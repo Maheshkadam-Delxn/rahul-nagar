@@ -71,11 +71,18 @@
                 |-- page.jsx
         |-- api
             |-- auth
+                |-- associate-members
+                    |-- add-member
+                        |-- route.js
+                    |-- delete-member
+                        |-- route.js
+                    |-- fetchAll
+                        |-- route.js
+                    |-- update-member
+                        |-- route.js
                 |-- signin
                     |-- route.js
                 |-- signup
-                    |-- route.js
-                |-- sub-signup
                     |-- route.js
         |-- contact
             |-- page.jsx
