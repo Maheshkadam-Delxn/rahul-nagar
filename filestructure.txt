@@ -52,6 +52,23 @@
     |-- app
         |-- about
             |-- page.jsx
+        |-- admin
+            |-- blog
+                |-- page.jsx
+            |-- document-management
+                |-- page.jsx
+            |-- event
+                |-- page.jsx
+            |-- layout.js
+            |-- page.js
+            |-- profile
+                |-- page.jsx
+            |-- site-settings
+                |-- page.jsx
+            |-- updates
+                |-- page.jsx
+            |-- user-management
+                |-- page.jsx
         |-- api
             |-- auth
                 |-- signin
@@ -66,6 +83,7 @@
             |-- page.jsx
         |-- globals.css
         |-- layout.js
+        |-- LayoutWrapper.js
         |-- page.js
     |-- components
         |-- About.jsx
