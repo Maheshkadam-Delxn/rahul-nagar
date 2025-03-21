@@ -52,6 +52,14 @@
     |-- app
         |-- about
             |-- page.jsx
+        |-- api
+            |-- auth
+                |-- signin
+                    |-- route.js
+                |-- signup
+                    |-- route.js
+                |-- sub-signup
+                    |-- route.js
         |-- contact
             |-- page.jsx
         |-- gallery
@@ -69,3 +77,7 @@
         |-- QuickLinks.jsx
         |-- ServiceHeroSection.jsx
         |-- Stats.jsx
+|-- utils
+    |-- connectDb.js
+    |-- models
+        |-- User.js
