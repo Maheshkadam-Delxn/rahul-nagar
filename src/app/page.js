@@ -1,36 +1,22 @@
-import Image from "next/image";
-import HeroSection from "./components/HeroSection";
-import About from "./components/About";
-import Services from "./components/Services";
-import Stats from "./components/Stats";
-import CaseStudy from "./components/CaseStudy";
-import OurSkills from "./components/OurSkills";
-import People from "./components/People";
-import Contact from "./components/Contact";
-import Testimonial from "./components/Testimonial";
-import Blog from "./components/Blog";
-import Button from "./components/Button";
-import Clients from "./components/Clients";
-import Footer from "./components/Footer";
+import About from "@/components/About";
+import Contact from "@/components/Contact";
+import Events from "@/components/Events";
+import HeroSection from "@/components/HeroSection";
+import QuickLinks from "@/components/QuickLinks";
+import Stats from "@/components/Stats";
+
 
 export default function Home() {
 
   return(
-    <>
-    <Button name='login' redirect='/login'/>
+  <>
     <HeroSection/>
+    <Events/>
     <About/>
-    <Services/>
+    <QuickLinks/>
     <Stats/>
-    <CaseStudy/>
-    <OurSkills/>
-    <People/>
     <Contact/>
-    <Testimonial/>
-    <Blog/>
-    <Clients/>
-    <Footer/>
-    </>
+  </>
     
 
   );

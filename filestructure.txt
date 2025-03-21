@@ -1,0 +1,71 @@
+|-- .gitignore
+|-- jsconfig.json
+|-- next.config.mjs
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.mjs
+|-- public
+    |-- home
+        |-- about
+            |-- building.png
+            |-- check.png
+            |-- ganesh.png
+            |-- kaman.png
+            |-- map.png
+            |-- sample.jpg
+            |-- video.png
+        |-- call.png
+        |-- contact
+            |-- email.png
+            |-- map.png
+            |-- pen.png
+            |-- right.png
+            |-- time.png
+        |-- contact.svg
+        |-- events
+            |-- arrow-right.png
+            |-- calander.png
+            |-- icon.png
+            |-- shape1.svg
+            |-- shape2.png
+            |-- shape2.svg
+            |-- user.png
+        |-- homebg.png
+        |-- homelogo.png
+        |-- homelogo.svg
+        |-- left.png
+        |-- logo.png
+        |-- logo.svg
+        |-- mail.png
+        |-- map.png
+        |-- playbtn.png
+        |-- right.png
+        |-- stats
+            |-- acres.png
+            |-- flatowner.png
+            |-- icon.png
+    |-- image.png
+    |-- logo.png
+    |-- logo2.png
+|-- README.md
+|-- src
+    |-- app
+        |-- about
+            |-- page.jsx
+        |-- contact
+            |-- page.jsx
+        |-- gallery
+            |-- page.jsx
+        |-- globals.css
+        |-- layout.js
+        |-- page.js
+    |-- components
+        |-- About.jsx
+        |-- Contact.jsx
+        |-- Events.jsx
+        |-- Footer.jsx
+        |-- HeroSection.jsx
+        |-- Navbar.jsx
+        |-- QuickLinks.jsx
+        |-- ServiceHeroSection.jsx
+        |-- Stats.jsx
