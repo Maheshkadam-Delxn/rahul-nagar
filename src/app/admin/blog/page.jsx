@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   FileText, 
   Plus, 
@@ -9,46 +9,17 @@ import {
   Image,
   Calendar,
   Tag,
-  User
+  User,
+  Loader
 } from "lucide-react";
 
 export default function BlogManagement() {
   const [showModal, setShowModal] = useState(false);
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      title: "Community Development Initiatives for 2025",
-      excerpt: "Exploring the key initiatives our community will focus on in the coming year to enhance living standards and promote sustainability.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies ultricies, nisl nisl ultricies nisl, euismod nisl nisl euismod nisl.",
-      author: "Raj Kumar",
-      date: "2025-01-15",
-      tags: ["Community", "Development", "Planning"],
-      image: "/public/events/shape1.svg",
-      status: "Published"
-    },
-    {
-      id: 2,
-      title: "The Importance of Cultural Preservation",
-      excerpt: "Why preserving our cultural heritage matters for the future generations and how our community is taking steps to ensure it.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies ultricies, nisl nisl ultricies nisl, euismod nisl nisl euismod nisl.",
-      author: "Priya Singh",
-      date: "2025-02-10",
-      tags: ["Culture", "Heritage", "Preservation"],
-      image: "/public/events/shape2.svg",
-      status: "Published"
-    },
-    {
-      id: 3,
-      title: "New Infrastructure Projects Beginning Next Month",
-      excerpt: "Details about the new infrastructure projects that will commence in our area next month and how they will benefit residents.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies ultricies, nisl nisl ultricies nisl, euismod nisl nisl euismod nisl.",
-      author: "Vikram Sharma",
-      date: "2025-03-05",
-      tags: ["Infrastructure", "Development", "Projects"],
-      image: "/public/events/shape2.png",
-      status: "Draft"
-    }
-  ]);
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [currentBlogId, setCurrentBlogId] = useState(null);
+  const [error,setError] =useState(false)
 
   const [newBlog, setNewBlog] = useState({
     title: "",
@@ -61,30 +32,39 @@ export default function BlogManagement() {
     status: "Draft"
   });
 
+  // Fetch all blogs when component mounts
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/blog/fetchAll");
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setBlogs(data.blogs);
+    } catch (error) {
+      console.error("Failed to fetch blogs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  console.log(blogs)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewBlog(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
-    // In a real app, you would handle file upload to storage
     setNewBlog(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Process tags from comma-separated string to array
-    const tagsArray = newBlog.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
-    
-    // In a real app, you would send this data to your API
-    const blogWithId = {
-      ...newBlog,
-      id: blogs.length + 1,
-      tags: tagsArray,
-      image: newBlog.image ? URL.createObjectURL(newBlog.image) : "/public/events/icon.png"
-    };
-    
-    setBlogs([...blogs, blogWithId]);
+  const resetForm = () => {
     setNewBlog({
       title: "",
       excerpt: "",
@@ -95,12 +75,145 @@ export default function BlogManagement() {
       image: null,
       status: "Draft"
     });
-    setShowModal(false);
+    setEditMode(false);
+    setCurrentBlogId(null);
   };
 
-  const handleDelete = (id) => {
-    // In a real app, you would call your API to delete the blog
-    setBlogs(blogs.filter(blog => blog.id !== id));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    setLoading(true);
+    setError(null);
+  
+    console.log("New Blog Data:", newBlog); // Debugging
+  
+    let imageUrl = "";
+  
+    // Upload Image if exists
+    if (newBlog.image && typeof newBlog.image !== "string") {
+      const imageData = new FormData();
+      imageData.append("file", newBlog.image);
+      imageData.append("upload_preset", "blog-upload"); // Cloudinary preset
+  
+      try {
+        const imageResponse = await fetch(
+          "https://api.cloudinary.com/v1_1/rahul-nagar/image/upload",
+          {
+            method: "POST",
+            body: imageData,
+          }
+        );
+  
+        const imageResult = await imageResponse.json();
+  
+        if (!imageResponse.ok) {
+          throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
+        }
+  
+        imageUrl = imageResult.secure_url || "";
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        setError("Failed to upload image. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+  
+    // Convert tags string to array
+    const tagsArray = newBlog.tags
+      ? newBlog.tags.split(",").map((tag) => tag.trim()).filter((tag) => tag !== "")
+      : [];
+  
+    // Prepare Blog Data with Default Values
+    const blogData = {
+      title: newBlog.title?.trim() || "Untitled Blog",
+      description: newBlog.description?.trim() || "No description provided",
+      category: newBlog.category || "General",
+      tags: tagsArray,
+      image: imageUrl,
+      authorName: newBlog.authorName?.trim() || "Anonymous",
+      createdBy: sessionStorage?.getItem("userId") || "defaultAdminId",
+    };
+  
+    console.log("Final Blog Data:", blogData); // Debugging before sending request
+  
+    try {
+      const response = await fetch("/api/blog/add-blog", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(blogData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add blog: ${response.statusText}`);
+      }
+  
+      const addedBlog = await response.json();
+      console.log("Blog added successfully:", addedBlog); // Debugging
+  
+      // Refresh blogs list after adding new blog
+      fetchBlogs();
+  
+      // Reset Form
+      resetForm();
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error adding blog:", error);
+      setError("Failed to add blog. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this blog post?")) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch("/api/blog/delete-blog", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      // Refresh the blog list
+      await fetchBlogs();
+      
+    } catch (error) {
+      console.error("Failed to delete blog:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (blog) => {
+    // Set up the form for editing
+    setNewBlog({
+      title: blog.title,
+      excerpt: blog.excerpt,
+      content: blog.content,
+      author: blog.author,
+      date: blog.date.split('T')[0], // Format date if in ISO format
+      tags: blog.tags.join(', '), // Convert tags array to string
+      status: blog.status,
+      image: null // Can't pre-fill the file input, but existing image data will be preserved on the server if not changed
+    });
+    
+    setEditMode(true);
+    setCurrentBlogId(blog.id);
+    setShowModal(true);
   };
 
   return (
@@ -108,92 +221,132 @@ export default function BlogManagement() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Blog Management</h1>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            resetForm();
+            setShowModal(true);
+          }}
           className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
+          disabled={loading}
         >
           <Plus size={18} />
           Add Blog Post
         </button>
       </div>
 
-      {/* Blogs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {blogs.map(blog => (
-          <div key={blog.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="h-48 bg-gray-200 relative">
-              {blog.image ? (
-                <img 
-                  src={blog.image} 
-                  alt={blog.title} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Image size={48} className="text-gray-400" />
-                </div>
-              )}
-              <div className="absolute top-2 right-2">
-                <span className={`inline-block px-2 py-1 text-xs rounded ${
-                  blog.status === 'Published' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
-                }`}>
-                  {blog.status}
-                </span>
-              </div>
-            </div>
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">{blog.title}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-2">{blog.excerpt}</p>
-              
-              <div className="flex items-center text-gray-500 mb-2">
-                <User size={16} className="mr-2" />
-                <span>{blog.author}</span>
-              </div>
-              
-              <div className="flex items-center text-gray-500 mb-2">
-                <Calendar size={16} className="mr-2" />
-                <span>{new Date(blog.date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}</span>
-              </div>
-              
-              <div className="flex items-center text-gray-500 mb-4 flex-wrap">
-                <Tag size={16} className="mr-2" />
-                <div className="flex flex-wrap gap-1">
-                  {blog.tags.map((tag, index) => (
-                    <span key={index} className="text-xs bg-gray-200 px-2 py-1 rounded">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 mt-2">
-                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-full">
-                  <Edit size={18} />
-                </button>
-                <button 
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-                  onClick={() => handleDelete(blog.id)}
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <Loader className="animate-spin text-purple-600 mr-2" />
+          <span>Loading...</span>
+        </div>
+      )}
 
-      {/* Add Blog Modal */}
+      {/* Empty State */}
+      {!loading && blogs.length === 0 && (
+        <div className="bg-gray-100 rounded-lg p-8 text-center">
+          <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No Blog Posts Yet</h3>
+          <p className="text-gray-600 mb-4">Get started by creating your first blog post</p>
+          <button 
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            Create Blog Post
+          </button>
+        </div>
+      )}
+
+      {/* Blogs Grid */}
+      {!loading && blogs.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {blogs.map(blog => (
+            <div key={blog.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="h-48 bg-gray-200 relative">
+                {blog.image ? (
+                  <img 
+                    src={blog.image} 
+                    alt={blog.title} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Image size={48} className="text-gray-400" />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2">
+                  <span className={`inline-block px-2 py-1 text-xs rounded ${
+                    blog.status === 'Published' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
+                  }`}>
+                    {blog.status}
+                  </span>
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{blog.title}</h3>
+                <p className="text-gray-600 mb-4 line-clamp-2">{blog.excerpt}</p>
+                
+                <div className="flex items-center text-gray-500 mb-2">
+                  <User size={16} className="mr-2" />
+                  <span>{blog.author}</span>
+                </div>
+                
+                <div className="flex items-center text-gray-500 mb-2">
+                  <Calendar size={16} className="mr-2" />
+                  <span>{new Date(blog.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+                
+                <div className="flex items-center text-gray-500 mb-4 flex-wrap">
+                  <Tag size={16} className="mr-2" />
+                  <div className="flex flex-wrap gap-1">
+                    {blog.tags.map((tag, index) => (
+                      <span key={index} className="text-xs bg-gray-200 px-2 py-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2 mt-2">
+                  <button 
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    onClick={() => handleEdit(blog)}
+                    disabled={loading}
+                  >
+                    <Edit size={18} />
+                  </button>
+                  <button 
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                    onClick={() => handleDelete(blog._id)}
+                    disabled={loading}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Blog Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Add New Blog Post</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                {editMode ? "Edit Blog Post" : "Add New Blog Post"}
+              </h2>
               <button 
                 onClick={() => setShowModal(false)}
                 className="text-gray-500 hover:text-gray-700"
+                disabled={loading}
               >
                 <X size={24} />
               </button>
@@ -213,6 +366,7 @@ export default function BlogManagement() {
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter blog title"
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -229,6 +383,7 @@ export default function BlogManagement() {
                   placeholder="Enter a short summary of the blog"
                   rows="2"
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -245,6 +400,7 @@ export default function BlogManagement() {
                   placeholder="Enter blog content"
                   rows="6"
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -262,6 +418,7 @@ export default function BlogManagement() {
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="Enter author name"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -277,6 +434,7 @@ export default function BlogManagement() {
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -293,6 +451,7 @@ export default function BlogManagement() {
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter tags separated by commas (e.g. Community, Development, Planning)"
+                  disabled={loading}
                 />
               </div>
               
@@ -306,6 +465,7 @@ export default function BlogManagement() {
                   value={newBlog.status}
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  disabled={loading}
                 >
                   <option value="Draft">Draft</option>
                   <option value="Published">Published</option>
@@ -314,10 +474,10 @@ export default function BlogManagement() {
               
               <div className="mb-6">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                  Featured Image
+                  Featured Image {editMode && "(Leave empty to keep existing image)"}
                 </label>
                 <div className="mt-1 flex items-center">
-                  <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
+                  <label className={`flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer ${!loading ? 'hover:bg-purple-600 hover:text-white' : 'opacity-50'}`}>
                     <span className="mx-auto flex items-center">
                       <Image size={24} className="mr-2" />
                       <span className="text-base leading-normal">Select a file</span>
@@ -329,6 +489,7 @@ export default function BlogManagement() {
                       onChange={handleImageChange}
                       className="hidden" 
                       accept="image/*"
+                      disabled={loading}
                     />
                   </label>
                   {newBlog.image && (
@@ -344,14 +505,23 @@ export default function BlogManagement() {
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+                  disabled={loading}
                 >
-                  Save Blog Post
+                  {loading ? (
+                    <>
+                      <Loader size={18} className="animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    `${editMode ? 'Update' : 'Save'} Blog Post`
+                  )}
                 </button>
               </div>
             </form>

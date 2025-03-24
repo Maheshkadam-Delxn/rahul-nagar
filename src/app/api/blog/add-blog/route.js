@@ -1,13 +1,26 @@
 import { NextResponse } from "next/server";
-import Blog from "../../../../../utils/models/Blog.js";
+import Blog from "../../../../../utils/models/Post.js";
 import connectDb from "../../../../../utils/connectDb";
 
 export async function POST(req) {
   try {
     await connectDb();
 
-    const { title, description, image, category, tags, authorName, createdBy } =
-      await req.json();
+    let body;
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      body = Object.fromEntries(formData.entries());
+      if (body.tags) body.tags = JSON.parse(body.tags); // Convert string to array
+    }
+
+    const { title, description, image, category, tags, authorName, createdBy } = body;
+
+    console.log(title, description, image, category, tags, authorName, createdBy);
+
 
     // Validate required fields
     if (!title || !description || !authorName || !createdBy) {

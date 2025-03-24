@@ -1,3 +1,4 @@
+|-- .env
 |-- .gitignore
 |-- jsconfig.json
 |-- next.config.mjs
@@ -84,6 +85,33 @@
                     |-- route.js
                 |-- signup
                     |-- route.js
+            |-- blog
+                |-- add-blog
+                    |-- route.js
+                |-- delete-blog
+                    |-- route.js
+                |-- fetchAll
+                    |-- route.js
+                |-- update-blog
+                    |-- route.js
+            |-- events
+                |-- add-event
+                    |-- route.js
+                |-- delete-event
+                    |-- route.js
+                |-- fetchAll
+                    |-- route.js
+                |-- update-event
+                    |-- route.js
+            |-- updates
+                |-- add-update
+                    |-- route.js
+                |-- delete-update
+                    |-- route.js
+                |-- edit-update
+                    |-- route.js
+                |-- fetchAll
+                    |-- route.js
         |-- contact
             |-- page.jsx
         |-- gallery
@@ -92,6 +120,8 @@
         |-- layout.js
         |-- LayoutWrapper.js
         |-- page.js
+        |-- signin
+            |-- page.jsx
     |-- components
         |-- About.jsx
         |-- Contact.jsx
@@ -105,4 +135,7 @@
 |-- utils
     |-- connectDb.js
     |-- models
+        |-- Events.js
+        |-- Post.js
+        |-- Updates.js
         |-- User.js

@@ -1,78 +1,9 @@
 "use client"
-import React, { useState } from 'react';
-import { Bell, Plus, Edit, Trash2, X, Calendar, Clock, PenTool, Users, Eye, EyeOff, Filter, Search, Tag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Plus, Edit, Trash2, X, Calendar, Clock, PenTool, Users, Eye, Filter, Search, Tag } from 'lucide-react';
 
 const UpdatesManagement = () => {
-  // Sample updates data
-  const initialUpdates = [
-    {
-      id: 1,
-      title: 'System Maintenance',
-      content: 'The system will be down for maintenance on March 25th from 2-4 AM EST.',
-      category: 'Maintenance',
-      priority: 'High',
-      status: 'Scheduled',
-      visibility: 'All Users',
-      createdAt: '2025-03-18T10:30:00',
-      publishedAt: '2025-03-18T14:00:00',
-      expiresAt: '2025-03-26T00:00:00',
-      author: 'System Admin'
-    },
-    {
-      id: 2,
-      title: 'New Feature: User Profiles',
-      content: 'We\'ve launched enhanced user profiles with customization options.',
-      category: 'Feature',
-      priority: 'Medium',
-      status: 'Published',
-      visibility: 'All Users',
-      createdAt: '2025-03-15T09:15:00',
-      publishedAt: '2025-03-17T12:00:00',
-      expiresAt: '2025-04-17T00:00:00',
-      author: 'Product Team'
-    },
-    {
-      id: 3,
-      title: 'Billing System Update',
-      content: 'The billing system has been updated with new payment options.',
-      category: 'Update',
-      priority: 'Medium',
-      status: 'Published',
-      visibility: 'Admins Only',
-      createdAt: '2025-03-10T14:22:00',
-      publishedAt: '2025-03-12T08:00:00',
-      expiresAt: '2025-04-12T00:00:00',
-      author: 'Finance Team'
-    },
-    {
-      id: 4,
-      title: 'Security Alert: Password Reset Required',
-      content: 'For security purposes, all users must reset their passwords within the next 7 days.',
-      category: 'Security',
-      priority: 'Critical',
-      status: 'Published',
-      visibility: 'All Users',
-      createdAt: '2025-03-20T08:45:00',
-      publishedAt: '2025-03-20T09:00:00',
-      expiresAt: '2025-03-27T00:00:00',
-      author: 'Security Team'
-    },
-    {
-      id: 5,
-      title: 'Holiday Schedule',
-      content: 'Our offices will be closed for the upcoming holidays. Support will be limited.',
-      category: 'Announcement',
-      priority: 'Low',
-      status: 'Draft',
-      visibility: 'All Users',
-      createdAt: '2025-03-19T15:30:00',
-      publishedAt: null,
-      expiresAt: '2025-04-10T00:00:00',
-      author: 'HR Team'
-    }
-  ];
-
-  const [updates, setUpdates] = useState(initialUpdates);
+  const [updates, setUpdates] = useState([]);
   const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false);
   const [isEditUpdateOpen, setIsEditUpdateOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -82,6 +13,8 @@ const UpdatesManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const [newUpdate, setNewUpdate] = useState({
     title: '',
@@ -98,6 +31,30 @@ const UpdatesManagement = () => {
   const statuses = ['Draft', 'Scheduled', 'Published', 'Expired', 'Archived'];
   const visibilityOptions = ['All Users', 'Admins Only', 'Managers Only', 'Staff Only'];
   
+  // Fetch all updates on component mount
+  useEffect(() => {
+    fetchUpdates();
+  }, []);
+  
+  // Fetch updates from API
+  const fetchUpdates = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/updates/fetchAll');
+      if (!response.ok) {
+        throw new Error('Failed to fetch updates');
+      }
+      const data = await response.json();
+      setUpdates(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching updates:', err);
+      setError('Failed to load updates. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Filter and search updates
   const filteredUpdates = updates.filter(update => {
     const matchesSearch = searchTerm === '' || 
@@ -111,29 +68,41 @@ const UpdatesManagement = () => {
   });
   
   // Handle adding a new update
-  const handleAddUpdate = () => {
-    const currentDate = new Date().toISOString();
-    const id = updates.length > 0 ? Math.max(...updates.map(update => update.id)) + 1 : 1;
-    
-    const newUpdateData = {
-      ...newUpdate,
-      id,
-      createdAt: currentDate,
-      publishedAt: newUpdate.status === 'Published' ? currentDate : null,
-      author: 'Current User', // In a real app, this would come from the authenticated user
-    };
-    
-    setUpdates([...updates, newUpdateData]);
-    setNewUpdate({
-      title: '',
-      content: '',
-      category: 'Announcement',
-      priority: 'Medium',
-      status: 'Draft',
-      visibility: 'All Users',
-      expiresAt: '',
-    });
-    setIsAddUpdateOpen(false);
+  const handleAddUpdate = async () => {
+    try {
+      const response = await fetch('/api/updates/add-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newUpdate,
+          status: newUpdate.status,
+        }),
+      });
+      console.log(response)
+      if (!response.ok) {
+        throw new Error('Failed to add update');
+      }
+      
+      // Refresh the updates list after adding
+      fetchUpdates();
+      
+      // Reset form and close modal
+      setNewUpdate({
+        title: '',
+        content: '',
+        category: 'Announcement',
+        priority: 'Medium',
+        status: 'Draft',
+        visibility: 'All Users',
+        expiresAt: '',
+      });
+      setIsAddUpdateOpen(false);
+    } catch (err) {
+      console.error('Error adding update:', err);
+      alert('Failed to add update. Please try again.');
+    }
   };
   
   // Handle editing an update
@@ -143,14 +112,36 @@ const UpdatesManagement = () => {
   };
   
   // Handle update submission
-  const handleUpdateSubmit = () => {
-    const updatedList = updates.map(update => 
-      update.id === selectedUpdate.id ? selectedUpdate : update
-    );
-    
-    setUpdates(updatedList);
-    setIsEditUpdateOpen(false);
-  };
+  const handleUpdateSubmit = async () => {
+    if (!selectedUpdate._id) {
+        console.error("Error: Update ID is missing.");
+        alert("Update ID is missing.");
+        return;
+    }
+
+    try {
+        console.log("Updating ID:", selectedUpdate._id); // Debugging log
+        const response = await fetch('/api/updates/edit-update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: selectedUpdate._id, ...selectedUpdate }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update');
+        }
+
+        // Refresh the updates list after editing
+        fetchUpdates();
+        setIsEditUpdateOpen(false);
+    } catch (err) {
+        console.error('Error updating update:', err);
+        alert('Failed to update. Please try again.');
+    }
+};
+
   
   // Handle delete confirmation
   const handleDeleteConfirmation = (update) => {
@@ -159,12 +150,29 @@ const UpdatesManagement = () => {
   };
   
   // Handle delete update
-  const handleDeleteUpdate = () => {
+  const handleDeleteUpdate = async () => {
     if (updateToDelete) {
-      const filteredUpdates = updates.filter(update => update.id !== updateToDelete.id);
-      setUpdates(filteredUpdates);
-      setIsDeleteConfirmOpen(false);
-      setUpdateToDelete(null);
+      try {
+        const response = await fetch('/api/updates/delete-update', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: updateToDelete}),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete update');
+        }
+        
+        // Refresh the updates list after deleting
+        fetchUpdates();
+        setIsDeleteConfirmOpen(false);
+        setUpdateToDelete(null);
+      } catch (err) {
+        console.error('Error deleting update:', err);
+        alert('Failed to delete update. Please try again.');
+      }
     }
   };
   
@@ -294,103 +302,129 @@ const UpdatesManagement = () => {
         </div>
       </div>
       
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="rounded-full bg-gray-200 h-12 w-12 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2.5"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+          </div>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-8 text-red-600">
+          <p>{error}</p>
+          <button 
+            onClick={fetchUpdates}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      
       {/* Updates List */}
-      <div className="space-y-4">
-        {filteredUpdates.length > 0 ? (
-          filteredUpdates.map(update => (
-            <div key={update.id} className="border rounded-lg overflow-hidden">
-              <div className="flex justify-between items-center p-4 bg-gray-50">
-                <div className="flex items-center">
-                  <div className={`p-2 rounded-full mr-3 ${getPriorityColorClass(update.priority)}`}>
-                    {getCategoryIcon(update.category)}
-                  </div>
-                  <div>
-                    <h3 className="font-medium">{update.title}</h3>
-                    <div className="flex flex-wrap gap-2 mt-1 text-xs">
-                      <span className={`px-2 py-1 rounded-full ${getStatusColorClass(update.status)}`}>
-                        {update.status}
-                      </span>
-                      <span className="px-2 py-1 rounded-full bg-gray-100">
-                        {update.category}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full ${getPriorityColorClass(update.priority)}`}>
-                        {update.priority}
-                      </span>
+      {!loading && !error && (
+        <div className="space-y-4">
+          {filteredUpdates.length > 0 ? (
+            filteredUpdates.map(update => (
+              <div key={update.id} className="border rounded-lg overflow-hidden">
+                <div className="flex justify-between items-center p-4 bg-gray-50">
+                  <div className="flex items-center">
+                    <div className={`p-2 rounded-full mr-3 ${getPriorityColorClass(update.priority)}`}>
+                      {getCategoryIcon(update.category)}
                     </div>
-                  </div>
-                </div>
-                
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => handleEditUpdate(update)}
-                    className="p-1 text-blue-600 hover:text-blue-800"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteConfirmation(update)}
-                    className="p-1 text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-4 border-t">
-                <p className="text-gray-700 mb-4">{update.content}</p>
-                
-                <div className="flex flex-wrap justify-between text-sm text-gray-500">
-                  <div className="space-y-1">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span>Created: {formatDate(update.createdAt)}</span>
+                    <div>
+                      <h3 className="font-medium">{update.title}</h3>
+                      <div className="flex flex-wrap gap-2 mt-1 text-xs">
+                        <span className={`px-2 py-1 rounded-full ${getStatusColorClass(update.status)}`}>
+                          {update.status}
+                        </span>
+                        <span className="px-2 py-1 rounded-full bg-gray-100">
+                          {update.category}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full ${getPriorityColorClass(update.priority)}`}>
+                          {update.priority}
+                        </span>
+                      </div>
                     </div>
-                    {update.publishedAt && (
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        <span>Published: {formatDate(update.publishedAt)}</span>
-                      </div>
-                    )}
-                    {update.expiresAt && (
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        <span>Expires: {formatDate(update.expiresAt)}</span>
-                      </div>
-                    )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      <span>Visibility: {update.visibility}</span>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handleEditUpdate(update)}
+                      className="p-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteConfirmation(update)}
+                      className="p-1 text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="p-4 border-t">
+                  <p className="text-gray-700 mb-4">{update.content}</p>
+                  
+                  <div className="flex flex-wrap justify-between text-sm text-gray-500">
+                    <div className="space-y-1">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        <span>Created: {formatDate(update.createdAt)}</span>
+                      </div>
+                      {update.publishedAt && (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>Published: {formatDate(update.publishedAt)}</span>
+                        </div>
+                      )}
+                      {update.expiresAt && (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>Expires: {formatDate(update.expiresAt)}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center">
-                      <PenTool className="h-4 w-4 mr-1" />
-                      <span>Author: {update.author}</span>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1" />
+                        <span>Visibility: {update.visibility}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <PenTool className="h-4 w-4 mr-1" />
+                        <span>Author: {update.author}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Bell className="h-10 w-10 mx-auto mb-2 text-gray-400" />
+              <p>No updates found matching your filters.</p>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setCategoryFilter('All');
+                  setStatusFilter('All');
+                  setPriorityFilter('All');
+                }}
+                className="mt-2 text-blue-600 hover:underline"
+              >
+                Clear all filters
+              </button>
             </div>
-          ))
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Bell className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-            <p>No updates found matching your filters.</p>
-            <button 
-              onClick={() => {
-                setSearchTerm('');
-                setCategoryFilter('All');
-                setStatusFilter('All');
-                setPriorityFilter('All');
-              }}
-              className="mt-2 text-blue-600 hover:underline"
-            >
-              Clear all filters
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       
       {/* Add Update Modal */}
       {isAddUpdateOpen && (
