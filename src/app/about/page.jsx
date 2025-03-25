@@ -4,13 +4,27 @@ import { useRouter } from "next/navigation";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import CheckIcon from "../../../public/home/about/check.png";
 import Image from "next/image";
-import BuildingMap from "../../../public/home/about/map.png";
+import BuildingMap1 from "../../../public/home/layout/layout1.png";
+import BuildingMap2 from "../../../public/home/layout/layout2.png";
+import BuildingMap3 from "../../../public/home/layout/layout3.png";
+import BuildingMap4 from "../../../public/home/layout/layout4.png";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/autoplay';
 const page = () => {
+    const maps = [BuildingMap1, BuildingMap2, BuildingMap3, BuildingMap4];
     const [buildings, setBuildings] = useState([]);
-const [loading, setLoading] = useState(true);
-const router = useRouter();
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [userLoading, setUserLoading] = useState(true);
+    const router = useRouter();
+    
     useEffect(() => {
         const fetchBuildings = async () => {
           try {
@@ -27,23 +41,26 @@ const router = useRouter();
           }
         };
       
+        const fetchUsers = async () => {
+          try {
+            const response = await fetch("/api/user-management/users");
+            if (!response.ok) {
+              throw new Error("Failed to fetch users");
+            }
+            const data = await response.json();
+            console.log(data)
+            setUsers(data.users);
+          } catch (error) {
+            console.error("Error fetching users:", error);
+          } finally {
+            setUserLoading(false);
+          }
+        };
+        
         fetchBuildings();
+        fetchUsers();
       }, []);
 
-    const members = [
-        { name: "Mr. Dagade Tushar Vaman", role: "President" },
-        { name: "Mr. Todkar Jalinder Sudam", role: "Secretary" },
-        { name: "Mr. Auti Rahul Sawaleram", role: "Treasurer" },
-        { name: "Mr. Patil Pramod Pratap", role: "Member Bldg. No. 1" },
-        { name: "Mr. Khandekar Rajan Dinkar", role: "Member Bldg. No. 2" },
-        { name: "Mr. Patil Mayapa Janaba", role: "Member Bldg. No. 3" },
-        { name: "Mr. Kharote Nilesh Ashok", role: "Member Bldg. No. 4" },
-        { name: "Mr. Zaware Shivaji Devram", role: "Member Bldg. No. 5" },
-        { name: "Mrs. Karandikar Pratima", role: "Member Bldg. No. A" },
-        { name: "Mr. Rajarshi Vikas Muralidhar", role: "Member Bldg. No. B" },
-        { name: "Mrs. Pooja Nikam", role: "Member Bldg. No. C" },
-    ];
-    
     const contactDetails = [
         {
             icon: <Phone className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,
@@ -147,17 +164,36 @@ const router = useRouter();
                         </div>
                     </div>
                     <div className="w-full flex flex-col items-start gap-8 md:gap-14">
-                        <h1 className="text-3xl md:text-4xl font-bold">Layout map of Rahul Nagar</h1>
-                        <div className="w-full overflow-x-auto">
-                            <Image 
-                                width={1920} 
-                                height={1080} 
-                                src={BuildingMap} 
-                                alt="Building Map"
-                                className="w-full object-contain"
-                            />
-                        </div>
-                    </div>
+      <h1 className="text-3xl md:text-4xl font-bold">Layout map of Rahul Nagar</h1>
+      
+      <div className="w-full relative">
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay]}
+          spaceBetween={30}
+          slidesPerView={1}
+          navigation
+          pagination={{ clickable: true }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          loop={true}
+          className="w-full rounded-lg overflow-hidden"
+        >
+          {maps.map((map, index) => (
+            <SwiperSlide key={index}>
+              <div className="w-full h-full flex items-center justify-center">
+                <Image
+                  width={1920}
+                  height={1080}
+                  src={map}
+                  alt={`Building Map ${index + 1}`}
+                  className="w-full h-auto object-contain"
+                  priority={index === 0} // Only load first image immediately
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+    </div>
                 </div>
             </div>
 
@@ -206,19 +242,35 @@ const router = useRouter();
                             Association Members
                         </h2>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {members.map((member, index) => (
-                            <div
-                                key={index}
-                                className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden"
-                            >
-                                <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0">
-                                    <p className="font-bold text-sm md:text-base">{member.name}</p>
-                                    <p className="text-xs md:text-sm">{member.role}</p>
+                    {userLoading ? (
+                        <div className="w-full flex justify-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
+                        </div>
+                    ) : users.length === 0 ? (
+                        <p className="text-gray-500">No members found</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            {users?.map((user) => (
+                                <div
+                                    key={user._id}
+                                    className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden"
+                                >
+                                    <Image
+                                        alt="userImage"
+                                            src={user?.image || ""}
+                                            width={1920}
+                                            height={1080}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0">
+                                        
+                                        <p className="font-bold text-sm md:text-base">{user.name}</p>
+                                        <p className="text-xs md:text-sm">{user.role || "Association Member"}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -248,44 +300,44 @@ const router = useRouter();
 
             {/* Building Section */}
             <div className="w-full bg-white flex items-center justify-center px-4 md:px-0">
-  <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
-    <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
-    
-    {loading ? (
-      <div className="w-full flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
-      </div>
-    ) : buildings.length === 0 ? (
-      <p className="text-gray-500">No buildings found</p>
-    ) : (
-      <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
-        {buildings.map((building) => (
-          <div 
-            key={building._id} 
-            className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => router.push(`/project/${building._id}`)}
-          >
-            <div className="relative">
-              <Image
-                src={"/home/about/building.png"}
-                alt={building.name}
-                width={1920}
-                height={1080}
-                className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
-                  {building.name.split(" ").pop()} {/* Extracts the last part of the name (number/letter) */}
+                <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
+                    
+                    {loading ? (
+                        <div className="w-full flex justify-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
+                        </div>
+                    ) : buildings.length === 0 ? (
+                        <p className="text-gray-500">No buildings found</p>
+                    ) : (
+                        <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
+                            {buildings.map((building) => (
+                                <div 
+                                    key={building._id} 
+                                    className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
+                                    onClick={() => router.push(`/project/${building._id}`)}
+                                >
+                                    <div className="relative">
+                                        <Image
+                                            src={"/home/about/building.png"}
+                                            alt={building.name}
+                                            width={1920}
+                                            height={1080}
+                                            className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
+                                                {building.name.split(" ").pop()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-              </div>
             </div>
-            <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</div>
         </div>
     );
 };

@@ -45,7 +45,8 @@ export default function AdminLayout({ children }) {
               
               <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Content</div>
               <MenuItem href="/admin/event" icon={<Calendar size={18} />} label="Event Management" />
-              <MenuItem href="/admin/blog" icon={<FileText size={18} />} label="Blog Management" />
+              {/* <MenuItem href="/admin/blog" icon={<FileText size={18} />} label="Blog Management" /> */}
+              <MenuItem href="/admin/building-management" icon={<FileText size={18} />} label="Building Management" />
               <MenuItem href="/admin/updates" icon={<RefreshCw size={18} />} label="Updates" />
               
               <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Users</div>
