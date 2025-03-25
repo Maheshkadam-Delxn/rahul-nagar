@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import { useAuth } from "@/context/AuthContext";
 import { 
   BarChart3, 
   Calendar, 
@@ -32,6 +33,8 @@ const geistMono = Geist_Mono({
 
 export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const {logout} = useAuth();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -98,7 +101,7 @@ export default function AdminLayout({ children }) {
               <MenuItem href="/admin/profile" icon={<UserCircle size={18} />} label="Your Profile" onClick={closeSidebar} />
               
               <div className="mt-6 border-t border-[#3D1F56] pt-4">
-                <MenuItem href="/auth/logout" icon={<LogOut size={18} />} label="Logout" onClick={closeSidebar} />
+                <MenuItem href="/" icon={<LogOut size={18} />} label="Logout" onClick={logout} />
               </div>
             </nav>
           </aside>
