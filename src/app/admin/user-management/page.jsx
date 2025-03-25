@@ -273,17 +273,60 @@ const UserManagement = () => {
   };
 
   // Handle delete user
-  const handleDeleteUser = () => {
-    if (userToDelete) {
-      const filteredUsers = users.filter(user => user.id !== userToDelete.id);
-      setUsers(filteredUsers);
+  const handleDeleteUser = async () => {
+    try {
+      setIsLoading(true);
+      
+      if (userToDelete) {
+        // Single user deletion
+        const response = await fetch(`/api/user-management/delete-user/${userToDelete._id}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete user');
+        }
+        
+        // Remove user from local state
+        const filteredUsers = users.filter(user => user.id !== userToDelete.id);
+        setUsers(filteredUsers);
+        
+      } else if (selectedRows.length > 0) {
+        // Bulk deletion - we need to get the MongoDB IDs for the selected users
+        const selectedUserIds = users
+          .filter(user => selectedRows.includes(user.id))
+          .map(user => user._id);
+        
+        const response = await fetch('/api/user-management/bulk-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userIds: selectedUserIds
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete users');
+        }
+        
+        // Remove users from local state
+        const filteredUsers = users.filter(user => !selectedRows.includes(user.id));
+        setUsers(filteredUsers);
+        setSelectedRows([]);
+      }
+      
       setIsConfirmDeleteOpen(false);
       setUserToDelete(null);
-    } else if (selectedRows.length > 0) {
-      const filteredUsers = users.filter(user => !selectedRows.includes(user.id));
-      setUsers(filteredUsers);
-      setSelectedRows([]);
-      setIsConfirmDeleteOpen(false);
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Error deleting user(s):', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
