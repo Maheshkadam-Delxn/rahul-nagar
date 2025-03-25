@@ -1,4 +1,6 @@
-import React from "react";
+"use client"
+import React,{useEffect,useState} from "react";
+import { useRouter } from "next/navigation";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import CheckIcon from "../../../public/home/about/check.png";
 import Image from "next/image";
@@ -6,20 +8,28 @@ import BuildingMap from "../../../public/home/about/map.png";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 
 const page = () => {
-    const buildings = [
-        { id: 1, name: "Building No. 1", number: "1" },
-        { id: 2, name: "Building No. 2", number: "2" },
-        { id: 3, name: "Building No. 3", number: "3" },
-        { id: 4, name: "Building No. 4", number: "4" },
-        { id: 5, name: "Building No. 5", number: "5" },
-        { id: 6, name: "Building No. 6A", number: "6A" },
-        { id: 7, name: "Building No. 6B", number: "6B" },
-        { id: 8, name: "Building No. 7", number: "7" },
-        { id: 9, name: "Building No. A", number: "A" },
-        { id: 10, name: "Building No. B", number: "B" },
-        { id: 11, name: "Building No. C", number: "C" },
-    ];
-    
+    const [buildings, setBuildings] = useState([]);
+const [loading, setLoading] = useState(true);
+const router = useRouter();
+    useEffect(() => {
+        const fetchBuildings = async () => {
+          try {
+            const response = await fetch("/api/building/fetchAll");
+            if (!response.ok) {
+              throw new Error("Failed to fetch buildings");
+            }
+            const data = await response.json();
+            setBuildings(data);
+          } catch (error) {
+            console.error("Error fetching buildings:", error);
+          } finally {
+            setLoading(false);
+          }
+        };
+      
+        fetchBuildings();
+      }, []);
+
     const members = [
         { name: "Mr. Dagade Tushar Vaman", role: "President" },
         { name: "Mr. Todkar Jalinder Sudam", role: "Secretary" },
@@ -238,31 +248,44 @@ const page = () => {
 
             {/* Building Section */}
             <div className="w-full bg-white flex items-center justify-center px-4 md:px-0">
-                <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
-                    <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
-                        {buildings.map((building) => (
-                            <div key={building.id} className="flex flex-col items-center">
-                                <div className="relative">
-                                    <Image
-                                        src="/home/about/building.png"
-                                        alt={building.name}
-                                        width={1920}
-                                        height={1080}
-                                        className="w-36 sm:w-48 md:w-64 h-auto object-cover"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
-                                            {building.number}
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="mt-2 font-semibold text-sm md:text-base">{building.name}</p>
-                            </div>
-                        ))}
-                    </div>
+  <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
+    <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
+    
+    {loading ? (
+      <div className="w-full flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
+      </div>
+    ) : buildings.length === 0 ? (
+      <p className="text-gray-500">No buildings found</p>
+    ) : (
+      <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
+        {buildings.map((building) => (
+          <div 
+            key={building._id} 
+            className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => router.push(`/project/${building._id}`)}
+          >
+            <div className="relative">
+              <Image
+                src={"/home/about/building.png"}
+                alt={building.name}
+                width={1920}
+                height={1080}
+                className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
+                  {building.name.split(" ").pop()} {/* Extracts the last part of the name (number/letter) */}
                 </div>
+              </div>
             </div>
+            <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
         </div>
     );
 };
