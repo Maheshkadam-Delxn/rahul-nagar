@@ -36,6 +36,11 @@
         |-- homebg.png
         |-- homelogo.png
         |-- homelogo.svg
+        |-- layout
+            |-- layout1.png
+            |-- layout2.png
+            |-- layout3.png
+            |-- layout4.png
         |-- left.png
         |-- logo.png
         |-- logo.svg
@@ -128,6 +133,14 @@
                     |-- route.js
                 |-- fetchAll
                     |-- route.js
+            |-- user-management
+                |-- add-user
+                    |-- route.js
+                |-- update-user
+                    |-- [id]
+                        |-- route.js
+                |-- users
+                    |-- route.js
         |-- contact
             |-- page.jsx
         |-- gallery
@@ -159,6 +172,7 @@
     |-- models
         |-- Building.js
         |-- Events.js
+        |-- members.js
         |-- Post.js
         |-- Updates.js
         |-- User.js
