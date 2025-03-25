@@ -684,11 +684,6 @@ export default function BuildingsManagement() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {newBuilding.owners.map((owner, index) => (
                       <div key={index} className="bg-white shadow-md rounded-lg p-4 flex items-center space-x-4 relative">
-                        <img 
-                          src={owner.image ? URL.createObjectURL(owner.image) : "/icon.png"} 
-                          alt="Resident Icon" 
-                          className="w-12 h-12 rounded-full"
-                        />
                         <div>
                           <h3 className="text-lg font-bold">{owner.name}</h3>
                           <p className="text-gray-600 text-sm">{owner.flatNumber}</p>
