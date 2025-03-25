@@ -115,6 +115,8 @@
                     |-- route.js
                 |-- update
                     |-- route.js
+            |-- contact
+                |-- route.js
             |-- events
                 |-- add-event
                     |-- route.js
@@ -136,6 +138,9 @@
             |-- user-management
                 |-- add-user
                     |-- route.js
+                |-- delete-user
+                    |-- [id]
+                        |-- route.js
                 |-- update-user
                     |-- [id]
                         |-- route.js

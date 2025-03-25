@@ -165,15 +165,7 @@ export default function EventsManagement() {
       }
     }
     
-    const userId = sessionStorage.getItem("userId");
-    const token = sessionStorage.getItem("authToken");
-    const userRole = sessionStorage.getItem("userRole") || "sub"; // Default to sub admin if role not found
-    
-    if (!userId || !token) {
-      alert("Authentication information missing. Please log in again.");
-      setLoading(false);
-      return;
-    }
+   
     
     // Prepare update data
     const updateData = {
@@ -184,8 +176,6 @@ export default function EventsManagement() {
       time: newEvent.time,
       location: newEvent.location.trim(),
       image: imageUrl,
-      userId,
-      role: userRole
     };
     
     try {
@@ -193,7 +183,6 @@ export default function EventsManagement() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(updateData),
       });

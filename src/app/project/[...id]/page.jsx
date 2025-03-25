@@ -155,11 +155,20 @@ const BuildingPage = () => {
                             <div className='bg-white shadow-lg rounded-lg overflow-hidden h-fit '>
                                 <div className='bg-[#b5831d] text-white px-4 py-3 text-lg font-bold'>Building No. {building.name}</div>
                                 <div className='p-4'>
-                                    <p className='text-gray-700'><span className='font-semibold'>President:</span> <strong>{building.president}</strong></p>
-                                    <hr className='my-2' />
-                                    <p className='text-gray-700'><span className='font-semibold'>Secretary:</span> <strong>{building.secretary}</strong></p>
-                                    <hr className='my-2' />
-                                    <p className='text-gray-700'><span className='font-semibold'>Treasurer:</span> <strong>{building.treasurer}</strong></p>
+                                    {building.president === "none" ? null : <div className='flex flex-col items-start gap-2'>
+                                      <p className='text-gray-700'><span className='font-semibold'>Chairman:</span> <strong>{building.president}</strong></p>
+                                      <hr className='my-2' />
+                                      </div>}
+                                      {
+                                        building.secretary==="none"?null: <div className='flex flex-col items-start gap-1'>
+                                           <p className='text-gray-700'><span className='font-semibold'>Secretary:</span> <strong>{building.secretary}</strong></p>
+                                           <hr className='my-2' />
+                                        </div>
+                                      }
+                                    {
+                                      building.treasurer ==="none"?null:  <p className='text-gray-700'><span className='font-semibold'>Treasurer:</span> <strong>{building.treasurer}</strong></p>
+                                    }
+                                   
                                 </div>
                             </div>
                         </div>

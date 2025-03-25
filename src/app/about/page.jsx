@@ -250,25 +250,25 @@ const page = () => {
                         <p className="text-gray-500">No members found</p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                            {users?.map((user) => (
-                                <div
-                                    key={user._id}
-                                    className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden"
-                                >
-                                    <Image
-                                        alt="userImage"
-                                            src={user?.image || ""}
-                                            width={1920}
-                                            height={1080}
-                                            className="w-full h-full object-contain"
-                                        />
-                                    <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0">
-                                        
-                                        <p className="font-bold text-sm md:text-base">{user.name}</p>
-                                        <p className="text-xs md:text-sm">{user.role || "Association Member"}</p>
-                                    </div>
-                                </div>
-                            ))}
+                           {users?.slice().reverse().map((user) => (
+    <div
+        key={user._id}
+        className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden"
+    >
+        <Image
+            alt="userImage"
+            src={user?.image || ""}
+            width={1920}
+            height={1080}
+            className="w-full h-full object-contain"
+        />
+        <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0 flex flex-col gap-2">
+            <p className="font-bold text-2xl">{user.name}</p>
+            <p className="text-xs md:text-sm">{user.post || "Association Member"}</p>
+        </div>
+    </div>
+))}
+
                         </div>
                     )}
                 </div>

@@ -11,17 +11,25 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className='w-full flex items-center justify-center z-20 relative'>
       {/* Desktop Navbar */}
       <div className='hidden md:flex w-full lg:w-4/5 bg-[#15181B] h-[15vh] rounded-bl-sm rounded-br-sm'>
-        <Image
-          alt='Logo'
-          src={"/logo.png"}
-          width={1920}
-          height={1080}
-          className='bg-white w-1/4 h-full object-contain rounded-bl-sm rounded-br-3xl'
-        />
+      <Link href={"/"} className="w-1/4 flex items-center justify-center   bg-white rounded-bl-lg rounded-br-3xl shadow-md">
+  <Image
+    alt="Logo"
+    src="/logo.png"
+    width={1920}
+    height={1080}
+    className="w-full h-full object-contain rounded-bl-lg rounded-br-3xl"
+  />
+</Link>
+
+
         <div className='flex flex-col w-3/4 h-full justify-between'>
           <div className='w-full bg-[#B57E10] h-1/3 flex items-center justify-between py-1 px-3'>
             <div className='flex items-center gap-2 text-white'>
@@ -42,15 +50,15 @@ const Navbar = () => {
           <div className='w-full h-2/3 flex items-center justify-between px-3 py-1'>
             <div className='flex items-center gap-6 text-white text-sm'>
               <Link href={"/"}>Home</Link>
-              <Link href={"#"}>Updates</Link>
+              {/* <Link href={"#"}>Updates</Link> */}
               <Link href={"/about"}>About</Link>
-              <Link href={"#"}>Redevelopment</Link>
+              {/* <Link href={"#"}>Redevelopment</Link> */}
               <Link href={"/gallery"}>Gallery</Link>
               <Link href={"/contact"}>Contact Us</Link>
             </div>
             <div className='flex items-center gap-5 text-white py-1 px-3'>
-              <Search size={20} />
-              <Link href={"#"} className='bg-[#B57E10] p-3 text-sm w-32 text-center rounded-sm'>Member Area</Link>
+              {/* <Search size={20} /> */}
+              <Link href={"/admin"} className='bg-[#B57E10] p-3 text-sm w-32 text-center rounded-sm'>Member Area</Link>
             </div>
           </div>
         </div>
@@ -59,13 +67,14 @@ const Navbar = () => {
       {/* Mobile Navbar */}
       <div className='md:hidden w-full bg-[#15181B] flex items-center justify-between p-4'>
         <div className='flex items-center gap-2'>
-          <Image
+         <Link href={"/"}>
+         <Image
             alt='Logo'
             src={"/logo.png"}
             width={100}
             height={50}
             className='bg-white h-12 w-auto object-contain rounded-sm'
-          />
+          /></Link>
         </div>
         <button
           className='text-white p-2'
@@ -124,20 +133,21 @@ const Navbar = () => {
                 </div>
 
                 <Link 
-                  href={"#"} 
+                  href={"/admin"} 
                   className='bg-[#B57E10] p-3 text-sm w-full text-center rounded-sm text-white'
+                  onClick={closeMenu}
                 >
                   Member Area
                 </Link>
               </div>
 
               <div className='flex flex-col mt-6 border-t border-gray-700 pt-6'>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700'>Home</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700'>Updates</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700'>About</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700'>Redevelopment</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700'>Gallery</Link>
-                <Link href={"#"} className='text-white py-4'>Contact Us</Link>
+                <Link href={"/"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Home</Link>
+                <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Updates</Link>
+                <Link href={"/about"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>About</Link>
+                <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Redevelopment</Link>
+                <Link href={"/gallery"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Gallery</Link>
+                <Link href={"/contact"} className='text-white py-4' onClick={closeMenu}>Contact Us</Link>
               </div>
             </div>
           </div>
