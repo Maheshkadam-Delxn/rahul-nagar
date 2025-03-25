@@ -1,9 +1,9 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Trash2, Edit, X, Check, MoreHorizontal, Filter, Download, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Plus, Trash2, Edit, X, Check, MoreHorizontal, Filter, Download, Upload, Camera } from 'lucide-react';
 
 const UserManagement = () => {
-  // Sample user data
+  // Sample user data (we'll use this as fallback if fetch fails)
   const initialUsers = [
     { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin', status: 'Active', lastLogin: '2025-03-15' },
     { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User', status: 'Active', lastLogin: '2025-03-18' },
@@ -12,12 +12,20 @@ const UserManagement = () => {
     { id: 5, name: 'Michael Brown', email: 'michael.b@example.com', role: 'User', status: 'Pending', lastLogin: '-' },
   ];
 
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'User', status: 'Active' });
+  const [newUser, setNewUser] = useState({ 
+    name: '', 
+    email: '', 
+    password: '', 
+    role: 'user', 
+    status: 'Active',
+    image: null,
+    post: ''
+  });
   const [editedUser, setEditedUser] = useState({ name: '', email: '', role: '', status: '' });
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -26,6 +34,18 @@ const UserManagement = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [roleFilter, setRoleFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'ascending' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Add imagePreview state for preview
+  const [imagePreview, setImagePreview] = useState(null);
+  
+  // For file input reference
+  const fileInputRef = useRef(null);
+
+  // Add state for edit image preview
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const editFileInputRef = useRef(null);
 
   // Handle sort
   const requestSort = (key) => {
@@ -43,33 +63,206 @@ const UserManagement = () => {
 
   // Handle add user
   const handleAddUser = () => {
+    resetAddUserForm();
     setIsAddUserOpen(true);
   };
 
-  // Handle submit new user
-  const handleSubmitNewUser = () => {
-    const id = users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1;
-    const currentDate = new Date().toISOString().split('T')[0];
-    const user = { ...newUser, id, lastLogin: '-' };
-    setUsers([...users, user]);
-    setNewUser({ name: '', email: '', role: 'User', status: 'Active' });
-    setIsAddUserOpen(false);
+  // Handle image change
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewUser({...newUser, image: file});
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle submit new user with image upload
+  const handleSubmitNewUser = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      let imageUrl = '';
+      
+      // Upload Image if exists
+      if (newUser.image) {
+        const imageData = new FormData();
+        imageData.append("file", newUser.image);
+        imageData.append("upload_preset", "event-upload"); // Use your Cloudinary preset
+    
+        try {
+          const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
+            method: "POST",
+            body: imageData,
+          });
+    
+          const imageResult = await imageResponse.json();
+    
+          if (!imageResponse.ok) {
+            throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
+          }
+    
+          imageUrl = imageResult.secure_url;
+    
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          setError("Failed to upload image. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Now create the user with the image URL
+      const response = await fetch('/api/user-management/add-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newUser.email,
+          password: newUser.password,
+          role: newUser.role,
+          name: newUser.name,
+          status: newUser.status,
+          image: imageUrl,  // Use the uploaded image URL
+          post: newUser.post
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add user');
+      }
+      
+      const data = await response.json();
+      
+      // Add the new user to the state
+      const id = users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1;
+      const user = { 
+        ...newUser, 
+        id, 
+        lastLogin: '-',
+        _id: data.user._id,
+        image: imageUrl // Store the image URL not the file object
+      };
+      
+      setUsers([...users, user]);
+      setNewUser({ name: '', email: '', password: '', role: 'user', status: 'Active', image: null, post: '' });
+      setImagePreview(null);
+      setIsAddUserOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle edit image change
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditedUser({...editedUser, image: file, imageFile: file });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Handle edit user
   const handleEditUser = (user) => {
     setSelectedUser(user);
-    setEditedUser({ ...user });
+    setEditedUser({ 
+      ...user,
+      // Use existing image URL if available
+      imageUrl: user.image || ''
+    });
+    setEditImagePreview(user.image || null);
     setIsEditUserOpen(true);
   };
 
-  // Handle update user
-  const handleUpdateUser = () => {
-    const updatedUsers = users.map(user => 
-      user.id === selectedUser.id ? { ...user, ...editedUser } : user
-    );
-    setUsers(updatedUsers);
-    setIsEditUserOpen(false);
+  // Handle update user with image
+  const handleUpdateUser = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      let imageUrl = editedUser.imageUrl; // Use existing image URL by default
+      
+      // Upload Image if a new file was selected
+      if (editedUser.imageFile) {
+        const imageData = new FormData();
+        imageData.append("file", editedUser.imageFile);
+        imageData.append("upload_preset", "event-upload"); // Use your Cloudinary preset
+    
+        try {
+          const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
+            method: "POST",
+            body: imageData,
+          });
+    
+          const imageResult = await imageResponse.json();
+    
+          if (!imageResponse.ok) {
+            throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
+          }
+    
+          imageUrl = imageResult.secure_url;
+    
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          setError("Failed to upload image. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Update user with image URL
+      const response = await fetch(`/api/user-management/update-user/${selectedUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editedUser.name,
+          email: editedUser.email,
+          role: editedUser.role,
+          status: editedUser.status,
+          image: imageUrl, // Use the uploaded or existing image URL
+          post: editedUser.post
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update user');
+      }
+      
+      // Update the user in the local state
+      const updatedUsers = users.map(user => 
+        user.id === selectedUser.id ? { 
+          ...user, 
+          ...editedUser,
+          image: imageUrl // Use the final image URL
+        } : user
+      );
+      
+      setUsers(updatedUsers);
+      setIsEditUserOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle delete confirmation
@@ -127,7 +320,7 @@ const UserManagement = () => {
   }
   
   if (roleFilter !== 'All') {
-    filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
+    filteredUsers = filteredUsers.filter(user => user.role === roleFilter.toLowerCase());
   }
   
   if (searchTerm) {
@@ -164,11 +357,62 @@ const UserManagement = () => {
     }
   }, [selectedRows, filteredUsers]);
 
+  // Fetch users from the API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/user-management/users');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        
+        const data = await response.json();
+        
+        // Transform the data to match our expected format if needed
+        const formattedUsers = data.users.map((user, index) => ({
+          id: index + 1,
+          _id: user._id,
+          name: user.name || 'Unknown',
+          email: user.email,
+          role: user.role || 'user',
+          status: user.status || 'Active',
+          lastLogin: user.lastLogin || '-',
+        }));
+        
+        setUsers(formattedUsers);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError('Failed to load users. Using sample data instead.');
+        setUsers(initialUsers); // Fallback to sample data
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
+  // Add resetForm function
+  const resetAddUserForm = () => {
+    setNewUser({ name: '', email: '', password: '', role: 'user', status: 'Active', image: null, post: '' });
+    setImagePreview(null);
+    setError(null);
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       {/* Header and search */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-2xl font-bold mb-4 md:mb-0">User Management</h1>
+        
+        {/* Error notification if fetch fails */}
+        {error && (
+          <div className="mb-4 p-3 bg-yellow-100 text-yellow-700 rounded-md w-full md:w-auto">
+            {error}
+          </div>
+        )}
         
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
@@ -217,9 +461,9 @@ const UserManagement = () => {
             className="border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">All Roles</option>
-            <option value="Admin">Admin</option>
-            <option value="Manager">Manager</option>
-            <option value="User">User</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="user">User</option>
           </select>
           
           {(statusFilter !== 'All' || roleFilter !== 'All' || searchTerm) && (
@@ -260,118 +504,128 @@ const UserManagement = () => {
       
       {/* Users table */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4 text-left">
-                <input 
-                  type="checkbox" 
-                  checked={selectAll} 
-                  onChange={handleSelectAll}
-                  className="rounded"
-                />
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('id')}
-              >
-                ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('name')}
-              >
-                Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('email')}
-              >
-                Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('role')}
-              >
-                Role {sortConfig.key === 'role' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('status')}
-              >
-                Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="p-4 text-left cursor-pointer"
-                onClick={() => requestSort('lastLogin')}
-              >
-                Last Login {sortConfig.key === 'lastLogin' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th className="p-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map(user => (
-                <tr 
-                  key={user.id} 
-                  className="border-t hover:bg-gray-50"
+        {isLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="ml-2 text-gray-600">Loading users...</span>
+          </div>
+        ) : (
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="p-4 text-left">
+                  <input 
+                    type="checkbox" 
+                    checked={selectAll} 
+                    onChange={handleSelectAll}
+                    className="rounded"
+                  />
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('id')}
                 >
-                  <td className="p-4">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedRows.includes(user.id)}
-                      onChange={() => handleSelectRow(user.id)}
-                      className="rounded"
-                    />
-                  </td>
-                  <td className="p-4">{user.id}</td>
-                  <td className="p-4 font-medium">{user.name}</td>
-                  <td className="p-4">{user.email}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' : 
-                        user.role === 'Manager' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-gray-100 text-gray-800'}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                        user.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                        'bg-yellow-100 text-yellow-800'}`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="p-4">{user.lastLogin}</td>
-                  <td className="p-4">
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => handleEditUser(user)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteConfirmation(user)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                  ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('name')}
+                >
+                  Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('email')}
+                >
+                  Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('role')}
+                >
+                  Role {sortConfig.key === 'role' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('status')}
+                >
+                  Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="p-4 text-left cursor-pointer"
+                  onClick={() => requestSort('lastLogin')}
+                >
+                  Last Login {sortConfig.key === 'lastLogin' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="p-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
+                  <tr 
+                    key={user.id} 
+                    className="border-t hover:bg-gray-50"
+                  >
+                    <td className="p-4">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedRows.includes(user.id)}
+                        onChange={() => handleSelectRow(user.id)}
+                        className="rounded"
+                      />
+                    </td>
+                    <td className="p-4">{user.id}</td>
+                    <td className="p-4 font-medium">{user.name}</td>
+                    <td className="p-4">{user.email}</td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                        ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
+                          user.role === 'manager' ? 'bg-blue-100 text-blue-800' : 
+                          'bg-gray-100 text-gray-800'}`}>
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                        ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                          user.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
+                          'bg-yellow-100 text-yellow-800'}`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td className="p-4">{user.lastLogin}</td>
+                    <td className="p-4">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEditUser(user)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteConfirmation(user)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="p-4 text-center text-gray-500">
+                    No users found. Try adjusting your filters or add a new user.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="p-4 text-center text-gray-500">
-                  No users found. Try adjusting your filters or add a new user.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
       
       {/* Pagination */}
@@ -386,7 +640,7 @@ const UserManagement = () => {
         </div>
       </div>
       
-      {/* Add User Modal */}
+      {/* Add User Modal with Image Upload */}
       {isAddUserOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
@@ -397,7 +651,60 @@ const UserManagement = () => {
               </button>
             </div>
             
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
+            
             <div className="space-y-4">
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Profile Image</label>
+                <div className="flex items-center space-x-4">
+                  <div 
+                    className="relative w-24 h-24 border-2 border-dashed rounded-full flex items-center justify-center overflow-hidden bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    {imagePreview ? (
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    )}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">
+                      Click to upload profile image
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Supports JPG, PNG. Max 5MB.
+                    </p>
+                    {imagePreview && (
+                      <button 
+                        onClick={() => { 
+                          setNewUser({...newUser, image: null});
+                          setImagePreview(null);
+                        }}
+                        className="mt-1 text-xs text-red-600 hover:text-red-800"
+                      >
+                        Remove image
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
@@ -421,15 +728,37 @@ const UserManagement = () => {
               </div>
               
               <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="Enter password"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Post/Position</label>
+                <input
+                  type="text"
+                  value={newUser.post}
+                  onChange={(e) => setNewUser({...newUser, post: e.target.value})}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="Enter user's position or post"
+                />
+              </div>
+              
+              <div>
                 <label className="block text-sm font-medium mb-1">Role</label>
                 <select
                   value={newUser.role}
                   onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                   className="w-full p-2 border rounded-md"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Manager">Manager</option>
-                  <option value="User">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="user">User</option>
                 </select>
               </div>
               
@@ -456,17 +785,25 @@ const UserManagement = () => {
               </button>
               <button 
                 onClick={handleSubmitNewUser}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                disabled={!newUser.name || !newUser.email}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+                disabled={!newUser.name || !newUser.email || !newUser.password || !newUser.image || !newUser.post || isLoading}
               >
-                Add User
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : 'Add User'}
               </button>
             </div>
           </div>
         </div>
       )}
       
-      {/* Edit User Modal */}
+      {/* Edit User Modal with Image Upload */}
       {isEditUserOpen && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
@@ -477,7 +814,60 @@ const UserManagement = () => {
               </button>
             </div>
             
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
+            
             <div className="space-y-4">
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Profile Image</label>
+                <div className="flex items-center space-x-4">
+                  <div 
+                    className="relative w-24 h-24 border-2 border-dashed rounded-full flex items-center justify-center overflow-hidden bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => editFileInputRef.current.click()}
+                  >
+                    {editImagePreview ? (
+                      <img 
+                        src={editImagePreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    )}
+                    <input
+                      type="file"
+                      ref={editFileInputRef}
+                      onChange={handleEditImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">
+                      Click to upload new profile image
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Supports JPG, PNG. Max 5MB.
+                    </p>
+                    {editImagePreview && (
+                      <button 
+                        onClick={() => { 
+                          setEditedUser({...editedUser, image: editedUser.imageUrl, imageFile: null});
+                          setEditImagePreview(editedUser.imageUrl);
+                        }}
+                        className="mt-1 text-xs text-red-600 hover:text-red-800"
+                      >
+                        Reset to original
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
@@ -499,15 +889,25 @@ const UserManagement = () => {
               </div>
               
               <div>
+                <label className="block text-sm font-medium mb-1">Post/Position</label>
+                <input
+                  type="text"
+                  value={editedUser.post}
+                  onChange={(e) => setEditedUser({...editedUser, post: e.target.value})}
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+              
+              <div>
                 <label className="block text-sm font-medium mb-1">Role</label>
                 <select
                   value={editedUser.role}
                   onChange={(e) => setEditedUser({...editedUser, role: e.target.value})}
                   className="w-full p-2 border rounded-md"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Manager">Manager</option>
-                  <option value="User">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="user">User</option>
                 </select>
               </div>
               
@@ -534,10 +934,18 @@ const UserManagement = () => {
               </button>
               <button 
                 onClick={handleUpdateUser}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                disabled={!editedUser.name || !editedUser.email}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+                disabled={!editedUser.name || !editedUser.email || !editedUser.post || isLoading}
               >
-                Update User
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : 'Update User'}
               </button>
             </div>
           </div>
