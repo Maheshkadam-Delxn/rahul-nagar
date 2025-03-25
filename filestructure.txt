@@ -15,6 +15,8 @@
             |-- map.png
             |-- sample.jpg
             |-- video.png
+        |-- building
+            |-- icon.svg
         |-- call.png
         |-- contact
             |-- email.png
@@ -56,6 +58,8 @@
         |-- admin
             |-- blog
                 |-- page.jsx
+            |-- building-management
+                |-- page.jsx
             |-- document-management
                 |-- page.jsx
             |-- event
@@ -94,6 +98,18 @@
                     |-- route.js
                 |-- update-blog
                     |-- route.js
+            |-- building
+                |-- add-building
+                    |-- route.js
+                |-- delete
+                    |-- [...id]
+                        |-- route.js
+                |-- fetchAll
+                    |-- route.js
+                |-- fetchById
+                    |-- route.js
+                |-- update
+                    |-- route.js
             |-- events
                 |-- add-event
                     |-- route.js
@@ -120,6 +136,9 @@
         |-- layout.js
         |-- LayoutWrapper.js
         |-- page.js
+        |-- project
+            |-- [...id]
+                |-- page.jsx
         |-- signin
             |-- page.jsx
     |-- components
@@ -132,9 +151,13 @@
         |-- QuickLinks.jsx
         |-- ServiceHeroSection.jsx
         |-- Stats.jsx
+    |-- context
+        |-- AuthContext.jsx
+    |-- middleware.js
 |-- utils
     |-- connectDb.js
     |-- models
+        |-- Building.js
         |-- Events.js
         |-- Post.js
         |-- Updates.js
