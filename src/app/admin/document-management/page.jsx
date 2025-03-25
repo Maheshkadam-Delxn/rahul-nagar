@@ -1,9 +1,11 @@
 "use client"
 import React, { useState } from 'react';
 import { Folder, File, Upload, Plus, MoreVertical, ChevronLeft, Search } from 'lucide-react';
-
+import { useAuth } from '@/context/AuthContext';
 const DocumentManagement = () => {
   const [currentPath, setCurrentPath] = useState(['My Drive']);
+ const {user} = useAuth();
+ console.log("user",user);
   const [items, setItems] = useState([
     { id: 1, type: 'folder', name: 'Documents', parent: 'My Drive' },
     { id: 2, type: 'folder', name: 'Images', parent: 'My Drive' },

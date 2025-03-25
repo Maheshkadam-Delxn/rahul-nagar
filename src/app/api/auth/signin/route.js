@@ -91,12 +91,12 @@ export async function POST(req) {
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     return NextResponse.json({
-      success: true,
-      token,
+      token: token,
       user: {
-        id: user._id,
-        email: user.email,
+        id: user._id.toString(),
+        name: user.name,
         role: user.role,
+        email: user.email,
         ...(user.role === "sub" && { superAdminId: user.superAdminId }) // Add Super Admin ID for Sub Admins
       }
     });

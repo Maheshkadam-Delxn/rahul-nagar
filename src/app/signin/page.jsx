@@ -1,6 +1,7 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,13 @@ export default function SignIn() {
   const [error, setError] = useState('');
 
   const router = useRouter();
+  const { user, login } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/admin');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,24 +34,54 @@ export default function SignIn() {
       });
 
       const data = await response.json();
-      console.log(data)
+      console.log("Login response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to sign in');
       }
 
-      // Store token in sessionStorage instead of localStorage
-      if (data.token) {
-        sessionStorage.setItem('authToken', data.token);
-        sessionStorage.setItem('userId',data.user.id)
+      if (data.token && data.user) {
+        // Make sure user has all required fields
+        const userData = {
+          token: data.token,
+          user: {
+            id: data.user.id || data.user._id,
+            name: data.user.name,
+            role: data.user.role,
+            email: data.user.email
+          }
+        };
         
-        // Redirect to dashboard
-        router.push('/admin');
+        console.log("Storing auth data:", userData);
+        
+        // IMPORTANT: Set the cookie manually to ensure it's set
+        try {
+          import('js-cookie').then(Cookies => {
+            Cookies.set('authToken', userData.token, { expires: 7 });
+            console.log("Cookie set:", Cookies.get('authToken') ? "Success" : "Failed");
+          });
+        } catch (e) {
+          console.error("Error setting cookie:", e);
+        }
+        
+        // Call login function
+        await login(userData);
+        
+        // Check if cookie was set
+        import('js-cookie').then(Cookies => {
+          const cookieToken = Cookies.get('authToken');
+          console.log("Cookie after login:", cookieToken ? "Present" : "Missing");
+        });
+        
+        setTimeout(() => {
+          console.log("Redirecting to admin page");
+          router.replace('/admin');
+        }, 300);
       } else {
-        throw new Error('No token received');
+        throw new Error('Invalid response format');
       }
-      console.log(data?.token);
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);

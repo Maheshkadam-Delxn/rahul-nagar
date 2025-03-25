@@ -1,8 +1,31 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { Bell, Plus, Edit, Trash2, X, Calendar, Clock, PenTool, Users, Eye, Filter, Search, Tag } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const UpdatesManagement = () => {
+  const { user, loading: authLoading } = useAuth();
+  console.log("UpdatesManagement: Auth context received:", { user, authLoading });
+  
+  // Log session storage directly
+  useEffect(() => {
+    const checkSessionStorage = () => {
+      try {
+        const sessionData = {
+          token: sessionStorage.getItem('authToken'),
+          userId: sessionStorage.getItem('userId'),
+          userName: sessionStorage.getItem('userName'),
+          userRole: sessionStorage.getItem('userRole')
+        };
+        console.log("UpdatesManagement: Direct sessionStorage check:", sessionData);
+      } catch (error) {
+        console.error("Error checking sessionStorage:", error);
+      }
+    };
+    
+    checkSessionStorage();
+  }, []);
+  
   const [updates, setUpdates] = useState([]);
   const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false);
   const [isEditUpdateOpen, setIsEditUpdateOpen] = useState(false);
@@ -70,6 +93,29 @@ const UpdatesManagement = () => {
   // Handle adding a new update
   const handleAddUpdate = async () => {
     try {
+      console.log("Current user:", user);
+      
+      // Get user data - prefer context, fallback to session storage
+      let userData;
+      
+      if (user) {
+        userData = {
+          userId: user.id,
+          userName: user.name,
+          userRole: user.role
+        };
+      } else {
+        // Fallback to session storage
+        userData = {
+          userId: sessionStorage.getItem('userId'),
+          userName: sessionStorage.getItem('userName'),
+          userRole: sessionStorage.getItem('userRole')
+        };
+      }
+      
+      // Log what we're sending
+      console.log("Sending user data:", userData);
+      
       const response = await fetch('/api/updates/add-update', {
         method: 'POST',
         headers: {
@@ -77,13 +123,16 @@ const UpdatesManagement = () => {
         },
         body: JSON.stringify({
           ...newUpdate,
-          status: newUpdate.status,
+          userData: userData,
         }),
       });
-      console.log(response)
+      
       if (!response.ok) {
         throw new Error('Failed to add update');
       }
+      
+      const result = await response.json();
+      console.log("Update creation result:", result);
       
       // Refresh the updates list after adding
       fetchUpdates();
@@ -94,7 +143,7 @@ const UpdatesManagement = () => {
         content: '',
         category: 'Announcement',
         priority: 'Medium',
-        status: 'Draft',
+        status: 'Draft', 
         visibility: 'All Users',
         expiresAt: '',
       });
@@ -689,6 +738,33 @@ const UpdatesManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {!isAddUpdateOpen && !isEditUpdateOpen && !isDeleteConfirmOpen && (
+        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
+          <h3 className="font-bold">Auth Debug Info</h3>
+          <div>Auth Loading: {authLoading ? 'Yes' : 'No'}</div>
+          <div>User: {user ? JSON.stringify(user) : 'null'}</div>
+          <div>Session Data: 
+            <button 
+              onClick={() => {
+                try {
+                  console.log({
+                    token: sessionStorage.getItem('authToken') ? 'Present' : 'Missing',
+                    userId: sessionStorage.getItem('userId'),
+                    userName: sessionStorage.getItem('userName'),
+                    userRole: sessionStorage.getItem('userRole')
+                  });
+                } catch(e) {
+                  console.error("Error accessing sessionStorage", e);
+                }
+              }}
+              className="ml-2 px-2 py-1 bg-blue-500 text-white rounded"
+            >
+              Log to Console
+            </button>
           </div>
         </div>
       )}

@@ -1,7 +1,11 @@
+"use client"
 import React from 'react';
 import { User, Home, Calendar, DollarSign, Settings, Bell, MessageSquare, BarChart2, Layers, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const AdminDashboardOverview = () => {
+  const { user } = useAuth();
+  console.log("AdminDashboardOverview: Auth context received:", { user });
   // Mock data for the dashboard
   const dashboardData = {
     stats: [

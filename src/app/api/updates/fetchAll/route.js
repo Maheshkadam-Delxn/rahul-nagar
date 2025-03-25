@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 import connectDb from "../../../../../utils/connectDb";
-import Notification from "../../../../../utils/models/Updates";
+import Updates from "../../../../../utils/models/Updates";
 
 export async function GET() {
     await connectDb();
     try {
-        const notifications = await Notification.find();
-        return NextResponse.json(notifications, { status: 200 });
+        // Get all updates, sort by most recent first
+        const updates = await Updates.find({}).sort({ createdAt: -1 });
+        
+        console.log(`Fetched ${updates.length} updates`);
+        // You can also log a sample update to check the structure
+        if (updates.length > 0) {
+            console.log("Sample update structure:", updates[0]);
+        }
+        
+        return NextResponse.json(updates);
     } catch (error) {
+        console.error('Error fetching updates:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

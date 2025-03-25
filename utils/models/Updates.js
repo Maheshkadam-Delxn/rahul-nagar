@@ -1,13 +1,54 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
-const NotificationSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  content: { type: String, required: true },
-  category: { type: String, required: true, default: "Announcement" },
-  priority: { type: String, required: true, default: "Medium" },
-  status: { type: String, required: true, default: "Draft" },
-  visibility: { type: String, required: true, default: "All Users" },
-  expiresAt: { type: Date },
+const UpdatesSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  priority: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    required: true
+  },
+  visibility: {
+    type: String,
+    required: true
+  },
+  expiresAt: {
+    type: Date
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  createdBy: {
+    userId: {
+      type: String,
+      required: true
+    },
+    userName: {
+      type: String,
+    },
+    userRole: {
+      type: String
+    }
+  },
+  publishedAt: {
+    type: Date
+  }
 });
 
-export default mongoose.models.Notification || mongoose.model("Notification", NotificationSchema);
+const Updates = mongoose.models.Updates || mongoose.model('Updates', UpdatesSchema);
+
+export default Updates;
