@@ -75,7 +75,7 @@ export default function SignIn() {
         
         setTimeout(() => {
           console.log("Redirecting to admin page");
-          router.replace('/admin');
+          router.push("/admin")
         }, 300);
       } else {
         throw new Error('Invalid response format');
