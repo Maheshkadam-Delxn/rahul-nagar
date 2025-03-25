@@ -7,7 +7,7 @@ export async function GET() {
         await connectDB();
         
         const users = await User.find({})
-            .select('name email role status lastLogin')
+            .select('name email role status lastLogin image post')
             .sort({ createdAt: -1 });
             
         return NextResponse.json({ users }, { status: 200 });

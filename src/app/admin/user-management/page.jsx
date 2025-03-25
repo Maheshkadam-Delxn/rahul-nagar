@@ -163,6 +163,7 @@ const UserManagement = () => {
     }
   };
 
+  console.log(users);
   // Handle edit image change
   const handleEditImageChange = (e) => {
     const file = e.target.files[0];
@@ -370,15 +371,17 @@ const UserManagement = () => {
         
         const data = await response.json();
         
-        // Transform the data to match our expected format if needed
+        // Transform the data to handle missing fields better
         const formattedUsers = data.users.map((user, index) => ({
           id: index + 1,
           _id: user._id,
-          name: user.name || 'Unknown',
-          email: user.email,
+          name: user.name || '', // Handle missing name
+          email: user.email || '',
           role: user.role || 'user',
           status: user.status || 'Active',
           lastLogin: user.lastLogin || '-',
+          image: user.image || '', // Handle missing image
+          post: user.post || ''  // Handle missing post
         }));
         
         setUsers(formattedUsers);
@@ -530,6 +533,7 @@ const UserManagement = () => {
                 >
                   ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                 </th>
+                <th className="p-4 text-left">Photo</th>
                 <th 
                   className="p-4 text-left cursor-pointer"
                   onClick={() => requestSort('name')}
@@ -579,7 +583,26 @@ const UserManagement = () => {
                       />
                     </td>
                     <td className="p-4">{user.id}</td>
-                    <td className="p-4 font-medium">{user.name}</td>
+                    <td className="p-4">
+                      {user.image ? (
+                        <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
+                          <img 
+                            src={user.image} 
+                            alt={`${user.name || 'User'}'s profile`}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "https://via.placeholder.com/40?text=User";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-600 font-medium">
+                          {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4 font-medium">{user.name || 'Unknown'}</td>
                     <td className="p-4">{user.email}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium
@@ -618,7 +641,7 @@ const UserManagement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="p-4 text-center text-gray-500">
+                  <td colSpan="9" className="p-4 text-center text-gray-500">
                     No users found. Try adjusting your filters or add a new user.
                   </td>
                 </tr>
