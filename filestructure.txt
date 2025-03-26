@@ -35,6 +35,18 @@
             |-- shape2.png
             |-- shape2.svg
             |-- user.png
+        |-- gallery
+            |-- diwali.png
+            |-- holi.png
+            |-- image1.png
+            |-- image2.png
+            |-- image3.png
+            |-- image4.png
+            |-- image5.png
+            |-- image6.png
+            |-- image7.png
+            |-- pexels-pixabay-257416.jpg
+            |-- shreeganesh.png
         |-- homebg.png
         |-- homelogo.png
         |-- homelogo.svg
