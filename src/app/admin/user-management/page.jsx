@@ -143,7 +143,7 @@ const UserManagement = () => {
       const data = await response.json();
       
       // Add the new user to the state
-      const id = users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1;
+    const id = users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1;
       const user = { 
         ...newUser, 
         id, 
@@ -152,10 +152,10 @@ const UserManagement = () => {
         image: imageUrl // Store the image URL not the file object
       };
       
-      setUsers([...users, user]);
+    setUsers([...users, user]);
       setNewUser({ name: '', email: '', password: '', role: 'user', status: 'Active', image: null, post: '' });
       setImagePreview(null);
-      setIsAddUserOpen(false);
+    setIsAddUserOpen(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -249,7 +249,7 @@ const UserManagement = () => {
       }
       
       // Update the user in the local state
-      const updatedUsers = users.map(user => 
+    const updatedUsers = users.map(user => 
         user.id === selectedUser.id ? { 
           ...user, 
           ...editedUser,
@@ -257,8 +257,8 @@ const UserManagement = () => {
         } : user
       );
       
-      setUsers(updatedUsers);
-      setIsEditUserOpen(false);
+    setUsers(updatedUsers);
+    setIsEditUserOpen(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -277,7 +277,7 @@ const UserManagement = () => {
     try {
       setIsLoading(true);
       
-      if (userToDelete) {
+    if (userToDelete) {
         // Single user deletion
         const response = await fetch(`/api/user-management/delete-user/${userToDelete._id}`, {
           method: 'DELETE',
@@ -289,10 +289,10 @@ const UserManagement = () => {
         }
         
         // Remove user from local state
-        const filteredUsers = users.filter(user => user.id !== userToDelete.id);
-        setUsers(filteredUsers);
+      const filteredUsers = users.filter(user => user.id !== userToDelete.id);
+      setUsers(filteredUsers);
         
-      } else if (selectedRows.length > 0) {
+    } else if (selectedRows.length > 0) {
         // Bulk deletion - we need to get the MongoDB IDs for the selected users
         const selectedUserIds = users
           .filter(user => selectedRows.includes(user.id))
@@ -314,9 +314,9 @@ const UserManagement = () => {
         }
         
         // Remove users from local state
-        const filteredUsers = users.filter(user => !selectedRows.includes(user.id));
-        setUsers(filteredUsers);
-        setSelectedRows([]);
+      const filteredUsers = users.filter(user => !selectedRows.includes(user.id));
+      setUsers(filteredUsers);
+      setSelectedRows([]);
       }
       
       setIsConfirmDeleteOpen(false);
@@ -559,73 +559,73 @@ const UserManagement = () => {
             <span className="ml-2 text-gray-600">Loading users...</span>
           </div>
         ) : (
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="p-4 text-left">
-                  <input 
-                    type="checkbox" 
-                    checked={selectAll} 
-                    onChange={handleSelectAll}
-                    className="rounded"
-                  />
-                </th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('id')}
-                >
-                  ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="p-4 text-left">
+                <input 
+                  type="checkbox" 
+                  checked={selectAll} 
+                  onChange={handleSelectAll}
+                  className="rounded"
+                />
+              </th>
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('id')}
+              >
+                ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
                 <th className="p-4 text-left">Photo</th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('name')}
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('name')}
+              >
+                Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('email')}
+              >
+                Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('role')}
+              >
+                Role {sortConfig.key === 'role' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('status')}
+              >
+                Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
+              <th 
+                className="p-4 text-left cursor-pointer"
+                onClick={() => requestSort('lastLogin')}
+              >
+                Last Login {sortConfig.key === 'lastLogin' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
+              <th className="p-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map(user => (
+                <tr 
+                  key={user.id} 
+                  className="border-t hover:bg-gray-50"
                 >
-                  Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('email')}
-                >
-                  Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('role')}
-                >
-                  Role {sortConfig.key === 'role' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('status')}
-                >
-                  Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
-                <th 
-                  className="p-4 text-left cursor-pointer"
-                  onClick={() => requestSort('lastLogin')}
-                >
-                  Last Login {sortConfig.key === 'lastLogin' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                </th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map(user => (
-                  <tr 
-                    key={user.id} 
-                    className="border-t hover:bg-gray-50"
-                  >
-                    <td className="p-4">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedRows.includes(user.id)}
-                        onChange={() => handleSelectRow(user.id)}
-                        className="rounded"
-                      />
-                    </td>
-                    <td className="p-4">{user.id}</td>
+                  <td className="p-4">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedRows.includes(user.id)}
+                      onChange={() => handleSelectRow(user.id)}
+                      className="rounded"
+                    />
+                  </td>
+                  <td className="p-4">{user.id}</td>
                     <td className="p-4">
                       {user.image ? (
                         <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
@@ -646,51 +646,51 @@ const UserManagement = () => {
                       )}
                     </td>
                     <td className="p-4 font-medium">{user.name || 'Unknown'}</td>
-                    <td className="p-4">{user.email}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                  <td className="p-4">{user.email}</td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium
                         ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
                           user.role === 'manager' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-gray-100 text-gray-800'}`}>
+                        'bg-gray-100 text-gray-800'}`}>
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                          user.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                          'bg-yellow-100 text-yellow-800'}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="p-4">{user.lastLogin}</td>
-                    <td className="p-4">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleEditUser(user)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteConfirmation(user)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="9" className="p-4 text-center text-gray-500">
-                    No users found. Try adjusting your filters or add a new user.
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium
+                      ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                        user.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
+                        'bg-yellow-100 text-yellow-800'}`}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="p-4">{user.lastLogin}</td>
+                  <td className="p-4">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => handleEditUser(user)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteConfirmation(user)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              ))
+            ) : (
+              <tr>
+                  <td colSpan="9" className="p-4 text-center text-gray-500">
+                  No users found. Try adjusting your filters or add a new user.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
         )}
       </div>
       

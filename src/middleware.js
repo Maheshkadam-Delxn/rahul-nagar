@@ -10,6 +10,8 @@ export function middleware(request) {
     value: authCookie.value.substring(0, 10) + "...",
     exists: !!authCookie.value
   } : "None");
+  console.log("Full cookie value:", authCookie ? authCookie.value : "None");
+  console.log("All cookies:", request.cookies.getAll());
 
   // Check if trying to access protected routes
   if (pathname.startsWith('/admin')) {
