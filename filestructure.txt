@@ -8,6 +8,8 @@
 |-- public
     |-- home
         |-- about
+            |-- associates.jpg
+            |-- build.jpg
             |-- building.png
             |-- check.png
             |-- ganesh.png
