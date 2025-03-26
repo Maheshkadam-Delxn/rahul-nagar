@@ -44,6 +44,7 @@ const Contact = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
+    console.log("click")
     e.preventDefault();
 
     if (!validateForm()) {
@@ -151,7 +152,7 @@ const Contact = () => {
                 <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Query or Grievance Details" className="w-full outline-none" rows="3"></textarea>
               </div>
 
-              <button className="w-full bg-yellow-700 text-white py-3 rounded-md font-bold">Submit Message</button>
+              <button type="submit" className="w-full bg-yellow-700 text-white py-3 rounded-md font-bold">Submit Message</button>
             </form>
           </div>
         </div>
