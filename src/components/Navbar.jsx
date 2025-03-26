@@ -39,11 +39,11 @@ const Navbar = () => {
             <div className='flex items-center gap-3 text-white text-xs'>
               <div className='flex items-center gap-2'>
                 <Phone size={16} />
-                0123456789
+                +91 8787574657
               </div>
               <div className='flex items-center gap-2'>
                 <Mail size={16} />
-                rnchsacal@gmail.com
+                support@rahulnagar.com
               </div>
             </div>
           </div>

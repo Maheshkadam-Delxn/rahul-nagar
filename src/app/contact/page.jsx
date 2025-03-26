@@ -87,6 +87,7 @@ const page = () => {
     };
   return (
     <div className='w-full min-h-screen'>
+      <Toaster/>
       <ServiceHeroSection
         name="Contact Rahul Nagar"
         breadcrumbs={[
@@ -112,15 +113,15 @@ const page = () => {
           <div className='w-full sm:w-[45%] md:w-1/3 lg:w-1/4 flex flex-col items-center p-4 md:p-6 rounded-lg border border-slate-200'>
             <Mail className="h-8 w-8 md:h-12 md:w-12 mb-3 md:mb-4 text-yellow-600" />
             <h3 className="text-base md:text-lg font-semibold">Email Address</h3>
-            <p className="text-sm md:text-base text-gray-600">email@example.com</p>
+            <p className="text-sm md:text-base text-gray-600">support@rahulnagar.com</p>
           </div>
 
           {/* Phone Number Card */}
           <div className='w-full sm:w-[45%] md:w-1/3 lg:w-1/4 flex flex-col items-center p-4 md:p-6 rounded-lg border border-slate-200'>
             <Phone className="h-8 w-8 md:h-12 md:w-12 mb-3 md:mb-4 text-yellow-600" />
             <h3 className="text-base md:text-lg font-semibold">Phone Number</h3>
-            <p className="text-sm md:text-base text-gray-600">02 (256) 325 3602</p>
-            <p className="text-sm md:text-base text-gray-600">01 (541) 258 360</p>
+            <p className="text-sm md:text-base text-gray-600">+91 8787574657</p>
+            <p className="text-sm md:text-base text-gray-600">+91 9875847584</p>
           </div>
 
         </div>

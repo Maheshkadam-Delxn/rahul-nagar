@@ -21,7 +21,7 @@ const Footer = () => {
             />
           </div>
           <p className="mt-4 text-gray-400">
-            Officia deserunt mollitia animi, id est laborum fuga. Et harum quidem rerum facilis est et expedita distinctio.
+          Rahul Construction is famous for their well-planned societies like Rahul Nagar in Pune. If you have always wanted to be part of a vibrant and well managed society, this is the best option for you.
           </p>
         </div>
 
@@ -74,11 +74,11 @@ const Footer = () => {
           <ul className="mt-4 space-y-3 text-gray-400">
             <li className="flex items-center space-x-2">
               <FaPhone className="text-yellow-500" />
-              <span>+8888888888</span>
+              <span>+91 8787574657</span>
             </li>
             <li className="flex items-center space-x-2">
               <FaEnvelope className="text-yellow-500" />
-              <span>example@gmail.com</span>
+              <span>support@rahulnagar.com</span>
             </li>
             <li className="flex items-center space-x-2">
               <FaMapMarkerAlt className="text-yellow-500" />

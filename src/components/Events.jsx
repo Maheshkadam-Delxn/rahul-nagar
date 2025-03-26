@@ -31,7 +31,7 @@ const Events = () => {
 
     fetchData();
   }, []);
-
+  console.log(updates)
   return (
     <div className="w-full bg-[#f8f8f8] min-h-screen flex items-center justify-center py-12 md:py-24 px-4">
       <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
@@ -41,13 +41,13 @@ const Events = () => {
             <hr className="w-8 md:w-12 border-t border-2 rounded-full" />
             <h1 className="text-sm md:text-base">What We Do</h1>
           </div>
-          <div className="flex flex-col md:flex-row items-center w-full justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center w-full justify-between gap-4 ">
             <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left w-full">
               Latest Updates & Upcoming Events
             </h1>
             <Link
               href={"/about"}
-              className="bg-[#B57E10] p-2 md:p-3 text-white rounded-sm text-xs md:text-sm font-medium w-full md:w-auto text-center"
+              className="bg-[#B57E10] p-2 md:p-3 text-white rounded-sm text-xs md:text-sm font-medium  md:w-72 text-center w-full"
             >
               More About Us
             </Link>
@@ -77,7 +77,7 @@ const Events = () => {
                     <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
                       <div className="flex items-center gap-1 md:gap-2">
                         <User size={14} color="red" />
-                        {update.createdBy.userRole}
+                        {update.createdBy.userName}
                       </div>
 
                       <div className="flex items-center gap-1 md:gap-2">
