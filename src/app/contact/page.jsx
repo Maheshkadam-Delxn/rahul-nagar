@@ -47,13 +47,17 @@ const page = () => {
 
       {/* Map Display Section */}
       <div className='w-full h-[30vh] sm:h-[40vh] md:h-[50vh] p-3 md:p-5 bg-white'>
-        <iframe 
+        {/* <iframe 
           className="w-full h-full rounded-lg"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.8354345097153!2d-122.419415684682!3d37.77492977975806!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085808c3e959b7b%3A0xceb03aa3b6e2c5e4!2sSan%20Francisco%2C%20CA!5e0!3m2!1sen!2sus!4v1637693684526!5m2!1sen!2sus" 
           allowFullScreen="" 
           loading="lazy" 
           referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
+        ></iframe> */}
+        <iframe           className="w-full h-full rounded-lg"
+ src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.6540781664557!2d73.8153475!3d18.499321800000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bfc109bfffff%3A0xcd2b5954a8fd421e!2sRahul%20Nagar%20Housing%20Society!5e0!3m2!1sen!2sin!4v1742984876297!5m2!1sen!2sin"  allowFullScreen="" 
+          loading="lazy" 
+          referrerPolicy="no-referrer-when-downgrade"></iframe>
       </div>
       
       {/* Contact Us Section */}
