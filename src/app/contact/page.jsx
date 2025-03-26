@@ -1,9 +1,90 @@
-import React from 'react'
+"use client"
+import React,{useState} from 'react'
 import ServiceHeroSection from "@/components/ServiceHeroSection"
 import Image from 'next/image'
 import { MapPin, Mail, Phone, MessageCircle, User } from "lucide-react"
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaUser, FaPencilAlt } from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast";
 
 const page = () => {
+    const [formData, setFormData] = useState({
+      name: "",
+      phone: "",
+      email: "",
+      inquiry: "",
+      message: "",
+    });
+  
+    const [errors, setErrors] = useState({});
+  
+    // Handle input change
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+  
+    // Validate Form
+    const validateForm = () => {
+      let newErrors = {};
+  
+      if (!formData.name.trim()) newErrors.name = "Name is required";
+      else if (formData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
+  
+      if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+      else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Invalid phone number (10 digits required)";
+  
+      if (!formData.email.trim()) newErrors.email = "Email is required";
+      else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email))
+        newErrors.email = "Invalid email address";
+  
+      if (!formData.inquiry.trim()) newErrors.inquiry = "Inquiry field is required";
+  
+      if (!formData.message.trim()) newErrors.message = "Message is required";
+      else if (formData.message.length < 10) newErrors.message = "Message must be at least 10 characters";
+  
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      console.log("Form submission initiated");
+    
+      // if (!validateForm()) {
+      //   toast.error("Please fix the errors in the form");
+      //   return;
+      // }
+    
+      try {
+        console.log("Sending request to API...");
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+    
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Something went wrong');
+        }
+    
+        console.log("API response:", data);
+        toast.success("Message sent successfully!");
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          inquiry: "",
+          message: "",
+        });
+        setErrors({});
+      } catch (error) {
+        console.error("Submission error:", error);
+        toast.error(error.message || "Failed to send message. Please try again.");
+      }
+    };
   return (
     <div className='w-full min-h-screen'>
       <ServiceHeroSection
@@ -72,49 +153,46 @@ const page = () => {
           <div className="w-full md:w-2/3">
             <h3 className="text-lg font-medium text-gray-800 mb-4">Get in touch</h3>
 
-            <form className="space-y-4">
-              {/* Full Name */}
-              <div className="relative">
-                <User className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
-                <input
-                  type="text"
-                  placeholder="Full Name*"
-                  className="w-full pl-8 pr-2 py-2 border-b border-black outline-none focus:border-gray-600"
-                />
-              </div>
-
-              {/* Email & Subject */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="relative">
-                  <Mail className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
-                  <input
-                    type="email"
-                    placeholder="Email Here*"
-                    className="w-full pl-8 pr-2 py-2 border-b border-black outline-none focus:border-gray-600"
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Subject *"
-                  className="w-full py-2 border-b border-black outline-none focus:border-gray-600"
-                />
-              </div>
-
-              {/* Message */}
-              <div className="relative">
-                <MessageCircle className="absolute left-2 top-2 text-gray-500" size={20} />
-                <textarea
-                  placeholder="Message"
-                  className="w-full pl-8 pr-2 py-2 border-b border-black outline-none focus:border-gray-600"
-                  rows="3"
-                ></textarea>
-              </div>
-
-              {/* Send Button */}
-              <button className="bg-[#b5831d] text-white px-6 py-2 rounded-md mt-4">
-                Send Message
-              </button>
-            </form>
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                            <div className="flex items-center border border-gray-300 p-3 rounded-md">
+                              <FaUser className="text-gray-500 mr-2" />
+                              <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Name" className="w-full outline-none" />
+                            </div>
+                            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+                          </div>
+                          
+                          <div className="flex flex-col">
+                            <div className="flex items-center border border-gray-300 p-3 rounded-md">
+                              <FaPhone className="text-gray-500 mr-2" />
+                              <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number" className="w-full outline-none" />
+                            </div>
+                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+                          </div>
+                        </div>
+          
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                            <div className="flex items-center border border-gray-300 p-3 rounded-md">
+                              <FaEnvelope className="text-gray-500 mr-2" />
+                              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full outline-none" />
+                            </div>
+                            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                          </div>
+          
+                          <div className="flex items-center border border-gray-300 p-3 rounded-md">
+                            <input type="text" name="inquiry" value={formData.inquiry} onChange={handleChange} placeholder="Work Inquiries" className="w-full outline-none" />
+                          </div>
+                        </div>
+          
+                        <div className="flex items-center border border-gray-300 p-3 rounded-md">
+                          <FaPencilAlt className="text-gray-500 mr-2" />
+                          <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Query or Grievance Details" className="w-full outline-none" rows="3"></textarea>
+                        </div>
+          
+                        <button className="w-full bg-yellow-700 text-white py-3 rounded-md font-bold">Submit Message</button>
+                      </form>
           </div>
         </div>
       </div>
