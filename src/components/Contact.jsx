@@ -85,9 +85,9 @@ const Contact = () => {
         {/* Contact Info Cards */}
         <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-4 gap-6 px-6">
           {[
-            { icon: <FaPhone />, title: "Phone Number", subtitle: "Phone" },
-            { icon: <FaEnvelope />, title: "Email Address", subtitle: "email" },
-            { icon: <FaMapMarkerAlt />, title: "Our Location", subtitle: "Location" },
+            { icon: <FaPhone />, title: "Phone Number", subtitle: "+91 8787574657" },
+            { icon: <FaEnvelope />, title: "Email Address", subtitle: "support@rahulnagar.com" },
+            { icon: <FaMapMarkerAlt />, title: "Our Location", subtitle: "Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038" },
             { icon: <FaClock />, title: "Office Hours", subtitle: "Mon - Sat: 09am - 07pm" },
           ].map((item, index) => (
             <div key={index} className="bg-white shadow-lg p-6 flex items-center rounded-lg">

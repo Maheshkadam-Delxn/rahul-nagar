@@ -69,17 +69,17 @@ const page = () => {
         {
             icon: <Phone className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,
             title: "Phone Number",
-            subtitle: "Phone",
+            subtitle: "+91 8787574657",
         },
         {
             icon: <Mail className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,
             title: "Email Address",
-            subtitle: "email",
+            subtitle: "support@rahulnagar.com",
         },
         {
             icon: <MapPin className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,
             title: "Our Location",
-            subtitle: "Location",
+            subtitle: "Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038",
         },
         {
             icon: <Clock className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,
