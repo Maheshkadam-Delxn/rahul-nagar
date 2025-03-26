@@ -92,8 +92,13 @@ export function AuthProvider({ children }) {
       sessionStorage.setItem('userName', userData.user.name || 'User');
       sessionStorage.setItem('userRole', userData.user.role || 'user');
       
-      // CRITICAL: Store auth token in cookie for middleware
-      Cookies.set('authToken', userData.token, { expires: 7 });
+      // CRITICAL: Store auth token in cookie for middleware with production-friendly settings
+      Cookies.set('authToken', userData.token, { 
+        expires: 7,
+        path: '/',
+        sameSite: 'Lax',
+        secure: process.env.NODE_ENV === 'production'
+      });
       
       // Log what was stored
       console.log("Auth data stored:", {
@@ -107,15 +112,32 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Error in login:", error);
     }
+
+    console.log("After login attempt:");
+    console.log("Cookie exists:", !!Cookies.get('authToken'));
+    console.log("Session storage:", {
+      authToken: !!sessionStorage.getItem('authToken'),
+      userId: sessionStorage.getItem('userId')
+    });
   };
 
   // Logout function - clears storage and state
   const logout = () => {
     // Clear both sessionStorage and cookies
     sessionStorage.clear();
-    Cookies.remove('authToken');
+    
+    // Remove cookie with the same settings used to set it
+    Cookies.remove('authToken', { 
+      path: '/',
+      sameSite: 'Lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
+    
+    // Update state
     setUser(null);
-    router.replace('/signin');
+    
+    // Use window.location for a full page refresh instead of Next.js router
+    window.location.href = '/signin';
   };
 
   return (
