@@ -8,6 +8,10 @@ import BuildingMap1 from "../../../public/home/layout/layout1.png";
 import BuildingMap2 from "../../../public/home/layout/layout2.png";
 import BuildingMap3 from "../../../public/home/layout/layout3.png";
 import BuildingMap4 from "../../../public/home/layout/layout4.png";
+import Image1 from "../../../public/home/about/build.jpg";
+import Image2 from "../../../public/home/about/associates.jpg";
+
+
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -99,7 +103,15 @@ const page = () => {
                 <div className="w-full h-full max-w-6xl flex flex-col items-center gap-12 md:gap-18">
                     {/* Left Image Section */}
                     <div className="w-full flex flex-col md:flex-row items-center gap-8 md:gap-10">
-                        <div className="w-full md:w-1/2 h-[250px] md:h-[350px] rounded-2xl bg-gray-300"></div>
+                        <div className="w-full md:w-1/2 h-[250px] md:h-[350px] rounded-2xl">
+ <Image
+              alt="Society Image"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover rounded-tl-[50px] rounded-br-[50px]"
+              src={Image1}
+            />                        
+                        </div>
 
                         {/* Right Content Section */}
                         <div className="w-full md:w-1/2 mt-6 md:mt-0">
@@ -111,11 +123,7 @@ const page = () => {
                                 Brief History of Rahul Nagar
                             </h2>
                             <p className="text-gray-600 mt-4">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                                euismod, nunc ac cursus tristique, libero purus aliquam libero,
-                                ac ultrices purus lectus id purus. Cras euismod, ligula ut
-                                feugiat sollicitudin, eros ex vulputate risus, eget consectetur
-                                lorem nisi ac ligula. Fusce non scelerisque mi.
+                            Founded in 1993, Rahul Nagar Society has been a pillar of community living in Pune, fostering a culture of transparency, inclusivity, and growth. As we step into the future, our redevelopment initiative aims to transform our neighborhood into a modern, sustainable, and vibrant living space. With a commitment to innovation and the well-being of our residents, we are shaping a community that blends tradition with contemporary living.
                             </p>
 
                             {/* Bullet Points Section */}
@@ -212,16 +220,19 @@ const page = () => {
                     <div className="w-full h-full max-w-6xl flex flex-col items-center gap-10 md:gap-18">
                         {/* Left Image Section */}
                         <div className="w-full flex flex-col md:flex-row items-center gap-8 md:gap-10">
-                            <div className="w-full md:w-1/2 h-[250px] md:h-[350px] rounded-2xl bg-gray-300"></div>
+                            <div className="w-full md:w-1/2 h-[250px] md:h-[350px] rounded-2xl ">
+                            <Image
+              alt="Society Image"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover rounded-tl-[50px] rounded-br-[50px]"
+              src={Image2}
+            /></div>
 
                             {/* Right Content Section */}
                             <div className="w-full md:w-1/2 mt-6 md:mt-0">
                                 <p className="text-gray-600">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                                    euismod, nunc ac cursus tristique, libero purus aliquam
-                                    libero, ac ultrices purus lectus id purus. Cras euismod,
-                                    ligula ut feugiat sollicitudin, eros ex vulputate risus, eget
-                                    consectetur lorem nisi ac ligula. Fusce non scelerisque mi.
+                                Our associates play a pivotal role in driving the success of Rahul Nagar Society. They are the backbone of our operations, working tirelessly to ensure smooth coordination, efficient project management, and timely execution of redevelopment plans. Through their expertise and dedication, we are able to bring our vision of a modern and sustainable living environment to life. Our associates are committed to creating spaces that not only meet the needs of our community but also elevate the quality of life for all our members.
                                 </p>
                             </div>
                         </div>

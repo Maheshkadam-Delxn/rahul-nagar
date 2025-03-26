@@ -149,12 +149,12 @@ const Events = () => {
                         <p className="text-xs md:text-sm opacity-45 font-medium">
                           {event.description}
                         </p>
-                        <Link
+                        {/* <Link
                           href={"#"}
                           className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]"
                         >
                           Read More <MoveRight size={16} />
-                        </Link>
+                        </Link> */}
                       </div>
                     </div>
                   </div>

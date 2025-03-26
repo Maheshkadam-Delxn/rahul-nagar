@@ -17,7 +17,7 @@ const HeroSection = () => {
           <div className="w-full md:w-1/2 flex flex-col gap-6 md:gap-10 text-center md:text-left">
             <div className="flex flex-col items-center md:items-start gap-3">
               <h2 className="text-white underline text-lg md:text-xl">
-                Building Tommorrow, Preserving Today
+                Building Tomorrow , Preserving Today
               </h2>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-center md:text-left">
                 Welcome to Rahul<br/> Nagar Society
