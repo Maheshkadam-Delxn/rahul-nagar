@@ -1,5 +1,15 @@
-import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
+
+const { GOOGLE_SHEET_ID, CLIENT_EMAIL, PRIVATE_KEY } = process.env;
+
+const auth = new google.auth.JWT({
+  email: CLIENT_EMAIL,
+  key: PRIVATE_KEY.replace(/\\n/g, '\n'), // Fix newline encoding issue
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
+
+const sheets = google.sheets({ version: 'v4', auth });
 
 export async function POST(request) {
   try {
@@ -22,65 +32,26 @@ export async function POST(request) {
       );
     }
 
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
+    // Store form data in Google Sheets
+    const sheetData = [
+      [new Date().toLocaleString(), name, email, phone || 'Not provided', inquiry || 'Not specified', message],
+    ];
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: GOOGLE_SHEET_ID,
+      range: 'Sheet1!A:F', // Adjust based on your Google Sheet structure
+      valueInputOption: 'RAW',
+      resource: { values: sheetData },
     });
 
-    // Email options
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.RECEIVING_EMAIL,
-      subject: `New Contact Form: ${inquiry || 'General Inquiry'}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">New Contact Form Submission</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; width: 30%;"><strong>Name:</strong></td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${name}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Email:</strong></td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${email}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Phone:</strong></td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${phone || 'Not provided'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Inquiry Type:</strong></td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${inquiry || 'Not specified'}</td>
-            </tr>
-          </table>
-          <h3 style="color: #333; margin-top: 20px;">Message:</h3>
-          <p style="background: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</p>
-        </div>
-      `,
-      text: `New Contact Form Submission\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nInquiry: ${inquiry || 'Not specified'}\n\nMessage:\n${message}`
-    };
-
-    // Send email
-    await transporter.sendMail(mailOptions);
-
     return NextResponse.json(
-      { 
-        success: true,
-        message: 'Your message has been sent successfully!' 
-      },
+      { success: true, message: 'Your message has been saved to Google Sheets!' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error:', error);
     return NextResponse.json(
-      { 
-        success: false,
-        message: 'An error occurred while sending your message. Please try again later.' 
-      },
+      { success: false, message: 'An error occurred while saving your message. Please try again later.' },
       { status: 500 }
     );
   }
