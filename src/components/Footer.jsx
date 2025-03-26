@@ -1,6 +1,7 @@
 import Image from "next/image";
 import React from "react";
 import { FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import Link from "next/link"; // Import Next.js Link
 
 const Footer = () => {
   return (
@@ -24,29 +25,48 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Pages Links */}
-        <div>
-          <h3 className="text-lg font-semibold">Pages</h3>
-          <ul className="mt-4 space-y-2 text-gray-400">
-            {["About Us", "Our Team", "Testimonials", "Blog Grid", "Projects"].map((page, index) => (
-              <li key={index}>
-                <a href="#" className="hover:text-white transition">{page}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Pages Links */}<div>
+  <h3 className="text-lg font-semibold">Pages</h3>
+  <ul className="mt-4 space-y-2 text-gray-400">
+    <li>
+      <Link href="/about" className="hover:text-white transition">About Us</Link>
+    </li>
+    <li>
+      <Link href="/about" className="hover:text-white transition">Our Team</Link>
+    </li>
+    <li>
+      <Link href="/testimonials" className="hover:text-white transition">Testimonials</Link>
+    </li>
+    
+    <li>
+      <Link href="/project" className="hover:text-white transition">Projects</Link>
+    </li>
+  </ul>
+</div>
+
 
         {/* Services Links */}
-        <div>
-          <h3 className="text-lg font-semibold">Our Services</h3>
-          <ul className="mt-4 space-y-2 text-gray-400">
-            {["General Construction", "Property Maintenance", "Project Management", "Virtual Design & Build", "Preconstruction"].map((service, index) => (
-              <li key={index}>
-                <a href="#" className="hover:text-white transition">{service}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+<div>
+  <h3 className="text-lg font-semibold">Our Services</h3>
+  <ul className="mt-4 space-y-2 text-gray-400">
+    <li>
+      <a href="/general" className="hover:text-white transition">General Construction</a>
+    </li>
+    <li>
+      <a href="/property" className="hover:text-white transition">Property Maintenance</a>
+    </li>
+    <li>
+      <a href="/project" className="hover:text-white transition">Project Management</a>
+    </li>
+    <li>
+      <a href="/virtual" className="hover:text-white transition">Virtual Design & Build</a>
+    </li>
+    <li>
+      <a href="/preconstruction" className="hover:text-white transition">Preconstruction</a>
+    </li>
+  </ul>
+</div>
+
 
         {/* Contact Info */}
         <div>
@@ -54,7 +74,7 @@ const Footer = () => {
           <ul className="mt-4 space-y-3 text-gray-400">
             <li className="flex items-center space-x-2">
               <FaPhone className="text-yellow-500" />
-              <span>+888 (123) 869523</span>
+              <span>+8888888888</span>
             </li>
             <li className="flex items-center space-x-2">
               <FaEnvelope className="text-yellow-500" />
