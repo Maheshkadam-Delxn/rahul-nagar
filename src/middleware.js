@@ -4,14 +4,7 @@ export function middleware(request) {
   const authCookie = request.cookies.get('authToken')
   const { pathname } = request.nextUrl
 
-  console.log("Middleware running for path:", pathname);
-  console.log("Auth cookie:", authCookie ? {
-    name: authCookie.name,
-    value: authCookie.value.substring(0, 10) + "...",
-    exists: !!authCookie.value
-  } : "None");
-  console.log("Full cookie value:", authCookie ? authCookie.value : "None");
-  console.log("All cookies:", request.cookies.getAll());
+ 
 
   // Check if trying to access protected routes
   if (pathname.startsWith('/admin')) {

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 const AdminDashboardOverview = () => {
   const router = useRouter()
   const { user } = useAuth();
-  console.log("AdminDashboardOverview: Auth context received:", { user });
   // Mock data for the dashboard
   const dashboardData = {
     stats: [
@@ -63,8 +62,7 @@ const AdminDashboardOverview = () => {
     }
   };
 
-  return (
-    user ? 
+  return ( 
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <header className="bg-white shadow-sm">
@@ -274,7 +272,7 @@ const AdminDashboardOverview = () => {
           </div>
         </div>
       </div>
-    </div> : router.push("/signin")
+    </div>
   );
 };
 

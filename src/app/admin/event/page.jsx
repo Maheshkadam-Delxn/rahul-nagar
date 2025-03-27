@@ -305,9 +305,9 @@ export default function EventsManagement() {
       day: 'numeric' 
     });
   };
-
+  console.log("User = ",user)
   return (
-    user?.role === "Super-Admin" || user.role === "Admin" || user.role === "Associate-Member" ? 
+    user?.user?.role === "Super-Admin" || user?.user?.role === "Admin" || user?.user?.role === "Associate-Member" ? 
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Housing Society Events</h1>
@@ -595,6 +595,6 @@ export default function EventsManagement() {
           </div>
         </div>
       )}
-    </div> : <p>your re not accisseble</p>
+    </div> : <p>your are not accessible to this page</p>
   );
 }
