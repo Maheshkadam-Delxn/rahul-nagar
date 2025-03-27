@@ -73,6 +73,8 @@ const DocumentManagement = () => {
   };
 
   return (
+    user?.role === "Super-Admin" || user.role === "Admin" || user.role === "Associate-Member" ? 
+
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow px-4 py-2 flex items-center">
@@ -185,7 +187,7 @@ const DocumentManagement = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>:<p>You Dnnt have access to this page</p>
   );
 };
 

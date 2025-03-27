@@ -283,6 +283,7 @@ const UpdatesManagement = () => {
   };
   
   return (
+    user?.role === "Super-Admin" || user.role === "Admin" ? 
     <div className="bg-white p-6 rounded-lg shadow-lg">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -768,7 +769,7 @@ const UpdatesManagement = () => {
           </div>
         </div>
       )}
-    </div>
+    </div> : <p>You DOnt have access</p>
   );
 };
 
