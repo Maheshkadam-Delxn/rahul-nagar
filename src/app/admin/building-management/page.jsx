@@ -396,7 +396,7 @@ export default function BuildingsManagement() {
   };
 
   return (
-    user?.role === "Super-Admin" || user.role === "Admin" ? 
+    user?.role === "Super-Admin" || user?.role === "Admin" ? 
 
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
