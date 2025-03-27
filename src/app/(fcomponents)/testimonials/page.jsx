@@ -1,4 +1,6 @@
+"use client";
 import React from 'react';
+import Image from 'next/image';
 import { Quote, Star, UserCircle2 } from 'lucide-react';
 
 const TestimonialsPage = () => {

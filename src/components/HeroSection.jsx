@@ -9,6 +9,10 @@ const HeroSection = () => {
   return (
     <div className="w-full min-h-[85vh] flex items-center justify-center text-white px-4 md:px-8 lg:px-16">
       <div className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between  space-y-8 md:space-y-0">
+      <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+  <div className="absolute bottom-10 right-10 w-40 h-40 bg-violet-600 rounded-full opacity-40 blur-2xl"></div>
+  <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
+
         {/* Navigation Arrows - Hidden on small screens */}
         {/* <MoveLeft size={48} className="hidden md:block p-3 border-2 border-white rounded-full"/> */}
         

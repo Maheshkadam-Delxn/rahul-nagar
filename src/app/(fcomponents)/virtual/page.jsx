@@ -1,6 +1,7 @@
+"use client";
 import React, { useState } from 'react';
 import { 
-  Cube, 
+  box, 
   Monitor, 
   Camera, 
   Target, 
@@ -32,7 +33,7 @@ const VirtualDesignBuildPage = () => {
 
   const vdbTechnologies = [
     {
-      icon: <Cube className="w-10 h-10 text-blue-600" />,
+      icon: <box className="w-10 h-10 text-blue-600" />,
       title: "3D Architectural Modeling",
       description: "Detailed digital representations of proposed structures and spaces."
     },
@@ -137,7 +138,7 @@ const VirtualDesignBuildPage = () => {
         </section>
 
         {/* Interactive 3D Model Demo */}
-        <section className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-md">
+        {/* <section className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-md">
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
             Interactive 3D Model
           </h2>
@@ -171,7 +172,7 @@ const VirtualDesignBuildPage = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
       </div>
     </div>
   );

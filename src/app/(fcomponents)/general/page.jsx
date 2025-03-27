@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Building, Shield, Leaf, Clock, HelpCircle } from 'lucide-react';
 
