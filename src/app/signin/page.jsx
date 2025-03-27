@@ -72,13 +72,12 @@ export default function SignIn() {
           const cookieToken = Cookies.get('authToken');
           console.log("Cookie after login:", cookieToken ? "Present" : "Missing");
         });
-  
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log("Redirecting to admin page");
-          router.push("/admin").then(() => {
-            window.location.reload(); // Refresh the page after redirection
-          });
+          await router.push("/admin");
+          window.location.reload();
         }, 300);
+        
       } else {
         throw new Error('Invalid response format');
       }

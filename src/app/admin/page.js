@@ -2,8 +2,9 @@
 import React from 'react';
 import { User, Home, Calendar, DollarSign, Settings, Bell, MessageSquare, BarChart2, Layers, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-
+import { useRouter } from 'next/navigation';
 const AdminDashboardOverview = () => {
+  const router = useRouter()
   const { user } = useAuth();
   console.log("AdminDashboardOverview: Auth context received:", { user });
   // Mock data for the dashboard
@@ -63,6 +64,7 @@ const AdminDashboardOverview = () => {
   };
 
   return (
+    user ? 
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <header className="bg-white shadow-sm">
@@ -272,7 +274,7 @@ const AdminDashboardOverview = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div> : router.push("/signin")
   );
 };
 
