@@ -3,8 +3,9 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 import { MapPin, Phone, Mail, Search, Menu, X } from "lucide-react"
 import Link from 'next/link'
-
+import { useAuth } from '@/context/AuthContext'
 const Navbar = () => {
+  const {user} = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -58,7 +59,7 @@ const Navbar = () => {
             </div>
             <div className='flex items-center gap-5 text-white py-1 px-3'>
               {/* <Search size={20} /> */}
-              <Link href={"/admin"} className='bg-[#B57E10] p-3 text-sm w-32 text-center rounded-sm'>Member Area</Link>
+              <Link href={user ? "/admin" : "/signin"} className='bg-[#B57E10] p-3 text-sm w-32 text-center rounded-sm'>Member Area</Link>
             </div>
           </div>
         </div>
