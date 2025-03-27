@@ -73,7 +73,7 @@ const DocumentManagement = () => {
   };
 
   return (
-    user?.role === "Super-Admin" || user.role === "Admin" || user.role === "Associate-Member" ? 
+    user?.role === "Super-Admin" || user?.role === "Admin" || user?.role === "Associate-Member" ? 
 
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
