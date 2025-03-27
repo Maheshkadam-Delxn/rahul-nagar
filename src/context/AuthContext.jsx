@@ -38,10 +38,7 @@ export function AuthProvider({ children }) {
         const tokenFromCookie = Cookies.get('authToken');
         const tokenFromSession = sessionStorage.getItem('authToken');
         
-        console.log("Auth tokens:", { 
-          cookie: tokenFromCookie ? "Present" : "None",
-          session: tokenFromSession ? "Present" : "None" 
-        });
+       
         
         const token = tokenFromCookie || tokenFromSession;
         
@@ -100,12 +97,7 @@ export function AuthProvider({ children }) {
         secure: process.env.NODE_ENV === 'production'
       });
       
-      // Log what was stored
-      console.log("Auth data stored:", {
-        token: "Set",
-        userId: userData.user.id,
-        cookie: Cookies.get('authToken') ? "Set" : "Failed"
-      });
+     
       
       // Update state
       setUser(userData.user);
