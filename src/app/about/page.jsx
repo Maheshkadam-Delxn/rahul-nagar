@@ -90,12 +90,17 @@ const page = () => {
   
     return (
         <div className="w-full min-h-screen">
+            <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+  <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
+
+            
             <ServiceHeroSection
                 name="About Rahul Nagar"
                 breadcrumbs={[
                     { label: "Home", link: "/" },
                     { label: "About Us", link: "/about" },
                 ]}
+                
             />
 
             {/* ABOUT US */}
