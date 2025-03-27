@@ -55,6 +55,9 @@ const Page = () => {
       />
 
       <div className="w-full py-12 md:py-16 lg:py-24 bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+  <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
+
         <div className="w-full max-w-6xl">
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-6 md:mb-8">

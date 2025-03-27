@@ -90,12 +90,17 @@ const page = () => {
   
     return (
         <div className="w-full min-h-screen">
+            <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+  <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
+
+            
             <ServiceHeroSection
                 name="About Rahul Nagar"
                 breadcrumbs={[
                     { label: "Home", link: "/" },
                     { label: "About Us", link: "/about" },
                 ]}
+                
             />
 
             {/* ABOUT US */}
@@ -311,44 +316,45 @@ const page = () => {
 
             {/* Building Section */}
             <div className="w-full bg-white flex items-center justify-center px-4 md:px-0">
-                <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
-                    
-                    {loading ? (
-                        <div className="w-full flex justify-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
-                        </div>
-                    ) : buildings.length === 0 ? (
-                        <p className="text-gray-500">No buildings found</p>
-                    ) : (
-                        <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
-                            {buildings.map((building) => (
-                                <div 
-                                    key={building._id} 
-                                    className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
-                                    onClick={() => router.push(`/project/${building._id}`)}
-                                >
-                                    <div className="relative">
-                                        <Image
-                                            src={"/home/about/building.png"}
-                                            alt={building.name}
-                                            width={1920}
-                                            height={1080}
-                                            className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
-                                                {building.name.split(" ").pop()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+    <div className="w-full max-w-6xl mx-auto py-12 md:py-24 bg-white text-center flex flex-col items-start gap-8 md:gap-14 justify-center">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6">All buildings in Rahul Nagar</h2>
+        
+        {loading ? (
+            <div className="w-full flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B57E10]"></div>
             </div>
+        ) : buildings.length === 0 ? (
+            <p className="text-gray-500">No buildings found</p>
+        ) : (
+            <div className="flex justify-center md:justify-start gap-4 md:gap-6 flex-wrap">
+                {buildings.map((building) => (
+                    <div 
+                        key={building._id} 
+                        className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => window.open(`/project/${building._id}`, "_blank")}
+                    >
+                        <div className="relative">
+                            <Image
+                                src={"/home/about/building.png"}
+                                alt={building.name}
+                                width={1920}
+                                height={1080}
+                                className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
+                                    {building.name.split(" ").pop()}
+                                </div>
+                            </div>
+                        </div>
+                        <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
+                    </div>
+                ))}
+            </div>
+        )}
+    </div>
+</div>
+
         </div>
     );
 };

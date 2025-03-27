@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-
+import Image from 'next/image';
+import Imagee from "../../../public/home/"
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
