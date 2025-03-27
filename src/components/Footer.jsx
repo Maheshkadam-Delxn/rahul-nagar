@@ -74,11 +74,11 @@ const Footer = () => {
           <ul className="mt-4 space-y-3 text-gray-400">
             <li className="flex items-center space-x-2">
               <FaPhone className="text-yellow-500" />
-              <span>+91 8787574657</span>
+              <a href="tel:+918787574657">+91 8787574657</a>
             </li>
             <li className="flex items-center space-x-2">
               <FaEnvelope className="text-yellow-500" />
-              <span>support@rahulnagar.com</span>
+              <a href="mailto:rahulnagarassociation1@gmail.com">rahulnagarassociation1@gmail.com</a>
             </li>
             <li className="flex items-center space-x-2">
               <FaMapMarkerAlt className="text-yellow-500" />

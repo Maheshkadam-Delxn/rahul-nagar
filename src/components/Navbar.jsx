@@ -37,14 +37,14 @@ const Navbar = () => {
               <h3 className='text-xs'>Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038</h3>
             </div>
             <div className='flex items-center gap-3 text-white text-xs'>
-              <div className='flex items-center gap-2'>
+              <a href='tel:+918787574657' className='flex items-center gap-2'>
                 <Phone size={16} />
                 +91 8787574657
-              </div>
-              <div className='flex items-center gap-2'>
+              </a>
+              <a href='mailto:rahulnagarassociation1@gmail.com' className='flex items-center gap-2'>
                 <Mail size={16} />
-                support@rahulnagar.com
-              </div>
+                rahulnagarassociation1@gmail.com
+              </a>
             </div>
           </div>
           <div className='w-full h-2/3 flex items-center justify-between px-3 py-1'>

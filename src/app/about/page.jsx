@@ -52,19 +52,23 @@ const page = () => {
               throw new Error("Failed to fetch users");
             }
             const data = await response.json();
-            console.log(data)
-            setUsers(data.users);
+            
+            // Filter users with role "Associate-Member"
+            const filteredUsers = data.users.filter(user => user.role === "Associate-Member");
+            
+            setUsers(filteredUsers);
           } catch (error) {
             console.error("Error fetching users:", error);
           } finally {
             setUserLoading(false);
           }
         };
-        
+      
         fetchBuildings();
         fetchUsers();
       }, []);
-
+      
+      console.log(users)
     const contactDetails = [
         {
             icon: <Phone className="text-yellow-700 w-8 h-8 md:w-10 md:h-10" />,

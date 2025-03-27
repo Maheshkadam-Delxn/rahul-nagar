@@ -84,21 +84,49 @@ const Contact = () => {
       <div className="relative z-10 flex flex-col items-center py-12">
         {/* Contact Info Cards */}
         <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-4 gap-6 px-6">
-          {[
-            { icon: <FaPhone />, title: "Phone Number", subtitle: "+91 8787574657" },
-            { icon: <FaEnvelope />, title: "Email Address", subtitle: "support@rahulnagar.com" },
-            { icon: <FaMapMarkerAlt />, title: "Our Location", subtitle: "Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038" },
-            { icon: <FaClock />, title: "Office Hours", subtitle: "Mon - Sat: 09am - 07pm" },
-          ].map((item, index) => (
-            <div key={index} className="bg-white shadow-lg p-6 flex items-center rounded-lg">
-              <div className="text-yellow-500 text-3xl">{item.icon}</div>
-              <div className="ml-4">
-                <h3 className="font-bold text-lg">{item.title}</h3>
-                <p className="text-gray-500">{item.subtitle}</p>
-              </div>
-            </div>
-          ))}
+      {[
+        { 
+          icon: <FaPhone />, 
+          title: "Phone Number", 
+          subtitle: "+91 8787574657", 
+          link: "tel:+918787574657" 
+        },
+        { 
+          icon: <FaEnvelope />, 
+          title: "Email Address", 
+          subtitle: "rahulnagarassociation1@gmail.com", 
+          link: "mailto:rahulnagarassociation1@gmail.com" 
+        },
+        { 
+          icon: <FaMapMarkerAlt />, 
+          title: "Our Location", 
+          subtitle: "Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038" 
+        },
+        { 
+          icon: <FaClock />, 
+          title: "Office Hours", 
+          subtitle: "Mon - Sat: 09am - 07pm" 
+        },
+      ].map((item, index) => (
+        <div key={index} className="bg-white shadow-lg p-6 flex-col flex items-center rounded-lg gap-5">
+          <div className="text-yellow-500 text-3xl">{item.icon}</div>
+          <div className="ml-4 flex flex-col items-center">
+            <h3 className="font-bold text-lg">{item.title}</h3>
+            {item.link ? (
+              <a 
+                href={item.link} 
+                className="text-gray-500 break-words text-sm text-center underline hover:text-yellow-600"
+              >
+                {item.subtitle}
+              </a>
+            ) : (
+              <p className="text-gray-500 break-words text-sm text-center">{item.subtitle}</p>
+            )}
+          </div>
         </div>
+      ))}
+    </div>
+
 
         {/* Contact Form Section */}
         <div className="max-w-6xl w-full bg-white shadow-lg rounded-lg mt-12 flex flex-col md:flex-row">

@@ -113,18 +113,18 @@ const page = () => {
           </div>
 
           {/* Email Card */}
-          <div className='w-full sm:w-[45%] md:w-1/3 lg:w-1/4 flex flex-col items-center p-4 md:p-6 rounded-lg border border-slate-200'>
+          <a href='mailto:rahulnagarassociation1@gmail.com' className='w-full sm:w-[45%] md:w-1/3 lg:w-1/4 flex flex-col items-center p-4 md:p-6 rounded-lg border border-slate-200'>
             <Mail className="h-8 w-8 md:h-12 md:w-12 mb-3 md:mb-4 text-yellow-600" />
             <h3 className="text-base md:text-lg font-semibold">Email Address</h3>
-            <p className="text-sm md:text-base text-gray-600">support@rahulnagar.com</p>
-          </div>
+            <p className="text-sm md:text-base text-gray-600">rahulnagarassociation1@gmail.com</p>
+          </a>
 
           {/* Phone Number Card */}
           <div className='w-full sm:w-[45%] md:w-1/3 lg:w-1/4 flex flex-col items-center p-4 md:p-6 rounded-lg border border-slate-200'>
             <Phone className="h-8 w-8 md:h-12 md:w-12 mb-3 md:mb-4 text-yellow-600" />
             <h3 className="text-base md:text-lg font-semibold">Phone Number</h3>
-            <p className="text-sm md:text-base text-gray-600">+91 8787574657</p>
-            <p className="text-sm md:text-base text-gray-600">+91 9875847584</p>
+            <a href='tel:+918787574657' className="text-sm md:text-base text-gray-600">+91 8787574657</a>
+            <a href='tel:+919875847584' className="text-sm md:text-base text-gray-600">+91 9875847584</a>
           </div>
 
         </div>
