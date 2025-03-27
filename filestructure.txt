@@ -6,6 +6,7 @@
 |-- package.json
 |-- postcss.config.mjs
 |-- public
+    |-- building.jpg
     |-- home
         |-- about
             |-- associates.jpg
@@ -72,6 +73,19 @@
 |-- README.md
 |-- src
     |-- app
+        |-- (fcomponents)
+            |-- general
+                |-- page.jsx
+            |-- preconstruction
+                |-- page.jsx
+            |-- project
+                |-- page.jsx
+            |-- property
+                |-- page.jsx
+            |-- testimonials
+                |-- page.jsx
+            |-- virtual
+                |-- page.jsx
         |-- about
             |-- page.jsx
         |-- admin

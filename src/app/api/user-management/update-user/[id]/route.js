@@ -10,6 +10,7 @@ export async function PUT(request, { params }) {
         
         // Parse the request body
         const { name, email, role, status, image, post } = await request.json();
+        console.log("Role = ",role)
         
         await connectDB();
         

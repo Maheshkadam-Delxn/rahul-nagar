@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Trash2, Edit, X, Check, MoreHorizontal, Filter, Download, Upload, Camera } from 'lucide-react';
 
+
+
 const UserManagement = () => {
   // Sample user data (we'll use this as fallback if fetch fails)
   const initialUsers = [
@@ -21,7 +23,7 @@ const UserManagement = () => {
     name: '', 
     email: '', 
     password: '', 
-    role: 'user', 
+    role: 'Super-Admin', 
     status: 'Active',
     image: null,
     post: ''
@@ -442,7 +444,7 @@ const UserManagement = () => {
 
   // Add resetForm function
   const resetAddUserForm = () => {
-    setNewUser({ name: '', email: '', password: '', role: 'user', status: 'Active', image: null, post: '' });
+    setNewUser({ name: '', email: '', password: '', role: 'Super-Admin', status: 'Active', image: null, post: '' });
     setImagePreview(null);
     setError(null);
   };
@@ -507,9 +509,9 @@ const UserManagement = () => {
             className="border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="user">User</option>
+            <option value="Super-Admin">Super-Admin</option>
+            <option value="Admin">Admin</option>
+            <option value="Associate-Member">Associate-Member</option>
           </select>
           
           {(statusFilter !== 'All' || roleFilter !== 'All' || searchTerm) && (
@@ -649,8 +651,8 @@ const UserManagement = () => {
                   <td className="p-4">{user.email}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 
-                          user.role === 'manager' ? 'bg-blue-100 text-blue-800' : 
+                        ${user.role === 'Super-Admin' ? 'bg-purple-100 text-purple-800' : 
+                          user.role === 'Admin' ? 'bg-blue-100 text-blue-800' : 
                         'bg-gray-100 text-gray-800'}`}>
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>
@@ -817,15 +819,15 @@ const UserManagement = () => {
               
               <div>
                 <label className="block text-sm font-medium mb-1">Role</label>
-                <select
-                  value={newUser.role}
-                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="user">User</option>
-                </select>
+                  <select
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="Super-Admin">Super-Admin</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Associate-Member">Associate-Member</option>
+                  </select>
               </div>
               
               <div>
@@ -971,9 +973,9 @@ const UserManagement = () => {
                   onChange={(e) => setEditedUser({...editedUser, role: e.target.value})}
                   className="w-full p-2 border rounded-md"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="user">User</option>
+                  <option value="Super-Admin">Super-Admin</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Associate-Member">Associate-Member</option>
                 </select>
               </div>
               

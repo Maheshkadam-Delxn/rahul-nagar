@@ -17,7 +17,7 @@ export async function POST(request) {
             image,
             post
         });
-        
+        console.log(role)
         return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
     } catch (error) {
         console.error('Error creating user:', error);
