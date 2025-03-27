@@ -23,7 +23,7 @@ export default function SignIn() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
+  
     try {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -32,14 +32,14 @@ export default function SignIn() {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       const data = await response.json();
       console.log("Login response:", data);
-
+  
       if (!response.ok) {
         throw new Error(data.error || 'Failed to sign in');
       }
-
+  
       if (data.token && data.user) {
         // Make sure user has all required fields
         const userData = {
@@ -51,10 +51,10 @@ export default function SignIn() {
             email: data.user.email
           }
         };
-        
+  
         console.log("Storing auth data:", userData);
-        
-        // IMPORTANT: Set the cookie manually to ensure it's set
+  
+        // Set cookie manually
         try {
           import('js-cookie').then(Cookies => {
             Cookies.set('authToken', userData.token, { expires: 7 });
@@ -63,19 +63,21 @@ export default function SignIn() {
         } catch (e) {
           console.error("Error setting cookie:", e);
         }
-        
+  
         // Call login function
         await login(userData);
-        
+  
         // Check if cookie was set
         import('js-cookie').then(Cookies => {
           const cookieToken = Cookies.get('authToken');
           console.log("Cookie after login:", cookieToken ? "Present" : "Missing");
         });
-        
+  
         setTimeout(() => {
           console.log("Redirecting to admin page");
-          router.push("/admin")
+          router.push("/admin").then(() => {
+            window.location.reload(); // Refresh the page after redirection
+          });
         }, 300);
       } else {
         throw new Error('Invalid response format');
@@ -87,7 +89,7 @@ export default function SignIn() {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-5xl w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden flex flex-col md:flex-row">
