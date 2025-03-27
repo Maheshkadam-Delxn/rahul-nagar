@@ -1,19 +1,11 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Trash2, Edit, X, Check, MoreHorizontal, Filter, Download, Upload, Camera } from 'lucide-react';
-
+import { useAuth } from '@/context/AuthContext';
 
 
 const UserManagement = () => {
-  // Sample user data (we'll use this as fallback if fetch fails)
-  const initialUsers = [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin', status: 'Active', lastLogin: '2025-03-15' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User', status: 'Active', lastLogin: '2025-03-18' },
-    { id: 3, name: 'Robert Johnson', email: 'robert.j@example.com', role: 'Manager', status: 'Inactive', lastLogin: '2025-02-28' },
-    { id: 4, name: 'Emily Davis', email: 'emily.d@example.com', role: 'User', status: 'Active', lastLogin: '2025-03-20' },
-    { id: 5, name: 'Michael Brown', email: 'michael.b@example.com', role: 'User', status: 'Pending', lastLogin: '-' },
-  ];
-
+  const {user} = useAuth()
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -450,6 +442,7 @@ const UserManagement = () => {
   };
 
   return (
+    user?.role === "Super-Admin" || user?.role ==="Admin" ? 
     <div className="bg-white p-6 rounded-lg shadow-lg">
       {/* Header and search */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -1061,7 +1054,7 @@ const UserManagement = () => {
           </div>
         </div>
       )}
-    </div>
+    </div> : <p>You DOnt have access to this page</p>
   );
 };
 

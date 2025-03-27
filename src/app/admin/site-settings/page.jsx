@@ -1,7 +1,11 @@
 "use client"
 import React, { useState } from 'react';
 import { Settings, Save, Image, Edit, Home, Mail, Phone, MapPin, Globe, Facebook, Instagram, Twitter, Calendar, FileText, Shield, Eye, EyeOff, Clock, X, Plus, Trash2, HelpCircle, AlertTriangle, Bell } from 'lucide-react';
+  import { useAuth } from '@/context/AuthContext';
+
 const SiteSettingsAdmin = () => {
+    const {user} = useAuth()
+  
   // Initial state for site settings
   const [siteSettings, setSiteSettings] = useState({
     general: {
@@ -163,6 +167,8 @@ const SiteSettingsAdmin = () => {
   };
   
   return (
+    user?.role === "Super-Admin"  ? 
+
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <header className="bg-white shadow-sm">
@@ -937,7 +943,7 @@ const SiteSettingsAdmin = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div>:<p>You Dnnt have access to this page</p>
   );
 };
 

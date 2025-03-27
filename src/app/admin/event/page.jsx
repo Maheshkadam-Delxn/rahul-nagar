@@ -11,8 +11,11 @@ import {
   MapPin,
   Loader
 } from "lucide-react";
+import { useAuth } from '@/context/AuthContext';
+
 
 export default function EventsManagement() {
+  const user = useAuth()
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -304,6 +307,7 @@ export default function EventsManagement() {
   };
 
   return (
+    user?.role === "Super-Admin" || user.role === "Admin" || user.role === "Associate-Member" ? 
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Housing Society Events</h1>
@@ -591,6 +595,6 @@ export default function EventsManagement() {
           </div>
         </div>
       )}
-    </div>
+    </div> : <p>your re not accisseble</p>
   );
 }
