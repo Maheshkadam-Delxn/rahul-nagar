@@ -186,8 +186,18 @@ const page = () => {
                           </div>
           
                           <div className="flex items-center border border-gray-300 p-3 rounded-md">
-                            <input type="text" name="inquiry" value={formData.inquiry} onChange={handleChange} placeholder="Work Inquiries" className="w-full outline-none" />
-                          </div>
+      <select 
+        name="inquiry" 
+        value={formData.inquiry} 
+        onChange={handleChange} 
+        className="w-full outline-none bg-transparent"
+      >
+        <option value="" disabled>Select Work Inquiry</option>
+        <option value="inquiry">Inquiry</option>
+        <option value="suggestions">Suggestions</option>
+        <option value="complaint">Complaint</option>
+      </select>
+    </div>
                         </div>
           
                         <div className="flex items-center border border-gray-300 p-3 rounded-md">
@@ -195,9 +205,10 @@ const page = () => {
                           <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Query or Grievance Details" className="w-full outline-none" rows="3"></textarea>
                         </div>
           
-                        <button className="w-full bg-yellow-700 text-white py-3 rounded-md font-bold">Submit Message</button>
+                        <button className="w-full bg-yellow-700 text-white py-3 rounded-md font-bold cursor-pointer">Submit Message</button>
                       </form>
           </div>
+          
         </div>
       </div>
     </div>
