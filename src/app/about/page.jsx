@@ -10,8 +10,6 @@ import BuildingMap3 from "../../../public/home/layout/layout3.png";
 import BuildingMap4 from "../../../public/home/layout/layout4.png";
 import Image1 from "../../../public/home/about/build.jpg";
 import Image2 from "../../../public/home/about/associates.jpg";
-
-
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -21,6 +19,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
+
 const page = () => {
     const maps = [BuildingMap1, BuildingMap2, BuildingMap3, BuildingMap4];
     const [buildings, setBuildings] = useState([]);
