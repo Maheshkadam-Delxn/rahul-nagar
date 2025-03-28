@@ -442,7 +442,9 @@ const UserManagement = () => {
   };
 
   return (
-    user?.role === "Super-Admin" || user?.role ==="Admin" ? 
+    user?.role === "Super-Admin" || 
+      user?.role === "Admin" || 
+      user?.role?.startsWith("Building")?     
     <div className="bg-white p-6 rounded-lg shadow-lg">
       {/* Header and search */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -504,7 +506,17 @@ const UserManagement = () => {
             <option value="All">All Roles</option>
             <option value="Super-Admin">Super-Admin</option>
             <option value="Admin">Admin</option>
-            <option value="Associate-Member">Associate-Member</option>
+            <option value="Building No.1">Building No.1</option>
+            <option value="Building No.2">Building No.2</option>
+            <option value="Building No.3">Building No.3</option>
+            <option value="Building No.4">Building No.4</option>
+            <option value="Building No.5">Building No.5</option>
+            <option value="Building No.6A">Building No.6A</option>
+            <option value="Building No.6B">Building No.6B</option>
+            <option value="Building No.7">Building No.7</option>
+            <option value="Building No.A">Building No.A</option>
+            <option value="Building No.B">Building No.B</option>
+            <option value="Building No.C">Building No.C</option>
           </select>
           
           {(statusFilter !== 'All' || roleFilter !== 'All' || searchTerm) && (
@@ -819,7 +831,17 @@ const UserManagement = () => {
                   >
                     <option value="Super-Admin">Super-Admin</option>
                     <option value="Admin">Admin</option>
-                    <option value="Associate-Member">Associate-Member</option>
+                    <option value="Building No.1">Building No.1</option>
+            <option value="Building No.2">Building No.2</option>
+            <option value="Building No.3">Building No.3</option>
+            <option value="Building No.4">Building No.4</option>
+            <option value="Building No.5">Building No.5</option>
+            <option value="Building No.6A">Building No.6A</option>
+            <option value="Building No.6B">Building No.6B</option>
+            <option value="Building No.7">Building No.7</option>
+            <option value="Building No.A">Building No.A</option>
+            <option value="Building No.B">Building No.B</option>
+            <option value="Building No.C">Building No.C</option>
                   </select>
               </div>
               
@@ -968,7 +990,17 @@ const UserManagement = () => {
                 >
                   <option value="Super-Admin">Super-Admin</option>
                   <option value="Admin">Admin</option>
-                  <option value="Associate-Member">Associate-Member</option>
+                  <option value="Building No.1">Building No.1</option>
+            <option value="Building No.2">Building No.2</option>
+            <option value="Building No.3">Building No.3</option>
+            <option value="Building No.4">Building No.4</option>
+            <option value="Building No.5">Building No.5</option>
+            <option value="Building No.6A">Building No.6A</option>
+            <option value="Building No.6B">Building No.6B</option>
+            <option value="Building No.7">Building No.7</option>
+            <option value="Building No.A">Building No.A</option>
+            <option value="Building No.B">Building No.B</option>
+            <option value="Building No.C">Building No.C</option>
                 </select>
               </div>
               

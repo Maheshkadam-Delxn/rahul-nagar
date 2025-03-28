@@ -46,16 +46,15 @@ const page = () => {
       
         const fetchUsers = async () => {
           try {
-            const response = await fetch("/api/user-management/users");
+            const response = await fetch("/api/associate-member-management/members");
             if (!response.ok) {
               throw new Error("Failed to fetch users");
             }
             const data = await response.json();
             
-            // Filter users with role "Associate-Member"
-            const filteredUsers = data.users.filter(user => user.role === "Associate-Member");
-            
-            setUsers(filteredUsers);
+           
+
+            setUsers(data.members);
           } catch (error) {
             console.error("Error fetching users:", error);
           } finally {
@@ -269,18 +268,18 @@ const page = () => {
                         <p className="text-gray-500">No members found</p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                           {users?.slice().reverse().map((user) => (
+                           {users?.map((user) => (
     <div
         key={user._id}
-        className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden"
+        className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden shadow-lg"
     >
-        <Image
+       {user?.image &&  <Image
             alt="userImage"
-            src={user?.image || ""}
+            src={user?.image}
             width={1920}
             height={1080}
-            className="w-full h-full object-contain"
-        />
+            className="w-full h-full object-cover"
+        />}
         <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0 flex flex-col gap-2">
             <p className="font-bold text-2xl">{user.name}</p>
             <p className="text-xs md:text-sm">{user.post || "Association Member"}</p>

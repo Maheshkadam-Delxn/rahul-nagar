@@ -24,6 +24,13 @@ export default function BuildingsManagement() {
   const [buildings, setBuildings] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentBuildingId, setCurrentBuildingId] = useState(null);
+  const [editingOwnerIndex, setEditingOwnerIndex] = useState(null);
+  const [editingEventIndex, setEditingEventIndex] = useState(null);
+  const [editingUpdateIndex, setEditingUpdateIndex] = useState(null);
+  const [currentOwner, setCurrentOwner] = useState({ name: '', flatNumber: '' });
+  const [currentEvent, setCurrentEvent] = useState({ title: '', date: '', description: '' });
+  const [currentUpdate, setCurrentUpdate] = useState({ title: '', date: '', description: '' });
+
   const [userRole,setUserRole]=useState(null)
      useEffect(() => {
         const checkSessionStorage = () => {
@@ -56,25 +63,7 @@ export default function BuildingsManagement() {
   });
 
   // Owners Management
-  const [currentOwner, setCurrentOwner] = useState({
-    name: "",
-    flatNumber: "",
-    image: null
-  });
-
-  // Events Management
-  const [currentEvent, setCurrentEvent] = useState({
-    title: "",
-    date: "",
-    description: ""
-  });
-
-  // Updates Management
-  const [currentUpdate, setCurrentUpdate] = useState({
-    title: "",
-    date: "",
-    description: ""
-  });
+ 
 
   // Fetch buildings when component mounts
   useEffect(() => {
@@ -89,10 +78,22 @@ export default function BuildingsManagement() {
         throw new Error("Failed to fetch buildings");
       }
       
-      const data = await response.json();
-      if (data) {
-        setBuildings(data);
+      const data = await response.json(); // Only call response.json() once
+      console.log("Fetched Buildings:", data); // Correct way to log data
+      
+      if (data && Array.isArray(data)) { // Ensure data is an array
+        if (user?.role === "Super-Admin" || user?.role === "Admin") {
+          setBuildings(data);
+        } else {
+          const filteredBuildings = data.filter(building => 
+            building.president === user?.name || 
+            building.secretary === user?.name || 
+            building.treasurer === user?.name
+          );
+          setBuildings(filteredBuildings);
+        }
       }
+      
     } catch (error) {
       console.error("Error fetching buildings:", error);
       setError("Failed to load buildings. Please refresh the page.");
@@ -100,7 +101,7 @@ export default function BuildingsManagement() {
       setFetchLoading(false);
     }
   };
-
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewBuilding(prev => ({ ...prev, [name]: value }));
@@ -110,34 +111,29 @@ export default function BuildingsManagement() {
     setNewBuilding(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  // Owner Management Functions
-  const handleOwnerInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentOwner(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleOwnerImageChange = (e) => {
     setCurrentOwner(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  const addOwner = () => {
-    if (currentOwner.name && currentOwner.flatNumber) {
-      setNewBuilding(prev => ({
-        ...prev,
-        owners: [...(prev.owners || []), { 
-          name: currentOwner.name, 
-          flatNumber: currentOwner.flatNumber, 
-          image: currentOwner.image 
-        }]
-      }));
-      // Reset owner form
-      setCurrentOwner({
-        name: "",
-        flatNumber: "",
-        image: null
-      });
-    }
-  };
+  // const addOwner = () => {
+  //   if (currentOwner.name && currentOwner.flatNumber) {
+  //     setNewBuilding(prev => ({
+  //       ...prev,
+  //       owners: [...(prev.owners || []), { 
+  //         name: currentOwner.name, 
+  //         flatNumber: currentOwner.flatNumber, 
+  //         image: currentOwner.image 
+  //       }]
+  //     }));
+  //     // Reset owner form
+  //     setCurrentOwner({
+  //       name: "",
+  //       flatNumber: "",
+  //       image: null
+  //     });
+  //   }
+  // };
 
   const removeOwner = (index) => {
     setNewBuilding(prev => ({
@@ -146,22 +142,58 @@ export default function BuildingsManagement() {
     }));
   };
 
-  // Event Management Functions
+ 
+  const handleOwnerInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentOwner(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
   const handleEventInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentEvent(prev => ({ ...prev, [name]: value }));
+    setCurrentEvent(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
-
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentUpdate(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
   const addEvent = () => {
     if (currentEvent.title && currentEvent.date) {
-      setNewBuilding(prev => ({
-        ...prev,
-        events: [...(prev.events || []), { 
+      // If we're in editing mode, update the existing event
+      if (editingEventIndex !== null) {
+        const updatedEvents = [...newBuilding.events];
+        updatedEvents[editingEventIndex] = { 
           title: currentEvent.title,
           date: currentEvent.date,
-          description: currentEvent.description
-        }]
-      }));
+          description: currentEvent.description || ""
+        };
+        
+        setNewBuilding(prev => ({
+          ...prev,
+          events: updatedEvents
+        }));
+        
+        // Reset editing state
+        setEditingEventIndex(null);
+      } else {
+        // If not in editing mode, add a new event
+        setNewBuilding(prev => ({
+          ...prev,
+          events: [...(prev.events || []), { 
+            title: currentEvent.title,
+            date: currentEvent.date,
+            description: currentEvent.description || ""
+          }]
+        }));
+      }
+      
       // Reset event form
       setCurrentEvent({
         title: "",
@@ -169,6 +201,16 @@ export default function BuildingsManagement() {
         description: ""
       });
     }
+  };
+  
+  const editEvent = (index) => {
+    const eventToEdit = newBuilding.events[index];
+    setCurrentEvent({ 
+      title: eventToEdit.title,
+      date: eventToEdit.date,
+      description: eventToEdit.description || ""
+    });
+    setEditingEventIndex(index);
   };
 
   const removeEvent = (index) => {
@@ -178,30 +220,25 @@ export default function BuildingsManagement() {
     }));
   };
 
-  // Update Management Functions
-  const handleUpdateInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentUpdate(prev => ({ ...prev, [name]: value }));
-  };
 
-  const addUpdate = () => {
-    if (currentUpdate.title) {
-      setNewBuilding(prev => ({
-        ...prev,
-        updates: [...(prev.updates || []), { 
-          title: currentUpdate.title,
-          date: currentUpdate.date || new Date().toISOString().split('T')[0],
-          description: currentUpdate.description
-        }]
-      }));
-      // Reset update form
-      setCurrentUpdate({
-        title: "",
-        date: "",
-        description: ""
-      });
-    }
-  };
+  // const addUpdate = () => {
+  //   if (currentUpdate.title) {
+  //     setNewBuilding(prev => ({
+  //       ...prev,
+  //       updates: [...(prev.updates || []), { 
+  //         title: currentUpdate.title,
+  //         date: currentUpdate.date || new Date().toISOString().split('T')[0],
+  //         description: currentUpdate.description
+  //       }]
+  //     }));
+  //     // Reset update form
+  //     setCurrentUpdate({
+  //       title: "",
+  //       date: "",
+  //       description: ""
+  //     });
+  //   }
+  // };
 
   const removeUpdate = (index) => {
     setNewBuilding(prev => ({
@@ -394,23 +431,123 @@ export default function BuildingsManagement() {
       setLoading(false);
     }
   };
-
+  const addOwner = () => {
+    if (currentOwner.name && currentOwner.flatNumber) {
+      // If we're in editing mode, update the existing owner
+      if (editingOwnerIndex !== null) {
+        const updatedOwners = [...newBuilding.owners];
+        updatedOwners[editingOwnerIndex] = { 
+          name: currentOwner.name, 
+          flatNumber: currentOwner.flatNumber, 
+          image: currentOwner.image || ""
+        };
+        
+        setNewBuilding(prev => ({
+          ...prev,
+          owners: updatedOwners
+        }));
+        
+        // Reset editing state
+        setEditingOwnerIndex(null);
+      } else {
+        // If not in editing mode, add a new owner
+        setNewBuilding(prev => ({
+          ...prev,
+          owners: [...(prev.owners || []), { 
+            name: currentOwner.name, 
+            flatNumber: currentOwner.flatNumber, 
+            image: currentOwner.image || ""
+          }]
+        }));
+      }
+      
+      // Reset owner form
+      setCurrentOwner({
+        name: "",
+        flatNumber: "",
+        image: null
+      });
+    }
+  };
+  
+  const editOwner = (index) => {
+    const ownerToEdit = newBuilding.owners[index];
+    setCurrentOwner({ 
+      name: ownerToEdit.name,
+      flatNumber: ownerToEdit.flatNumber,
+      image: ownerToEdit.image || null
+    });
+    setEditingOwnerIndex(index);
+  };
+  
+  const addUpdate = () => {
+    if (currentUpdate.title) {
+      // If we're in editing mode, update the existing update
+      if (editingUpdateIndex !== null) {
+        const updatedUpdates = [...newBuilding.updates];
+        updatedUpdates[editingUpdateIndex] = { 
+          title: currentUpdate.title,
+          date: currentUpdate.date || new Date().toISOString().split('T')[0],
+          description: currentUpdate.description || ""
+        };
+        
+        setNewBuilding(prev => ({
+          ...prev,
+          updates: updatedUpdates
+        }));
+        
+        // Reset editing state
+        setEditingUpdateIndex(null);
+      } else {
+        // If not in editing mode, add a new update
+        setNewBuilding(prev => ({
+          ...prev,
+          updates: [...(prev.updates || []), { 
+            title: currentUpdate.title,
+            date: currentUpdate.date || new Date().toISOString().split('T')[0],
+            description: currentUpdate.description || ""
+          }]
+        }));
+      }
+      
+      // Reset update form
+      setCurrentUpdate({
+        title: "",
+        date: "",
+        description: ""
+      });
+    }
+  };
+  
+  const editUpdate = (index) => {
+    const updateToEdit = newBuilding.updates[index];
+    setCurrentUpdate({ 
+      title: updateToEdit.title,
+      date: updateToEdit.date,
+      description: updateToEdit.description || ""
+    });
+    setEditingUpdateIndex(index);
+  };
+  console.log(buildings)
+  console.log(user)
   return (
-    user?.role === "Super-Admin" || user?.role === "Admin" ? 
+    user?.role === "Super-Admin" || user?.role === "Admin" || user?.role?.startsWith("Building")? 
 
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Housing Society Buildings</h1>
-        <button 
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
-        >
-          <Plus size={18} />
-          Add Building
-        </button>
+      {
+        user?.role === "Super-Admin" || user?.role === "Admin" &&   <button 
+        onClick={() => {
+          resetForm();
+          setShowModal(true);
+        }}
+        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
+      >
+        <Plus size={18} />
+        Add Building
+      </button>
+      }
       </div>
 
       {error && (
@@ -496,6 +633,7 @@ export default function BuildingsManagement() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            {/* ... (previous modal header code) ... */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">
                 {isEditMode ? "Edit Building" : "Add New Building"}
@@ -510,8 +648,8 @@ export default function BuildingsManagement() {
                 <X size={24} />
               </button>
             </div>
-            
             <form onSubmit={handleSubmit}>
+              {/* ... (previous form fields) ... */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                   Building Name*
@@ -676,7 +814,7 @@ export default function BuildingsManagement() {
                       className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                       disabled={!currentOwner.name || !currentOwner.flatNumber}
                     >
-                      Add Owner
+                      {editingOwnerIndex !== null ? 'Update Owner' : 'Add Owner'}
                     </button>
                   </div>
                 </div>
@@ -686,17 +824,26 @@ export default function BuildingsManagement() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {newBuilding.owners.map((owner, index) => (
                       <div key={index} className="bg-white shadow-md rounded-lg p-4 flex items-center space-x-4 relative">
-                        <div>
+                        <div className="flex-grow">
                           <h3 className="text-lg font-bold">{owner.name}</h3>
                           <p className="text-gray-600 text-sm">{owner.flatNumber}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeOwner(index)}
-                          className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => editOwner(index)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeOwner(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -745,7 +892,7 @@ export default function BuildingsManagement() {
                       className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                       disabled={!currentEvent.title || !currentEvent.date}
                     >
-                      Add Event
+                      {editingEventIndex !== null ? 'Update Event' : 'Add Event'}
                     </button>
                   </div>
                 </div>
@@ -774,13 +921,22 @@ export default function BuildingsManagement() {
                             <h3 className="text-lg font-bold">{event.title}</h3>
                             <p className="text-gray-600 text-sm">{event.date}</p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeEvent(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => editEvent(index)}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeEvent(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                         {event.description && (
                           <p className="mt-2 text-gray-700">{event.description}</p>
@@ -848,7 +1004,7 @@ export default function BuildingsManagement() {
                     className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     disabled={!currentUpdate.title}
                   >
-                    Add Update
+                    {editingUpdateIndex !== null ? 'Update Update' : 'Add Update'}
                   </button>
                 </div>
 
@@ -864,13 +1020,22 @@ export default function BuildingsManagement() {
                               <p className="text-gray-600 text-sm">{update.date}</p>
                             )}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeUpdate(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => editUpdate(index)}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeUpdate(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                         {update.description && (
                           <p className="mt-2 text-gray-700">{update.description}</p>
@@ -881,6 +1046,7 @@ export default function BuildingsManagement() {
                 )}
               </div>
 
+              {/* ... (rest of the form remains the same) ... */}
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
@@ -932,6 +1098,7 @@ export default function BuildingsManagement() {
           </div>
         </div>
       )}
+    
     </div>
     : <p>not allowed</p>
   );
