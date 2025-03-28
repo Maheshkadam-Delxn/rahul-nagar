@@ -24,8 +24,8 @@ const Navbar = () => {
   <Image
     alt="Logo"
     src="/logo.png"
-    width={200}
-    height={200}
+    width={170}
+    height={170}
     className=" object-cover rounded-bl-lg rounded-br-3xl"
   />
 </Link>
