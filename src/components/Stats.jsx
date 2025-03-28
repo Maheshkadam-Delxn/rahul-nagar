@@ -11,7 +11,7 @@ const Stats = () => {
         },
         {
             id: 2,
-            Stat: "262",
+            Stat: "261",
             logo: "/home/stats/flatowner.png",
             desc: "Flat Owners"
         },

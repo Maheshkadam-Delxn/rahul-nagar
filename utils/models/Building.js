@@ -77,17 +77,14 @@ const BuildingSchema = new mongoose.Schema({
     },
     president: { 
         type: String, 
-        required: [true, 'President name is required'],
         trim: true
     },
     secretary: { 
         type: String, 
-        required: [true, 'Secretary name is required'],
         trim: true
     },
     treasurer: { 
         type: String, 
-        required: [true, 'Treasurer name is required'],
         trim: true
     },
     image:{
@@ -97,7 +94,6 @@ const BuildingSchema = new mongoose.Schema({
     },
     description: { 
         type: String, 
-        required: [true, 'Building description is required'],
         trim: true
     },
    

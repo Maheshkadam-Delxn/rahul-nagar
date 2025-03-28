@@ -27,6 +27,7 @@
             |-- pen.png
             |-- right.png
             |-- time.png
+            |-- vector.svg
         |-- contact.svg
         |-- events
             |-- arrow-right.png

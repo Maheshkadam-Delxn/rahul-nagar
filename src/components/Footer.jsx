@@ -91,9 +91,9 @@ const Footer = () => {
 
       {/* Copyright Section */}
       <div className="w-full flex items-center justify-center">
-      <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-500 text-sm flex items-center w-full justify-center max-w-7xl">
+      <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-500 text-sm flex items-center w-full justify-between max-w-7xl">
        <span className="flex items-center gap-2">© Copyright <a href="#" className="text-white">Rahul Nagar CHSC Association Ltd.</a> 2025. All rights reserved.</span>
-        
+        <span className="font-bold">Created By <span className="text-[#DCBE00]">Skillnuts</span></span>
       </div>
       </div>
     </footer>

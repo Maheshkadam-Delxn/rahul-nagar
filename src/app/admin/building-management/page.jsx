@@ -528,8 +528,6 @@ export default function BuildingsManagement() {
     });
     setEditingUpdateIndex(index);
   };
-  console.log(buildings)
-  console.log(user)
   return (
     user?.role === "Super-Admin" || user?.role === "Admin" || user?.role?.startsWith("Building")? 
 
@@ -537,7 +535,7 @@ export default function BuildingsManagement() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Housing Society Buildings</h1>
       {
-        user?.role === "Super-Admin" || user?.role === "Admin" &&   <button 
+        user?.role === "Super-Admin" || user?.role === "Admin" ?   <button 
         onClick={() => {
           resetForm();
           setShowModal(true);
@@ -546,7 +544,7 @@ export default function BuildingsManagement() {
       >
         <Plus size={18} />
         Add Building
-      </button>
+      </button> : null
       }
       </div>
 
@@ -661,14 +659,14 @@ export default function BuildingsManagement() {
                   value={newBuilding.name}
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter building name"
+                  placeholder="For Example : A,B,C"
                   required
                 />
               </div>
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                  Description*
+                  Description
                 </label>
                 <textarea
                   id="description"
@@ -678,14 +676,13 @@ export default function BuildingsManagement() {
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter building description"
                   rows="4"
-                  required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
-                    President*
+                    Chairman
                   </label>
                   <input
                     id="president"
@@ -695,13 +692,12 @@ export default function BuildingsManagement() {
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="President Name"
-                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
-                    Secretary*
+                    Secretary
                   </label>
                   <input
                     id="secretary"
@@ -711,13 +707,12 @@ export default function BuildingsManagement() {
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="Secretary Name"
-                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
-                    Treasurer*
+                    Treasurer
                   </label>
                   <input
                     id="treasurer"
@@ -727,7 +722,6 @@ export default function BuildingsManagement() {
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="Treasurer Name"
-                    required
                   />
                 </div>
               </div>

@@ -94,13 +94,13 @@ export default function SignIn() {
       <div className="max-w-5xl w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden flex flex-col md:flex-row">
         {/* Image Section */}
         <div className="md:w-1/2 relative">
-          <img src="/building.jpg" alt="Cooperative Housing Society" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
-          <div className="absolute bottom-0 left-0 p-8 text-white">
+          <img src="/logo2.png" alt="Cooperative Housing Society" className="w-full h-full object-contain bg-gradient-to-r from-[#220E31] via-[#29133A] to-[#241033] p-10" />
+          <div className="absolute inset-0 bg-gradient-to-t "></div>
+          {/* <div className="absolute bottom-0 left-0 p-8 text-white">
             <h1 className="text-3xl font-bold mb-2">Rahul Nagar</h1>
             <p className="mb-1">Cooperative Housing Society</p>
             <p className="text-sm opacity-80">Building communities, creating homes</p>
-          </div>
+          </div> */}
         </div>
 
         {/* Form Section */}
@@ -127,7 +127,7 @@ export default function SignIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B57E10] focus:border-transparent"
                 placeholder="your@email.com"
               />
             </div>
@@ -142,7 +142,7 @@ export default function SignIn() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B57E10] focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -154,7 +154,7 @@ export default function SignIn() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-[#B57E10] focus:ring-[#B57E10] border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                   Remember me
@@ -162,7 +162,7 @@ export default function SignIn() {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-green-600 hover:text-green-500">
+                <a href="#" className="font-medium text-[#B57E10] hover:text-[#B57E10]">
                   Forgot password?
                 </a>
               </div>
@@ -172,7 +172,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2 px-4 border border-transparent rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 font-medium"
+                className="w-full py-2 px-4 border border-transparent rounded-md text-white bg-[#B57E10] hover:bg-[#B57E10] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 font-medium"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -182,7 +182,7 @@ export default function SignIn() {
           <div className="mt-6 text-center text-sm">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <a href="#" className="font-medium text-green-600 hover:text-green-500">
+              <a href="#" className="font-medium text-[#B57E10] hover:text-[#B57E10]">
                 Contact your administrator
               </a>
             </p>

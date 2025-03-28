@@ -29,29 +29,7 @@ export async function POST(req) {
         // Comprehensive validation
         const validationErrors = [];
 
-        if (!name || name.trim() === "") {
-            validationErrors.push("Building name is required");
-        }
-
-        if (!description || description.trim() === "") {
-            validationErrors.push("Building description is required");
-        }
-
-        if (!president || president.trim() === "") {
-            validationErrors.push("President name is required");
-        }
-
-        if (!secretary || secretary.trim() === "") {
-            validationErrors.push("Secretary name is required");
-        }
-
-        if (!treasurer || treasurer.trim() === "") {
-            validationErrors.push("Treasurer name is required");
-        }
-
-        if (!image || typeof image !== "string") {
-            validationErrors.push("Valid image URL is required");
-        }
+       
 
         // Check for validation errors
         if (validationErrors.length > 0) {

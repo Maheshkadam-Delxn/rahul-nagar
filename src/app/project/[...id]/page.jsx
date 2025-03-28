@@ -143,14 +143,16 @@ const BuildingPage = () => {
                         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                             <div className='md:col-span-2'>
                                 <div className='w-full h-64 bg-gray-300 rounded-lg'><Image src={building.image} width={1920} height={1080} className='w-full h-full object-cover'/></div>
-                                <h2 className='text-2xl font-bold mt-6'>About Building No. {building.name}</h2>
+                               { building?.description ?  <h2 className='text-2xl font-bold mt-6'>About Building No. {building.name}</h2> :  <h2 className='text-2xl font-bold mt-6'>Building No. {building.name}</h2>}
                                 <p className='text-gray-700 mt-2'>{building.description}</p>
-                                <h3 className='text-xl font-bold mt-4'>Events Conducted</h3>
-                                <ul className='list-disc list-inside text-gray-700 mt-2 space-y-1'>
-                                    {building.events?.map((event, index) => (
-                                        <li key={index}><strong>{event.title}</strong> {event.description}</li>
-                                    ))}
-                                </ul>
+                                {
+                                    building?.events?.length>0 ?<div className='flex flex-col items-start'> <h3 className='text-xl font-bold mt-4'>Events Conducted</h3>
+                                    <ul className='list-disc list-inside text-gray-700 mt-2 space-y-1'>
+                                        {building.events?.map((event, index) => (
+                                            <li key={index}><strong>{event.title}</strong> {event.description}</li>
+                                        ))}
+                                    </ul></div> :  null
+                                }
                             </div>
                             <div className='bg-white shadow-lg rounded-lg overflow-hidden h-fit '>
                                 <div className='bg-[#b5831d] text-white px-4 py-3 text-lg font-bold'>Building No. {building.name}</div>
@@ -174,31 +176,33 @@ const BuildingPage = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-white shadow-2xl rounded-lg p-6 flex flex-col gap-5">
-                        <div className="flex items-center gap-5">
-                            <Image src={ConstructionIcon} alt="ConstructionIcon" width={64} height={64} className="w-16 h-16" />
-                            <h1 className="text-lg text-[#B57E10] font-medium">Latest Updates of Redevelopment</h1>
-                        </div>
-                        <div className="flex flex-col gap-5 w-full">
-                            {updates.length > 0 ? (
-                                updates.map((update) => (
-                                    <div key={update.id} className="flex flex-col gap-3">
-                                        <div className="flex items-center gap-5 text-sm text-gray-600">
-                                            <div className="flex items-center gap-2"><User size={16} color="red" />{update.role}</div>
-                                            <div className="flex items-center gap-2"><Calendar size={16} color="red" />{new Date(update.date).toLocaleDateString()}</div>
-                                        </div>
-                                        <h1 className="text-xl font-bold">{update.title}</h1>
-                                        <p className="text-sm opacity-45 font-medium">{update.content}</p>
-                                        <Link href={update.link || "#"} className="flex items-center gap-2 text-sm text-[#B57E10]">
-                                            Read More <MoveRight size={20} />
-                                        </Link>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-center text-gray-500">No latest updates.</p>
-                            )}
-                        </div>
+                   {
+                    updates?.length>0 &&  <div className="flex-1 bg-white shadow-2xl rounded-lg p-6 flex flex-col gap-5">
+                    <div className="flex items-center gap-5">
+                        <Image src={ConstructionIcon} alt="ConstructionIcon" width={64} height={64} className="w-16 h-16" />
+                        <h1 className="text-lg text-[#B57E10] font-medium">Latest Updates of Redevelopment</h1>
                     </div>
+                    <div className="flex flex-col gap-5 w-full">
+                        {updates.length > 0 ? (
+                            updates.map((update) => (
+                                <div key={update.id} className="flex flex-col gap-3">
+                                    <div className="flex items-center gap-5 text-sm text-gray-600">
+                                        <div className="flex items-center gap-2"><User size={16} color="red" />{update.role}</div>
+                                        <div className="flex items-center gap-2"><Calendar size={16} color="red" />{new Date(update.date).toLocaleDateString()}</div>
+                                    </div>
+                                    <h1 className="text-xl font-bold">{update.title}</h1>
+                                    <p className="text-sm opacity-45 font-medium">{update.content}</p>
+                                    <Link href={update.link || "#"} className="flex items-center gap-2 text-sm text-[#B57E10]">
+                                        Read More <MoveRight size={20} />
+                                    </Link>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-center text-gray-500">No latest updates.</p>
+                        )}
+                    </div>
+                </div>
+                   }
 
                     <div className="w-full py-12 flex flex-col ">
                         <div className="max-w-6xl w-full px-6 md:px-12 flex flex-col items-start gap-14">
