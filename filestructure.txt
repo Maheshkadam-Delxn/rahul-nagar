@@ -49,6 +49,7 @@
             |-- image7.png
             |-- pexels-pixabay-257416.jpg
             |-- shreeganesh.png
+            |-- shreeRam.png
         |-- homebg.png
         |-- homelogo.png
         |-- homelogo.svg
@@ -172,6 +173,8 @@
                     |-- route.js
                 |-- update-event
                     |-- route.js
+                |-- [eventId]
+                    |-- route.js
             |-- updates
                 |-- add-update
                     |-- route.js
@@ -180,6 +183,8 @@
                 |-- edit-update
                     |-- route.js
                 |-- fetchAll
+                    |-- route.js
+                |-- [updateId]
                     |-- route.js
             |-- user-management
                 |-- add-user
@@ -194,7 +199,13 @@
                     |-- route.js
         |-- contact
             |-- page.jsx
+        |-- events
+            |-- page.jsx
+            |-- [id]
+                |-- page.jsx
         |-- gallery
+            |-- layout.js
+            |-- metadata.js
             |-- page.jsx
         |-- globals.css
         |-- layout.js
@@ -205,6 +216,10 @@
                 |-- page.jsx
         |-- signin
             |-- page.jsx
+        |-- updates
+            |-- page.jsx
+            |-- [updateId]
+                |-- page.jsx
     |-- components
         |-- About.jsx
         |-- Contact.jsx
