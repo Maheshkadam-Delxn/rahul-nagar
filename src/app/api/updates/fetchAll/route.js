@@ -8,7 +8,6 @@ export async function GET() {
         // Get all updates, sort by most recent first
         const updates = await Updates.find({}).sort({ createdAt: -1 });
         
-        console.log(`Fetched ${updates.length} updates`);
         // You can also log a sample update to check the structure
         if (updates.length > 0) {
             console.log("Sample update structure:", updates[0]);
