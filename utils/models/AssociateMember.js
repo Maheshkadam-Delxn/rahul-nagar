@@ -15,7 +15,7 @@ const AssociateMemberSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  Post: {
+  post: {
     type: String,
     trim: true
   },

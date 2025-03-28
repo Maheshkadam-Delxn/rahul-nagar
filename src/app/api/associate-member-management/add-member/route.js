@@ -12,7 +12,7 @@ export async function POST(request) {
       image,
       post,
     } = await request.json();
-
+    console.log(post)
     const existingMember = await AssociateMember.findOne({ name });
     if (existingMember) {
       return NextResponse.json({
