@@ -273,13 +273,19 @@ const page = () => {
         key={user._id}
         className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden shadow-lg"
     >
-       {user?.image &&  <Image
+       {user?.image === "" ?  <Image
             alt="userImage"
-            src={user?.image}
+            src={"/avatar.jpg"}
             width={1920}
             height={1080}
             className="w-full h-full object-cover"
-        />}
+        /> :  <Image
+        alt="userImage"
+        src={user?.image}
+        width={1920}
+        height={1080}
+        className="w-full h-full object-cover"
+    />}
         <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0 flex flex-col gap-2">
             <p className="font-bold text-2xl">{user.name}</p>
             <p className="text-xs md:text-sm">{user.post || "Association Member"}</p>

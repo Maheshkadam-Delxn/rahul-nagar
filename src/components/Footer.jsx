@@ -76,7 +76,7 @@ const Footer = () => {
             </a> 2025. All rights reserved.
           </span>
           <span className="font-bold">
-            Created By <span className="text-[#DCBE00] hover:animate-pulse">Skillnuts</span>
+            Created By <Link href={"skillnuts.in"} className="text-[#DCBE00] hover:animate-pulse">Skillnuts</Link>
           </span>
         </div>
       </div>
