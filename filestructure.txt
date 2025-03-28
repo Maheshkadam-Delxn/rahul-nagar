@@ -89,6 +89,8 @@
         |-- about
             |-- page.jsx
         |-- admin
+            |-- associate-member
+                |-- page.jsx
             |-- blog
                 |-- page.jsx
             |-- building-management
@@ -108,6 +110,19 @@
             |-- user-management
                 |-- page.jsx
         |-- api
+            |-- associate-member-management
+                |-- add-member
+                    |-- route.js
+                |-- bulk-delete
+                    |-- route.js
+                |-- delete-member
+                    |-- [...id]
+                        |-- route.js
+                |-- members
+                    |-- route.js
+                |-- update-member
+                    |-- [...id]
+                        |-- route.js
             |-- auth
                 |-- associate-members
                     |-- add-member
@@ -200,9 +215,12 @@
     |-- context
         |-- AuthContext.jsx
     |-- middleware.js
+    |-- scripts
+        |-- fixDatabase.js
 |-- utils
     |-- connectDb.js
     |-- models
+        |-- AssociateMember.js
         |-- Building.js
         |-- Events.js
         |-- members.js
