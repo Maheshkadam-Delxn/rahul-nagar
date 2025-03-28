@@ -32,24 +32,24 @@ const Navbar = () => {
 
 
         <div className='flex flex-col w-3/4 h-full justify-between'>
-          <div className='w-full bg-[#B57E10] h-1/3 flex items-center justify-between py-1 px-3'>
-            <div className='flex items-center gap-2 text-white'>
+          <div className='w-full bg-[#B57E10] h-1/3 flex items-center justify-between py-1 px-2 '>
+            <div className='flex items-center gap-2 text-white p-2'>
               <MapPin size={16} />
-              <h3 className='text-xs'>Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038</h3>
+              <h3 className='text-xs tracking-[30%] '>Rahul Nagar, Near Karve Statue, Kothrud, Pune-411038</h3>
             </div>
             <div className='flex items-center gap-3 text-white text-xs'>
               <a href='tel:+918787574657' className='flex items-center gap-2'>
                 <Phone size={16} />
                 +91 8787574657
               </a>
-              <a href='mailto:rahulnagarassociation1@gmail.com' className='flex items-center gap-2'>
+              <a href='mailto:rahulnagarassociation1@gmail.com' className='flex items-center gap-2 p-2'>
                 <Mail size={16} />
                 rahulnagarassociation1@gmail.com
               </a>
             </div>
           </div>
-          <div className='w-full h-2/3 flex items-center justify-between px-3 py-1'>
-            <div className='flex items-center gap-6 text-white text-sm'>
+          <div className='w-full h-2/3 flex items-center justify-between px-3 py-1 '>
+            <div className='flex items-center gap-10 text-white text-md'>
               <Link href={"/"}>Home</Link>
               {/* <Link href={"#"}>Updates</Link> */}
               <Link href={"/about"}>About</Link>
@@ -59,7 +59,12 @@ const Navbar = () => {
             </div>
             <div className='flex items-center gap-5 text-white py-1 px-3'>
               {/* <Search size={20} /> */}
-              <Link href={user ? "/admin" : "/signin"} className='bg-[#B57E10] p-3 text-sm w-32 text-center rounded-sm'>Member Area</Link>
+              <Link 
+  href={user ? "/admin" : "/signin"} 
+  className="bg-[#B57E10] p-3 w-40 text-center rounded-sm font-roboto font-semibold text-[16px] leading-[26px] tracking-[0%]"
+>
+  Member Area
+</Link>
             </div>
           </div>
         </div>

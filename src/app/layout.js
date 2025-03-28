@@ -1,16 +1,12 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto } from "next/font/google"; // Import Roboto font
 import "./globals.css";
 import LayoutWrapper from "./LayoutWrapper"; // Import the client component
 import { AuthProvider } from "@/context/AuthContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const roboto = Roboto({
+  weight: ["300", "400", "500", "700"], // Choose the font weights you need
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-roboto",
 });
 
 export const metadata = {
@@ -25,10 +21,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="favicon" href="/logo2.png" type="image/png" />
+        <link rel="icon" href="/logo2.png" type="image/png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-r from-[#220E31] via-[#29133A] to-[#241033]`}
+        className={`${roboto.variable} antialiased bg-gradient-to-r from-[#220E31] via-[#29133A] to-[#241033]`}
       >
         <AuthProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
