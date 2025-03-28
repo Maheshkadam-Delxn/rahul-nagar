@@ -49,13 +49,13 @@ const HeroSection = () => {
           </div>
           
           {/* Image Section */}
-          <div className="w-full md:w-2/5 flex justify-center md:justify-end">
+          <div className="w-full md:w-1/3 flex justify-center md:justify-end">
             <Image
               alt="logo"
               src={"/logo2.png"}
               width={1920}
               height={1080}
-              className="w-3/4 md:w-full h-auto object-cover rounded-lg"
+              className="w-2/3 md:w-full h-auto object-cover rounded-lg"
             />
           </div>
         </div>
