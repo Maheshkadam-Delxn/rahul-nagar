@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import Event  from '../../../../../utils/models/Events.js';
 import connectDb from "../../../../../utils/connectDb";
-export async function GET() {
+
+
+export async function GET(req) {
   try {
     await connectDb();
 
-    // Fetch all events, sorted by latest created
-    const events = await Event.find().sort({ createdAt: -1 });
+    const { searchParams } = new URL(req.url);
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")) : null;
+
+    let query = Event.find().sort({ createdAt: -1 });
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const events = await query.exec();
 
     return NextResponse.json({ success: true, events });
 
