@@ -43,7 +43,7 @@ const EventDetails = () => {
           alt={event.title} 
           width={600} 
           height={300} 
-          className="w-full h-64 object-cover rounded-lg" 
+          className="w-full h-64 object-contain rounded-lg" 
         />
         <h1 className="text-2xl md:text-3xl font-bold mt-5 text-[#B57E10]">{event.title}</h1>
         <p className="text-gray-600 mt-2">{event.description}</p>
