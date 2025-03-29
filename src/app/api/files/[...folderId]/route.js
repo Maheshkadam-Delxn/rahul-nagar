@@ -1,7 +1,12 @@
 import { google } from 'googleapis';
- 
-export async function GET() {
+
+export async function GET(req, { params }) {
   try {
+    const { folderId } = params; // Extract folder ID from the request parameters
+    if (!folderId) {
+      return Response.json({ error: 'Folder ID is required' }, { status: 400 });
+    }
+
     const serviceAccountKey = {
       "type": "service_account",
       "project_id": "rahul-nagar-454910",
@@ -10,27 +15,27 @@ export async function GET() {
       "client_email": "sheets-service-account@rahul-nagar-454910.iam.gserviceaccount.com",
       "token_uri": "https://oauth2.googleapis.com/token"
     };
- 
+
     const auth = new google.auth.GoogleAuth({
       credentials: serviceAccountKey,
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     });
- 
+
     const drive = google.drive({ version: 'v3', auth });
-   
+
     const response = await drive.files.list({
-      q: `'${process.env.GOOGLE_DRIVE_FOLDER_ID}' in parents`,
+      q: `'${folderId}' in parents`,
       fields: 'files(id, name, mimeType, webViewLink, createdTime)',
       orderBy: 'name',
     });
- 
+
     const files = response.data.files.map(file => ({
       id: file.id,
       name: file.name,
       type: file.mimeType.includes('folder') ? 'folder' : 'file',
       driveFileId: file.id,
       viewLink: file.webViewLink,
-      createdAt: file.createdTime
+      createdAt: file.createdTime,
     }));
     return Response.json({ files });
   } catch (error) {
@@ -38,10 +43,3 @@ export async function GET() {
     return Response.json({ error: 'Failed to fetch files' }, { status: 500 });
   }
 }
- 
-// You can add other HTTP methods as needed
-export async function POST(request) {
-  // Handle POST requests if needed
-  return Response.json({ message: 'POST method not implemented' }, { status: 501 });
-}
- 

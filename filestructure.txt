@@ -199,7 +199,8 @@
             |-- files
                 |-- delete
                     |-- route.js
-                |-- route.js
+                |-- [...folderId]
+                    |-- route.js
             |-- updates
                 |-- add-update
                     |-- route.js

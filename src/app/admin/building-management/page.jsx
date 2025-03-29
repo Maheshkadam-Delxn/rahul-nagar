@@ -11,12 +11,21 @@ import {
   User,
   Users,
   Calendar,
-  Megaphone
+  Megaphone,
+  AlertCircle,
+  FileText,
+  Download,
+  FilePlus,
+  File
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 export default function BuildingsManagement() {
-    const { user, loading: authLoading } = useAuth();
+  const [showDocumentsPopup, setShowDocumentsPopup] = useState(false);
+const [currentBuildingDocuments, setCurrentBuildingDocuments] = useState([]);
+const [documentsLoading, setDocumentsLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -27,28 +36,78 @@ export default function BuildingsManagement() {
   const [editingOwnerIndex, setEditingOwnerIndex] = useState(null);
   const [editingEventIndex, setEditingEventIndex] = useState(null);
   const [editingUpdateIndex, setEditingUpdateIndex] = useState(null);
+  const [editingDocumentIndex, setEditingDocumentIndex] = useState(null);
   const [currentOwner, setCurrentOwner] = useState({ name: '', flatNumber: '' });
   const [currentEvent, setCurrentEvent] = useState({ title: '', date: '', description: '' });
   const [currentUpdate, setCurrentUpdate] = useState({ title: '', date: '', description: '' });
+  const [currentDocument, setCurrentDocument] = useState([{ title: '', file: null }]);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  // Form validation states
+  const [formErrors, setFormErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   const [userRole,setUserRole]=useState(null)
-     useEffect(() => {
-        const checkSessionStorage = () => {
-          try {
-            const sessionData = {
-              token: sessionStorage.getItem('authToken'),
-              userId: sessionStorage.getItem('userId'),
-              userName: sessionStorage.getItem('userName'),
-              userRole: sessionStorage.getItem('userRole')
-            };
-            setUserRole(sessionData.userRole)
-          } catch (error) {
-            console.error("Error checking sessionStorage:", error);
-          }
+  useEffect(() => {
+    const checkSessionStorage = () => {
+      try {
+        const sessionData = {
+          token: sessionStorage.getItem('authToken'),
+          userId: sessionStorage.getItem('userId'),
+          userName: sessionStorage.getItem('userName'),
+          userRole: sessionStorage.getItem('userRole')
         };
+        setUserRole(sessionData.userRole)
+      } catch (error) {
+        console.error("Error checking sessionStorage:", error);
+      }
+    };
+    
+    checkSessionStorage();
+  }, []);
+  const handleShowDocuments = async (building) => {
+    setDocumentsLoading(true);
+    setShowDocumentsPopup(true);
+    
+    try {
+      // First check if we already have documents in the building data
+      if (building.documents && building.documents.length > 0) {
+        setCurrentBuildingDocuments(building.documents);
+      } else {
+        // If not, fetch from API using the folder ID
+        const folderId = buildingFolderMap[building.name];
+        if (!folderId) {
+          throw new Error("No folder configured for this building");
+        }
         
-        checkSessionStorage();
-      }, []);
+        const response = await fetch(`/api/files/${folderId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch documents");
+        }
+        
+        const documents = await response.json();
+        setCurrentBuildingDocuments(documents.files);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      setError("Failed to load documents. Please try again.");
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+  // Building folder mappings
+  const buildingFolderMap = {
+    "Building No.1": "1pk3BXv-NzVgPhSrAlwHerHwSbD-nnexQ",
+    "Building No.2": "1YA7636FvwlbUdEfBLmuow-flRVQwNWnv",
+    "Building No.3": "1oFDa8Bgp1Zy0_M1hCKG73QY2bnAkW_HM",
+    "Building No.4": "127rVb-_zrLkP1a66C46xYjnhd4eh9Gh7",
+    "Building No.5": "1bpC4CoJUQlFhFc0l4NPjdxNrB-cMf-Dj",
+    "Building No.6A": "17LdunpVZbawYsc6Zpxcacjyefw0DeizU",
+    "Building No.6B": "1lPt8QVrUdgYOQSEGF5G0qk5WrYdvg2Wi",
+    "Building No.7": "1_BceKyQKAWqUhqgiLQna_ow14J2Ctoy0",
+    "Building No.A": "1uiwD9JQ4zuPLQEX7GtzRtJq9uup6Giun",
+    "Building No.B": "17_rZYJjQteH1gmcdqwu3CUWGRMLCwxEI",
+    "Building No.C": "1cAxtYD35TQsyYsnxpPrJooMFV8SnvY_Q"
+  };
 
   const [newBuilding, setNewBuilding] = useState({
     name: "",
@@ -59,11 +118,31 @@ export default function BuildingsManagement() {
     image: null,
     owners: [],
     events: [],
-    updates: []
+    updates: [],
+    documents: []
   });
-
-  // Owners Management
- 
+  console.log(currentBuildingDocuments)
+  // Form validation function
+  const validateField = (name, value) => {
+    let error = "";
+    
+    switch(name) {
+      case "name":
+        if (!value.trim()) {
+          error = "Building name is required";
+        }
+        break;
+      case "image":
+        if (!isEditMode && !value) {
+          error = "Building image is required";
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
 
   // Fetch buildings when component mounts
   useEffect(() => {
@@ -78,29 +157,26 @@ export default function BuildingsManagement() {
         throw new Error("Failed to fetch buildings");
       }
       
-      const data = await response.json(); // Only call response.json() once
-      console.log("Fetched Buildings:", data); // Correct way to log data
+      const data = await response.json();
+      console.log("Fetched Buildings:", data);
       
-      if (data && Array.isArray(data)) { // Ensure data is an array
+      if (data && Array.isArray(data)) {
         if (user?.role === "Super-Admin" || user?.role === "Admin") {
           setBuildings(data);
         } else {
           const userBuildingNumber = user?.role ? user.role.replace(/\D/g, "") : "N/A";
-console.log("Bui - ", userBuildingNumber);
-// Extract numeric part from role
-           
+          console.log("Bui - ", userBuildingNumber);
+          
           const filteredBuildings = data.filter(building => 
             building.president === user?.name || 
             building.secretary === user?.name || 
             building.treasurer === user?.name || 
-            building.name === user?.role // Compare with extracted number
+            building.name === user?.role
           );
       
           setBuildings(filteredBuildings);
         }
       }
-      
-      
     } catch (error) {
       console.error("Error fetching buildings:", error);
       setError("Failed to load buildings. Please refresh the page.");
@@ -111,36 +187,149 @@ console.log("Bui - ", userBuildingNumber);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Update the field value
     setNewBuilding(prev => ({ ...prev, [name]: value }));
+    
+    // Mark the field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field and update errors
+    const error = validateField(name, value);
+    setFormErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleImageChange = (e) => {
-    setNewBuilding(prev => ({ ...prev, image: e.target.files[0] }));
+    const file = e.target.files[0];
+    
+    // Update the field value
+    setNewBuilding(prev => ({ ...prev, image: file }));
+    
+    // Mark the field as touched
+    setTouchedFields(prev => ({ ...prev, image: true }));
+    
+    // Validate the field and update errors
+    const error = validateField("image", file);
+    setFormErrors(prev => ({ ...prev, image: error }));
   };
-
 
   const handleOwnerImageChange = (e) => {
     setCurrentOwner(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  // const addOwner = () => {
-  //   if (currentOwner.name && currentOwner.flatNumber) {
-  //     setNewBuilding(prev => ({
-  //       ...prev,
-  //       owners: [...(prev.owners || []), { 
-  //         name: currentOwner.name, 
-  //         flatNumber: currentOwner.flatNumber, 
-  //         image: currentOwner.image 
-  //       }]
-  //     }));
-  //     // Reset owner form
-  //     setCurrentOwner({
-  //       name: "",
-  //       flatNumber: "",
-  //       image: null
-  //     });
-  //   }
-  // };
+  const handleDocumentInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentDocument(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleDocumentFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCurrentDocument(prev => ({
+        ...prev,
+        file: file
+      }));
+    }
+  };
+
+  const getFolderIdForBuilding = (buildingName) => {
+    return buildingFolderMap[buildingName] || null;
+  };
+
+  const uploadDocument = async () => {
+    if (!currentDocument.title || !currentDocument.file) {
+      alert("Please provide both a title and a file");
+      return;
+    }
+
+    setDocumentUploading(true);
+    try {
+      const folderId = getFolderIdForBuilding(newBuilding.name);
+      
+      if (!folderId) {
+        throw new Error("No folder configured for this building");
+      }
+
+      const formData = new FormData();
+      formData.append("file", currentDocument.file);
+      formData.append("folderId", folderId);
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload document");
+      }
+
+      const result = await response.json();
+
+      // If editing an existing document
+      if (editingDocumentIndex !== null) {
+        const updatedDocuments = [...newBuilding.documents];
+        updatedDocuments[editingDocumentIndex] = {
+          title: currentDocument.title,
+          fileId: result.fileId || result.id,
+          fileName: currentDocument.file.name,
+          uploadDate: new Date().toISOString(),
+          fileUrl: result.fileUrl || ""
+        };
+        
+        setNewBuilding(prev => ({
+          ...prev,
+          documents: updatedDocuments
+        }));
+        
+        setEditingDocumentIndex(null);
+      } else {
+        // Adding a new document
+        setNewBuilding(prev => ({
+          ...prev,
+          documents: [...(prev.documents || []), {
+            title: currentDocument.title,
+            fileId: result.fileId || result.id,
+            fileName: currentDocument.file.name,
+            uploadDate: new Date().toISOString(),
+            fileUrl: result.fileUrl || ""
+          }]
+        }));
+      }
+
+      // Reset document form
+      setCurrentDocument({
+        title: "",
+        file: null
+      });
+
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      alert(error.message || "Failed to upload document");
+    } finally {
+      setDocumentUploading(false);
+    }
+  };
+
+  const editDocument = (index) => {
+    const documentToEdit = newBuilding.documents[index];
+    setCurrentDocument({
+      title: documentToEdit.title,
+      // We can't set the file here since it's already uploaded
+      // The user will need to select a new file if they want to change it
+      file: null
+    });
+    setEditingDocumentIndex(index);
+  };
+
+  const removeDocument = (index) => {
+    setNewBuilding(prev => ({
+      ...prev,
+      documents: prev.documents.filter((_, i) => i !== index)
+    }));
+  };
 
   const removeOwner = (index) => {
     setNewBuilding(prev => ({
@@ -149,7 +338,6 @@ console.log("Bui - ", userBuildingNumber);
     }));
   };
 
- 
   const handleOwnerInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentOwner(prev => ({
@@ -157,6 +345,7 @@ console.log("Bui - ", userBuildingNumber);
       [name]: value
     }));
   };
+  
   const handleEventInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentEvent(prev => ({
@@ -164,6 +353,7 @@ console.log("Bui - ", userBuildingNumber);
       [name]: value
     }));
   };
+  
   const handleUpdateInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentUpdate(prev => ({
@@ -171,6 +361,7 @@ console.log("Bui - ", userBuildingNumber);
       [name]: value
     }));
   };
+  
   const addEvent = () => {
     if (currentEvent.title && currentEvent.date) {
       // If we're in editing mode, update the existing event
@@ -227,26 +418,6 @@ console.log("Bui - ", userBuildingNumber);
     }));
   };
 
-
-  // const addUpdate = () => {
-  //   if (currentUpdate.title) {
-  //     setNewBuilding(prev => ({
-  //       ...prev,
-  //       updates: [...(prev.updates || []), { 
-  //         title: currentUpdate.title,
-  //         date: currentUpdate.date || new Date().toISOString().split('T')[0],
-  //         description: currentUpdate.description
-  //       }]
-  //     }));
-  //     // Reset update form
-  //     setCurrentUpdate({
-  //       title: "",
-  //       date: "",
-  //       description: ""
-  //     });
-  //   }
-  // };
-  console.log(user)
   const removeUpdate = (index) => {
     setNewBuilding(prev => ({
       ...prev,
@@ -307,8 +478,13 @@ console.log("Bui - ", userBuildingNumber);
       currentImageUrl: building.image, // Store current image URL separately
       owners: building.owners || [],
       events: building.events || [],
-      updates: mappedUpdates // Use the mapped updates
+      updates: mappedUpdates, // Use the mapped updates
+      documents: building.documents || []
     });
+    
+    // Reset form errors when editing
+    setFormErrors({});
+    setTouchedFields({});
     
     setShowModal(true);
   };
@@ -323,14 +499,51 @@ console.log("Bui - ", userBuildingNumber);
       image: null,
       owners: [],
       events: [],
-      updates: []
+      updates: [],
+      documents: []
     });
+    
+    // Reset validation states
+    setFormErrors({});
+    setTouchedFields({});
+    
     setIsEditMode(false);
     setCurrentBuildingId(null);
   };
 
+  // Validate entire form
+  const validateForm = () => {
+    const errors = {};
+    
+    // Validate required fields
+    if (!newBuilding.name.trim()) {
+      errors.name = "Building name is required";
+    }
+    
+    if (!isEditMode && !newBuilding.image && !newBuilding.currentImageUrl) {
+      errors.image = "Building image is required";
+    }
+    
+    setFormErrors(errors);
+    
+    // Mark all fields as touched
+    const touched = {};
+    Object.keys(newBuilding).forEach(key => {
+      touched[key] = true;
+    });
+    setTouchedFields(touched);
+    
+    // Return true if no errors
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -392,6 +605,13 @@ console.log("Bui - ", userBuildingNumber);
         date: update.date || new Date().toISOString(),
         link: update.link || ""
       })),
+      documents: newBuilding.documents.map(doc => ({
+        title: doc.title?.trim() || "",
+        fileId: doc.fileId || "",
+        fileName: doc.fileName || "",
+        uploadDate: doc.uploadDate || new Date().toISOString(),
+        fileUrl: doc.fileUrl || ""
+      })),
       createdBy: sessionStorage?.getItem('userId') || "defaultAdminId",
     };
   
@@ -405,8 +625,6 @@ console.log("Bui - ", userBuildingNumber);
         method: method,
         headers: {
           "Content-Type": "application/json",
-          // Add authorization if needed
-          // "Authorization": `Bearer ${sessionStorage.getItem('authToken')}`
         },
         body: JSON.stringify({
           ...buildingData,
@@ -438,6 +656,7 @@ console.log("Bui - ", userBuildingNumber);
       setLoading(false);
     }
   };
+  
   const addOwner = () => {
     if (currentOwner.name && currentOwner.flatNumber) {
       // If we're in editing mode, update the existing owner
@@ -535,6 +754,17 @@ console.log("Bui - ", userBuildingNumber);
     });
     setEditingUpdateIndex(index);
   };
+  
+  // Helper function to show field error
+  const getFieldError = (fieldName) => {
+    return touchedFields[fieldName] && formErrors[fieldName] ? (
+      <p className="text-red-500 text-xs italic mt-1">
+        <AlertCircle size={12} className="inline mr-1" />
+        {formErrors[fieldName]}
+      </p>
+    ) : null;
+  };
+  
   return (
     user?.role === "Super-Admin" || user?.role === "Admin" || user?.role?.startsWith("Building")? 
 
@@ -575,7 +805,7 @@ console.log("Bui - ", userBuildingNumber);
       ) : (
         /* Buildings Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {buildings.map(building => (
+         {buildings.map(building => (
             <div key={building._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
               <div className="h-48 bg-gray-200 relative">
                 {building.image ? (
@@ -613,20 +843,34 @@ console.log("Bui - ", userBuildingNumber);
                   <Megaphone size={16} className="mr-2 flex-shrink-0" />
                   <span>Updates: {building.updates?.length || 0}</span>
                 </div>
+
+                {/* <div className="flex items-center text-gray-500 mb-2">
+                  <FileText size={16} className="mr-2 flex-shrink-0" />
+                  <span>Documents: {building.documents?.length || 0}</span>
+                </div> */}
                 
-                <div className="flex justify-end gap-2 mt-2">
+                <div className="flex justify-between mt-4">
                   <button 
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                    onClick={() => handleEdit(building)}
+                    className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                    onClick={(e) => handleShowDocuments(building, e)}
                   >
-                    <Edit size={18} />
+                    <FileText size={16} className="mr-1" />
+                    View Documents
                   </button>
-                  <button 
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                    onClick={() => handleDelete(building._id)}
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                      onClick={() => handleEdit(building)}
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button 
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      onClick={() => handleDelete(building._id)}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -638,7 +882,6 @@ console.log("Bui - ", userBuildingNumber);
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-            {/* ... (previous modal header code) ... */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">
                 {isEditMode ? "Edit Building" : "Add New Building"}
@@ -654,7 +897,6 @@ console.log("Bui - ", userBuildingNumber);
               </button>
             </div>
             <form onSubmit={handleSubmit}>
-              {/* ... (previous form fields) ... */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                   Building Name*
@@ -665,433 +907,554 @@ console.log("Bui - ", userBuildingNumber);
                   type="text"
                   value={newBuilding.name}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className={`shadow appearance-none border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} 
+                    rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
                   placeholder="For Example : Building No.1,2,A,B,etc"
                   required
                 />
+                {getFieldError('name')}
               </div>
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                  Description
+                  Description (Optional)
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   value={newBuilding.description}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter building description"
-                  rows="4"
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
+                  placeholder="Building description"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
-                    Chairman
-                  </label>
-                  <input
-                    id="president"
-                    name="president"
-                    type="text"
-                    value={newBuilding.president}
-                    onChange={handleInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="President Name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
-                    Secretary
-                  </label>
-                  <input
-                    id="secretary"
-                    name="secretary"
-                    type="text"
-                    value={newBuilding.secretary}
-                    onChange={handleInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Secretary Name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
-                    Treasurer
-                  </label>
-                  <input
-                    id="treasurer"
-                    name="treasurer"
-                    type="text"
-                    value={newBuilding.treasurer}
-                    onChange={handleInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Treasurer Name"
-                  />
-                </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
+                  President (Optional)
+                </label>
+                <input
+                  id="president"
+                  name="president"
+                  type="text"
+                  value={newBuilding.president}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Building president"
+                />
               </div>
 
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                  Building Image{isEditMode ? "" : "*"}
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
+                  Secretary (Optional)
                 </label>
-                {isEditMode && newBuilding.currentImageUrl && (
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">Current Image:</p>
+                <input
+                  id="secretary"
+                  name="secretary"
+                  type="text"
+                  value={newBuilding.secretary}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Building secretary"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
+                  Treasurer (Optional)
+                </label>
+                <input
+                  id="treasurer"
+                  name="treasurer"
+                  type="text"
+                  value={newBuilding.treasurer}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Building treasurer"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+                  Building Image {isEditMode ? "(Optional)" : "*"}
+                </label>
+                <div className="flex items-center">
+                  <input
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className={`shadow appearance-none border ${formErrors.image ? 'border-red-500' : 'border-gray-300'} 
+                      rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+                  />
+                  {isEditMode && newBuilding.currentImageUrl && (
                     <img 
                       src={newBuilding.currentImageUrl} 
-                      alt="Current building image" 
-                      className="h-32 object-cover rounded mt-1"
+                      alt="Current" 
+                      className="h-10 w-10 object-cover ml-2 rounded"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Upload a new image to replace the current one, or leave empty to keep the current image.
-                    </p>
-                  </div>
-                )}
-                <div className="mt-1 flex items-center">
-                  <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
-                    <span className="mx-auto flex items-center">
-                      <LucideImage size={24} className="mr-2" />
-                      <span className="text-base leading-normal">Select a file</span>
-                    </span>
-                    <input 
-                      type='file' 
-                      id="image"
-                      name="image"
-                      onChange={handleImageChange}
-                      className="hidden" 
-                      accept="image/*"
-                      required={!isEditMode}
-                    />
-                  </label>
-                  {newBuilding.image && (
-                    <span className="ml-3 text-sm text-gray-600">
-                      {newBuilding.image.name}
-                    </span>
                   )}
                 </div>
+                {getFieldError('image')}
               </div>
 
-              {/* Owners Management Section */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Flat/Shop Owners</h3>
+              {/* Owners Section */}
+              <div className="mb-6 border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <User size={18} className="mr-2" />
+                  Owners
+                </h3>
                 
-                {/* Owner Input Form */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerName">
-                      Owner Name
+                <div className="bg-gray-50 p-3 rounded-md mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerName">
+                        Owner Name
+                      </label>
+                      <input
+                        id="ownerName"
+                        name="name"
+                        type="text"
+                        value={currentOwner.name}
+                        onChange={handleOwnerInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Owner's name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="flatNumber">
+                        Flat/Unit Number
+                      </label>
+                      <input
+                        id="flatNumber"
+                        name="flatNumber"
+                        type="text"
+                        value={currentOwner.flatNumber}
+                        onChange={handleOwnerInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Flat number"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerImage">
+                      Owner Image (Optional)
                     </label>
                     <input
-                      id="ownerName"
-                      name="name"
-                      type="text"
-                      value={currentOwner.name}
-                      onChange={handleOwnerInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      placeholder="Owner Name"
+                      id="ownerImage"
+                      name="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleOwnerImageChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
                   </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="flatNumber">
-                      Flat/Shop Number
-                    </label>
-                    <input
-                      id="flatNumber"
-                      name="flatNumber"
-                      type="text"
-                      value={currentOwner.flatNumber}
-                      onChange={handleOwnerInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      placeholder="Flat/Shop Number"
-                    />
-                  </div>
-                  <div className="flex items-end">
+                  
+                  <div className="mt-3 flex justify-end">
                     <button
                       type="button"
                       onClick={addOwner}
-                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      disabled={!currentOwner.name || !currentOwner.flatNumber}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
                     >
-                      {editingOwnerIndex !== null ? 'Update Owner' : 'Add Owner'}
+                      {editingOwnerIndex !== null ? (
+                        <>
+                          <Edit size={16} className="mr-1" />
+                          Update Owner
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-1" />
+                          Add Owner
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
-
-                {/* Owners List */}
+                
                 {newBuilding.owners && newBuilding.owners.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {newBuilding.owners.map((owner, index) => (
-                      <div key={index} className="bg-white shadow-md rounded-lg p-4 flex items-center space-x-4 relative">
-                        <div className="flex-grow">
-                          <h3 className="text-lg font-bold">{owner.name}</h3>
-                          <p className="text-gray-600 text-sm">{owner.flatNumber}</p>
+                  <div className="mt-2">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Owners</h4>
+                    <div className="space-y-2">
+                      {newBuilding.owners.map((owner, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <div className="flex items-center">
+                            {owner.image ? (
+                              <img src={owner.image} alt={owner.name} className="h-8 w-8 rounded-full mr-2 object-cover" />
+                            ) : (
+                              <User size={18} className="mr-2 text-gray-400" />
+                            )}
+                            <span className="font-medium">{owner.name}</span>
+                            <span className="ml-2 text-gray-500 text-sm">({owner.flatNumber})</span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button 
+                              type="button"
+                              onClick={() => editOwner(index)}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => removeOwner(index)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => editOwner(index)}
-                            className="text-blue-500 hover:text-blue-700"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeOwner(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Events Management Section */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <Calendar className="mr-2" /> Events
+              {/* Events Section */}
+              <div className="mb-6 border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <Calendar size={18} className="mr-2" />
+                  Events
                 </h3>
                 
-                {/* Event Input Form */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
-                      Event Title
+                <div className="bg-gray-50 p-3 rounded-md mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
+                        Event Title
+                      </label>
+                      <input
+                        id="eventTitle"
+                        name="title"
+                        type="text"
+                        value={currentEvent.title}
+                        onChange={handleEventInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Event title"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
+                        Event Date
+                      </label>
+                      <input
+                        id="eventDate"
+                        name="date"
+                        type="date"
+                        value={currentEvent.date}
+                        onChange={handleEventInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
+                      Event Description (Optional)
                     </label>
-                    <input
-                      id="eventTitle"
-                      name="title"
-                      type="text"
-                      value={currentEvent.title}
+                    <textarea
+                      id="eventDescription"
+                      name="description"
+                      value={currentEvent.description}
                       onChange={handleEventInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      placeholder="Event Title"
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
+                      placeholder="Event description"
                     />
                   </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
-                      Event Date
-                    </label>
-                    <input
-                      id="eventDate"
-                      name="date"
-                      type="date"
-                      value={currentEvent.date}
-                      onChange={handleEventInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                  </div>
-                  <div className="flex items-end">
+                  
+                  <div className="mt-3 flex justify-end">
                     <button
                       type="button"
                       onClick={addEvent}
-                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      disabled={!currentEvent.title || !currentEvent.date}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
                     >
-                      {editingEventIndex !== null ? 'Update Event' : 'Add Event'}
+                      {editingEventIndex !== null ? (
+                        <>
+                          <Edit size={16} className="mr-1" />
+                          Update Event
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-1" />
+                          Add Event
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
-                    Event Description
-                  </label>
-                  <textarea
-                    id="eventDescription"
-                    name="description"
-                    value={currentEvent.description}
-                    onChange={handleEventInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Event Description"
-                    rows="3"
-                  />
-                </div>
-
-                {/* Events List */}
+                
                 {newBuilding.events && newBuilding.events.length > 0 && (
-                  <div className="space-y-4">
-                    {newBuilding.events.map((event, index) => (
-                      <div key={index} className="bg-white shadow-md rounded-lg p-4 relative">
-                        <div className="flex justify-between items-start">
+                  <div className="mt-2">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Events</h4>
+                    <div className="space-y-2">
+                      {newBuilding.events.map((event, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                           <div>
-                            <h3 className="text-lg font-bold">{event.title}</h3>
-                            <p className="text-gray-600 text-sm">{event.date}</p>
+                            <div className="font-medium">{event.title}</div>
+                            <div className="text-gray-500 text-sm">{new Date(event.date).toLocaleDateString()}</div>
                           </div>
-                          <div className="flex space-x-2">
-                            <button
+                          <div className="flex gap-1">
+                            <button 
                               type="button"
                               onClick={() => editEvent(index)}
-                              className="text-blue-500 hover:text-blue-700"
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                             >
                               <Edit size={16} />
                             </button>
-                            <button
+                            <button 
                               type="button"
                               onClick={() => removeEvent(index)}
-                              className="text-red-500 hover:text-red-700"
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
                             >
                               <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
-                        {event.description && (
-                          <p className="mt-2 text-gray-700">{event.description}</p>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Updates Management Section */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <Megaphone className="mr-2" /> Updates
+              {/* Updates Section */}
+              <div className="mb-6 border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <Megaphone size={18} className="mr-2" />
+                  Updates
                 </h3>
                 
-                {/* Update Input Form */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateTitle">
-                      Update Title
+                <div className="bg-gray-50 p-3 rounded-md mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateTitle">
+                        Update Title
+                      </label>
+                      <input
+                        id="updateTitle"
+                        name="title"
+                        type="text"
+                        value={currentUpdate.title}
+                        onChange={handleUpdateInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Update title"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDate">
+                        Date
+                      </label>
+                      <input
+                        id="updateDate"
+                        name="date"
+                        type="date"
+                        value={currentUpdate.date}
+                        onChange={handleUpdateInputChange}
+                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDescription">
+                      Update Content
                     </label>
-                    <input
-                      id="updateTitle"
-                      name="title"
-                      type="text"
-                      value={currentUpdate.title}
+                    <textarea
+                      id="updateDescription"
+                      name="description"
+                      value={currentUpdate.description}
                       onChange={handleUpdateInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      placeholder="Update Title"
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
+                      placeholder="Update content"
                     />
                   </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDate">
-                      Update Date
-                    </label>
-                    <input
-                      id="updateDate"
-                      name="date"
-                      type="date"
-                      value={currentUpdate.date}
-                      onChange={handleUpdateInputChange}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+                  
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={addUpdate}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+                    >
+                      {editingUpdateIndex !== null ? (
+                        <>
+                          <Edit size={16} className="mr-1" />
+                          Update
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-1" />
+                          Add Update
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDescription">
-                    Update Description
-                  </label>
-                  <textarea
-                    id="updateDescription"
-                    name="description"
-                    value={currentUpdate.description}
-                    onChange={handleUpdateInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Update Description"
-                    rows="3"
-                  />
-                </div>
-                <div className="flex justify-end mb-4">
-                  <button
-                    type="button"
-                    onClick={addUpdate}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    disabled={!currentUpdate.title}
-                  >
-                    {editingUpdateIndex !== null ? 'Update Update' : 'Add Update'}
-                  </button>
-                </div>
-
-                {/* Updates List */}
+                
                 {newBuilding.updates && newBuilding.updates.length > 0 && (
-                  <div className="space-y-4">
-                    {newBuilding.updates.map((update, index) => (
-                      <div key={index} className="bg-white shadow-md rounded-lg p-4 relative">
-                        <div className="flex justify-between items-start">
+                  <div className="mt-2">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Updates</h4>
+                    <div className="space-y-2">
+                      {newBuilding.updates.map((update, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                           <div>
-                            <h3 className="text-lg font-bold">{update.title}</h3>
-                            {update.date && (
-                              <p className="text-gray-600 text-sm">{update.date}</p>
-                            )}
+                            <div className="font-medium">{update.title}</div>
+                            <div className="text-gray-500 text-sm">
+                              {update.date ? new Date(update.date).toLocaleDateString() : 'No date'}
+                            </div>
                           </div>
-                          <div className="flex space-x-2">
-                            <button
+                          <div className="flex gap-1">
+                            <button 
                               type="button"
                               onClick={() => editUpdate(index)}
-                              className="text-blue-500 hover:text-blue-700"
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                             >
                               <Edit size={16} />
                             </button>
-                            <button
+                            <button 
                               type="button"
                               onClick={() => removeUpdate(index)}
-                              className="text-red-500 hover:text-red-700"
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
                             >
                               <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
-                        {update.description && (
-                          <p className="mt-2 text-gray-700">{update.description}</p>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* ... (rest of the form remains the same) ... */}
-              <div className="flex justify-end gap-4">
+              {/* Documents Section */}
+              <div className="mb-6 border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <FileText size={18} className="mr-2" />
+                  Documents
+                </h3>
+                
+                <div className="bg-gray-50 p-3 rounded-md mb-3">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentTitle">
+                      Document Title
+                    </label>
+                    <input
+                      id="documentTitle"
+                      name="title"
+                      type="text"
+                      value={currentDocument.title}
+                      onChange={handleDocumentInputChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      placeholder="Document title"
+                    />
+                  </div>
+                  
+                  <div className="mt-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentFile">
+                      Document File
+                    </label>
+                    <input
+                      id="documentFile"
+                      name="file"
+                      type="file"
+                      onChange={handleDocumentFileChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+                  
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={uploadDocument}
+                      disabled={documentUploading}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+                    >
+                      {documentUploading ? (
+                        <>
+                          <Loader size={16} className="mr-1 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : editingDocumentIndex !== null ? (
+                        <>
+                          <Edit size={16} className="mr-1" />
+                          Update Document
+                        </>
+                      ) : (
+                        <>
+                          <FilePlus size={16} className="mr-1" />
+                          Upload Document
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                {newBuilding.documents && newBuilding.documents.length > 0 && (
+                  <div className="mt-2">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Documents</h4>
+                    <div className="space-y-2">
+                      {newBuilding.documents.map((doc, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <div className="flex items-center">
+                            <File size={16} className="mr-2 text-gray-400" />
+                            <div>
+                              <div className="font-medium">{doc.title}</div>
+                              <div className="text-gray-500 text-xs">{doc.fileName}</div>
+                            </div>
+                          </div>
+                          {/* <div className="flex gap-1">
+                            <a 
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Download size={16} />
+                            </a>
+                            <button 
+                              type="button"
+                              onClick={() => editDocument(index)}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => removeDocument(index)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div> */}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  disabled={loading}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
                 >
                   Cancel
                 </button>
-                
                 <button
                   type="submit"
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
                   disabled={loading}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center"
                 >
                   {loading ? (
                     <>
-                      <svg
-                        className="animate-spin h-5 w-5 mr-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        ></path>
-                      </svg>
-                      {isEditMode ? "Updating..." : "Saving..."}
+                      <Loader size={16} className="mr-2 animate-spin" />
+                      Saving...
                     </>
                   ) : (
-                    isEditMode ? "Update Building" : "Save Building"
+                    isEditMode ? "Save Changes" : "Add Building"
                   )}
                 </button>
               </div>
@@ -1099,8 +1462,68 @@ console.log("Bui - ", userBuildingNumber);
           </div>
         </div>
       )}
-    
+      {showDocumentsPopup && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">
+          Building Documents
+        </h2>
+        <button 
+          onClick={() => {
+            setShowDocumentsPopup(false);
+            setCurrentBuildingDocuments([]);
+          }}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <X size={24} />
+        </button>
+      </div>
+      
+      {documentsLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <Loader size={40} className="animate-spin text-purple-600" />
+        </div>
+      ) : currentBuildingDocuments?.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-700 mb-2">No Documents Found</h3>
+          <p className="text-gray-500">This building doesn't have any documents yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {currentBuildingDocuments?.map((doc, index) => (
+            <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                <File size={18} className="mr-3 text-gray-400" />
+                <div>
+                  <Link href={doc.viewLink} className="font-medium underline text-blue-500" >{doc.title || doc.name}</Link>
+                  {/* <div className="text-gray-500 text-xs">
+                    {new Date(doc.createdTime).toLocaleDateString()} • {doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : ''}
+                  </div> */}
+                </div>
+              </div>
+              {/* <a 
+                href={doc.webViewLink || doc.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+              >
+                <Download size={18} />
+              </a> */}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-    : <p>not allowed</p>
+  </div>
+)}
+    </div>
+    :
+    <div className="flex flex-col items-center justify-center h-screen">
+      <Building2 size={48} className="text-gray-400 mb-4" />
+      <h3 className="text-xl font-medium text-gray-700 mb-2">Access Denied</h3>
+      <p className="text-gray-500">You do not have permission to view this page.</p>
+    </div>
   );
 }
