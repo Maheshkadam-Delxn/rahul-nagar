@@ -35,7 +35,7 @@ const Events = () => {
   };
 
   return (
-    <div className="w-full bg-[#f8f8f8] min-h-screen flex items-center justify-center py-12 md:py-24 px-4">
+    <div className="w-full bg-[#f8f8f8] min-h-[50vh] flex items-center justify-center py-12 md:py-24 px-4">
       <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
         <div className="flex flex-col items-start gap-4 md:gap-5 w-full">
           <div className="flex items-center gap-2 text-[#B57E10]">

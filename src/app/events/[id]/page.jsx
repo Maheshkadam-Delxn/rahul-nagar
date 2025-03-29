@@ -38,13 +38,15 @@ const EventDetails = () => {
   return (
     <div className="w-full min-h-screen flex items-center justify-center py-12 px-4 bg-gray-100">
       <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6 md:p-10">
-        <Image 
-          src={event.image} 
-          alt={event.title} 
-          width={600} 
-          height={300} 
-          className="w-full h-64 object-contain rounded-lg" 
-        />
+       {
+        event.image !== "" &&  <Image 
+        src={event.image} 
+        alt={event.title} 
+        width={600} 
+        height={300} 
+        className="w-full h-64 object-contain rounded-lg" 
+      />
+       }
         <h1 className="text-2xl md:text-3xl font-bold mt-5 text-[#B57E10]">{event.title}</h1>
         <p className="text-gray-600 mt-2">{event.description}</p>
         
