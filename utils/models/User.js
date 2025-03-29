@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true
   },
   post: {
     type: String,
@@ -27,7 +26,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     // enum: ['super', 'sub', 'admin', 'user'],
-    default: 'sub'
+    default: 'Super-Admin'
   }
 }, { timestamps: true });
 
