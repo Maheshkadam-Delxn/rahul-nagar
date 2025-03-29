@@ -15,7 +15,8 @@ const images = Array.from({ length: imageCount }, (_, index) => ({
 const Page = () => {
   const [activeFilter, setActiveFilter] = useState("All");
 
-  const getFilteredImages = () => activeFilter === "All" ? images : images.filter(img => img.category === activeFilter);
+  const getFilteredImages = () =>
+    activeFilter === "All" ? images : images.filter((img) => img.category === activeFilter);
 
   const filterOptions = ["All", ...categories];
 
@@ -24,16 +25,17 @@ const Page = () => {
       <ServiceHeroSection
         name="Gallery"
         breadcrumbs={[{ label: "Home", link: "/" }, { label: "Gallery", link: "/gallery" }]}
-      />
+      /> <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+      <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
 
-      <div className="w-full py-12 md:py-16 lg:py-24 bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
-        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
 
+      <div className="w-full py-12 md:py-16 lg:py-24 bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
+        {/* Background Effects */}
+       
         <div className="w-full max-w-6xl">
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-6 md:mb-8">
-            {filterOptions.map(filter => (
+            {filterOptions.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
@@ -49,18 +51,21 @@ const Page = () => {
           {/* Gallery Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {getFilteredImages().map((img, index) => (
-              <div key={index} className="relative bg-gray-300 w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden group">
-                <Image 
-                  src={img.src} 
-                  alt={img.title} 
-                  layout="fill" 
-                  objectFit="cover" 
+              <div
+                key={index}
+                className="relative bg-gray-300 w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden group"
+              >
+                <Image
+                  src={img.src}
+                  alt={`Gallery image ${index + 1} - ${img.category}`}
+                  layout="fill"
+                  objectFit="cover"
                   className="group-hover:scale-105 transition-transform duration-300"
                 />
                 {/* Hover Content */}
                 <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-4 transition-all ease-in-out duration-300">
                   <p className="text-gray-400 text-sm">{img.category}</p>
-                  <h3 className="text-white font-semibold text-base md:text-lg">{img.title}</h3>
+                  <h3 className="text-white font-semibold text-base md:text-lg">{img.category}</h3>
                 </div>
               </div>
             ))}
