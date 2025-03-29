@@ -272,24 +272,24 @@ It is one of the most renowned and reputed housing society in Kothrud. </p>
                            {users?.map((user) => (
     <div
         key={user._id}
-        className="bg-gray-300 rounded-lg w-full h-64 md:h-96 flex flex-col justify-end relative overflow-hidden shadow-lg"
+        className="bg-gray-300 rounded-lg w-full h-72 md:h-96 flex flex-col justify-end relative overflow-hidden shadow-lg"
     >
        {user?.image === "" ?  <Image
             alt="userImage"
             src={"/avatar.jpg"}
             width={1920}
             height={1080}
-            className="w-full h-full object-cover"
+            className="w-full h-full md:object-cover object-contain"
         /> :  <Image
         alt="userImage"
         src={user?.image}
         width={1920}
         height={1080}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain md:object-cover"
     />}
-        <div className="bg-gray-700 text-white p-4 absolute bottom-0 left-0 right-0 flex flex-col gap-2">
-            <p className="font-bold text-2xl">{user.name}</p>
-            <p className="text-xs md:text-sm">{user.post || "Association Member"}</p>
+        <div className="bg-gray-700 text-white md:p-4 p-2 absolute bottom-0 left-0 right-0 flex flex-col gap-2">
+            <p className="font-bold md:text-2xl text-sm">{user.name}</p>
+            <p className="text-xs md:text-sm ">{user.post || "Association Member"}</p>
         </div>
     </div>
 ))}

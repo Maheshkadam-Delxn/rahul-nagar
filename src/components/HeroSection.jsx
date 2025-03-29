@@ -34,17 +34,17 @@ const HeroSection = () => {
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-10 justify-center md:justify-start">
               <Link1
                 href={"/about"}
-                className="bg-[#B57E10] p-3 text-white rounded-sm w-1/2 md:w-auto text-center cursor-pointer"
+                className="bg-[#B57E10] p-3 text-white rounded-sm w-1/2 md:w-auto text-center cursor-pointer z-10"
               >
                 Know More
               </Link1>
               
-              <div className="flex items-center gap-2 text-sm">
+              {/* <div className="flex items-center gap-2 text-sm">
                 <div className="bg-white text-[#B57E10] p-3 rounded-full">
                   <Play />
                 </div>
                 Play Now
-              </div>
+              </div> */}
             </div>
           </div>
           
