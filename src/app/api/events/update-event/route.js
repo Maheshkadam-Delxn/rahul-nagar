@@ -24,8 +24,8 @@ export async function PUT(req) {
     event.date = date || event.date;
     event.time = time || event.time;
     event.location = location || event.location;
-    event.image = image || event.image;
-
+    event.image = image;
+    console.log(event.image)
     await event.save();
 
     return NextResponse.json({ success: true, event });

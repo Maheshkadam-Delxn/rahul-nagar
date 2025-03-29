@@ -6,16 +6,15 @@ import {
   Edit, 
   Trash2, 
   X, 
-  Image,
+  Image as ImageIcon,
   Clock,
   MapPin,
   Loader
 } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 
-
 export default function EventsManagement() {
-  const user = useAuth()
+  const user = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -30,7 +29,8 @@ export default function EventsManagement() {
     date: "",
     time: "",
     location: "",
-    image: null
+    image: null,
+    isImageDeleted: false // New flag to track image deletion
   });
 
   // Fetch events when component mounts
@@ -63,38 +63,53 @@ export default function EventsManagement() {
   };
 
   const handleImageChange = (e) => {
-    setNewEvent(prev => ({ ...prev, image: e.target.files[0] }));
+    if (e.target.files[0]) {
+      setNewEvent(prev => ({ 
+        ...prev, 
+        image: e.target.files[0],
+        isImageDeleted: false // Reset image deleted flag if adding new image
+      }));
+    }
+  };
+
+  const handleDeleteImage = () => {
+    setNewEvent(prev => ({
+      ...prev,
+      image: null,
+      currentImageUrl: null,
+      isImageDeleted: true // Set flag to true to explicitly indicate deletion
+    }));
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        const userId = sessionStorage.getItem("userId"); // Get userId from sessionStorage
-        const token = sessionStorage.getItem("authToken"); // Retrieve token from sessionStorage
-  
+        const userId = sessionStorage.getItem("userId");
+        const token = sessionStorage.getItem("authToken");
+
         if (!userId) {
           alert("User not found. Please log in again.");
           return;
         }
-  
+
         if (!token) {
           alert("Authentication token missing. Please log in again.");
           return;
         }
-  
+
         const response = await fetch("/api/events/delete-event", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}` // Add token in Authorization header
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({ eventId: id, userId }),
         });
-  
+
         if (!response.ok) {
           throw new Error("Failed to delete event");
         }
-  
+
         setEvents(events.filter(event => event._id !== id));
       } catch (error) {
         console.error("Error deleting event:", error);
@@ -102,20 +117,20 @@ export default function EventsManagement() {
       }
     }
   };
-  
+
   const handleEdit = (event) => {
-    // Set edit mode and populate form with event data
     setIsEditMode(true);
     setCurrentEventId(event._id);
     
     setNewEvent({
       title: event.title,
       description: event.description,
-      date: new Date(event.date).toISOString().split('T')[0], // Format date for input
+      date: new Date(event.date).toISOString().split('T')[0],
       time: event.time,
       location: event.location,
-      image: null, // Can't populate file input, but we'll handle this
-      currentImageUrl: event.image // Store current image URL
+      image: null,
+      currentImageUrl: event.image,
+      isImageDeleted: false // Reset flag when editing
     });
     
     setShowModal(true);
@@ -128,7 +143,8 @@ export default function EventsManagement() {
       date: "",
       time: "",
       location: "",
-      image: null
+      image: null,
+      isImageDeleted: false
     });
     setIsEditMode(false);
     setCurrentEventId(null);
@@ -140,26 +156,29 @@ export default function EventsManagement() {
     
     let imageUrl = newEvent.currentImageUrl || "";
     
-    // Upload new image if selected
-    if (newEvent.image) {
+    // If the delete flag is set, always use empty string for imageUrl
+    if (newEvent.isImageDeleted) {
+      imageUrl = "";
+    }
+    // If there's a new image, upload it
+    else if (newEvent.image) {
       const imageData = new FormData();
       imageData.append("file", newEvent.image);
-      imageData.append("upload_preset", "event-upload"); // Cloudinary preset
-  
+      imageData.append("upload_preset", "event-upload");
+
       try {
         const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
           method: "POST",
           body: imageData,
         });
-  
+
         const imageResult = await imageResponse.json();
-  
+
         if (!imageResponse.ok) {
           throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
         }
-  
+
         imageUrl = imageResult.secure_url;
-  
       } catch (error) {
         console.error("Error uploading image:", error);
         setError("Failed to upload image. Please try again.");
@@ -167,8 +186,6 @@ export default function EventsManagement() {
         return;
       }
     }
-    
-   
     
     // Prepare update data
     const updateData = {
@@ -217,7 +234,6 @@ export default function EventsManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // If in edit mode, call update instead
     if (isEditMode) {
       await handleUpdate();
       return;
@@ -228,26 +244,24 @@ export default function EventsManagement() {
   
     let imageUrl = "";
   
-    // Upload Image if exists
     if (newEvent.image) {
       const imageData = new FormData();
       imageData.append("file", newEvent.image);
-      imageData.append("upload_preset", "event-upload"); // Cloudinary preset
-  
+      imageData.append("upload_preset", "event-upload");
+
       try {
         const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
           method: "POST",
           body: imageData,
         });
-  
+
         const imageResult = await imageResponse.json();
-  
+
         if (!imageResponse.ok) {
           throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
         }
-  
+
         imageUrl = imageResult.secure_url;
-  
       } catch (error) {
         console.error("Error uploading image:", error);
         setError("Failed to upload image. Please try again.");
@@ -256,7 +270,6 @@ export default function EventsManagement() {
       }
     }
   
-    // Prepare Event Data
     const eventData = {
       title: newEvent.title.trim(),
       description: newEvent.description.trim(),
@@ -275,17 +288,13 @@ export default function EventsManagement() {
         },
         body: JSON.stringify(eventData),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to add event: ${response.statusText}`);
       }
-  
+
       const addedEvent = await response.json();
-      
-      // Refresh events list after adding new event
       fetchEvents();
-  
-      // Reset Form
       resetForm();
       setShowModal(false);
     } catch (error) {
@@ -296,7 +305,6 @@ export default function EventsManagement() {
     }
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -305,7 +313,7 @@ export default function EventsManagement() {
       day: 'numeric' 
     });
   };
-  console.log("User = ",user)
+
   return (
     user?.user?.role === "Super-Admin" || user?.user?.role === "Admin" || user?.user?.role === "Associate-Member" ? 
     <div className="container mx-auto px-4 py-8">
@@ -329,19 +337,17 @@ export default function EventsManagement() {
         </div>
       )}
 
-      {/* Loading state */}
       {fetchLoading ? (
         <div className="flex justify-center items-center h-64">
           <Loader size={40} className="animate-spin text-purple-600" />
         </div>
       ) : events.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <Image size={48} className="mx-auto text-gray-400 mb-4" />
+          <ImageIcon size={48} className="mx-auto text-gray-400 mb-4" />
           <h3 className="text-xl font-medium text-gray-700 mb-2">No Events Found</h3>
           <p className="text-gray-500">Click 'Add Event' to create your first event</p>
         </div>
       ) : (
-        /* Events Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map(event => (
             <div key={event._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
@@ -354,7 +360,7 @@ export default function EventsManagement() {
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <Image size={48} className="text-gray-400" />
+                    <ImageIcon size={48} className="text-gray-400" />
                   </div>
                 )}
               </div>
@@ -397,7 +403,6 @@ export default function EventsManagement() {
         </div>
       )}
 
-      {/* Add/Edit Event Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
@@ -510,53 +515,69 @@ export default function EventsManagement() {
               </div>
 
               <div className="mb-6">
-  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-    Event Image
-  </label>
-  
-  {isEditMode && newEvent.currentImageUrl && (
-    <div className="mb-2">
-      <p className="text-sm text-gray-600">Current Image:</p>
-      <img 
-        src={newEvent.currentImageUrl} 
-        alt="Current event image" 
-        className="h-32 object-cover rounded mt-1"
-      />
-      <p className="text-xs text-gray-500 mt-1">
-        Upload a new image to replace the current one, or leave empty to keep the current image.
-      </p>
-    </div>
-  )}
-  
-  <div className="mt-1 flex items-center">
-    <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
-      <span className="mx-auto flex items-center">
-        <Image size={24} className="mr-2" />
-        <span className="text-base leading-normal">Select a file</span>
-      </span>
-      <input 
-        type='file' 
-        id="image"
-        name="image"
-        onChange={handleImageChange}
-        className="hidden" 
-        accept="image/*"
-      />
-    </label>
-    
-    {newEvent.image && (
-      <span className="ml-3 text-sm text-gray-600">
-        {newEvent.image.name}
-      </span>
-    )}
-  </div>
-  
-  {!isEditMode && (
-    <p className="text-xs text-gray-500 mt-1">
-      Optional: Upload an image for this event
-    </p>
-  )}
-</div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+                  Event Image
+                </label>
+                
+                {isEditMode && newEvent.currentImageUrl && !newEvent.isImageDeleted && (
+                  <div className="mb-2">
+                    <p className="text-sm text-gray-600">Current Image:</p>
+                    <img 
+                      src={newEvent.currentImageUrl} 
+                      alt="Current event image" 
+                      className="h-32 object-cover rounded mt-1"
+                    />
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-xs text-gray-500">
+                        Upload a new image to replace, or delete the current one.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleDeleteImage}
+                        className="text-red-600 hover:text-red-800 text-sm flex items-center"
+                      >
+                        <Trash2 size={14} className="mr-1" />
+                        Delete Image
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {newEvent.isImageDeleted && isEditMode && (
+                  <div className="text-sm text-red-500 mb-2">
+                    Image will be deleted upon saving.
+                  </div>
+                )}
+                
+                <div className="mt-1 flex items-center">
+                  <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
+                    <span className="mx-auto flex items-center">
+                      <ImageIcon size={24} className="mr-2" />
+                      <span className="text-base leading-normal">Select a file</span>
+                    </span>
+                    <input 
+                      type='file' 
+                      id="image"
+                      name="image"
+                      onChange={handleImageChange}
+                      className="hidden" 
+                      accept="image/*"
+                    />
+                  </label>
+                  
+                  {newEvent.image && (
+                    <span className="ml-3 text-sm text-gray-600">
+                      {newEvent.image.name}
+                    </span>
+                  )}
+                </div>
+                
+                {!isEditMode && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Optional: Upload an image for this event
+                  </p>
+                )}
+              </div>
 
               <div className="flex justify-end gap-4">
                 <button
@@ -609,6 +630,6 @@ export default function EventsManagement() {
           </div>
         </div>
       )}
-    </div> : <p>your are not accessible to this page</p>
+    </div> : <p>You are not authorized to access this page</p>
   );
 }

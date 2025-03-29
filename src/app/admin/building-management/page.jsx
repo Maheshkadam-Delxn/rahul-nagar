@@ -949,633 +949,633 @@ export default function BuildingsManagement() {
 
       {/* Add/Edit Building Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
-                {isEditMode ? "Edit Building" : "Add New Building"}
-              </h2>
-              <button 
-                onClick={() => {
-                  setShowModal(false);
-                  resetForm();
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">
+          {isEditMode ? "Edit Building" : "Add New Building"}
+        </h2>
+        <button 
+          onClick={() => {
+            setShowModal(false);
+            resetForm();
+          }}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <X size={24} />
+        </button>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+            Building Name*
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            value={newBuilding.name}
+            onChange={handleInputChange}
+            className={`shadow appearance-none border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} 
+              rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+            placeholder="For Example : Building No.1,2,A,B,etc"
+            required
+          />
+          {getFieldError('name')}
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+            Description (Optional)
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={newBuilding.description}
+            onChange={handleInputChange}
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
+            placeholder="Building description"
+          />
+        </div>
+
+        {/* President Section */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
+            President (Optional)
+          </label>
+          <input
+            id="president"
+            name="president"
+            type="text"
+            value={newBuilding.president}
+            onChange={handleInputChange}
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Building president"
+          />
+          <div className="mt-2">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="presidentImage">
+              President Image (Optional)
+            </label>
+            <div className="flex items-center">
+              <input
+                id="presidentImage"
+                name="presidentImage"
+                type="file"
+                accept="image/*"
+                onChange={handlePresidentImageChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+              {isEditMode && newBuilding.presidentImageUrl && (
+                <img 
+                  src={newBuilding.presidentImageUrl} 
+                  alt="Current President" 
+                  className="h-10 w-10 object-cover ml-2 rounded"
+                />
+              )}
             </div>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-                  Building Name*
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={newBuilding.name}
-                  onChange={handleInputChange}
-                  className={`shadow appearance-none border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} 
-                    rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-                  placeholder="For Example : Building No.1,2,A,B,etc"
-                  required
-                />
-                {getFieldError('name')}
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                  Description (Optional)
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={newBuilding.description}
-                  onChange={handleInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
-                  placeholder="Building description"
-                />
-              </div>
-
-              {/* President Section */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
-                  President (Optional)
-                </label>
-                <input
-                  id="president"
-                  name="president"
-                  type="text"
-                  value={newBuilding.president}
-                  onChange={handleInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Building president"
-                />
-                <div className="mt-2">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="presidentImage">
-                    President Image (Optional)
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      id="presidentImage"
-                      name="presidentImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePresidentImageChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    {isEditMode && newBuilding.presidentImageUrl && (
-                      <img 
-                        src={newBuilding.presidentImageUrl} 
-                        alt="Current President" 
-                        className="h-10 w-10 object-cover ml-2 rounded"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Secretary Section */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
-                  Secretary (Optional)
-                </label>
-                <input
-                  id="secretary"
-                  name="secretary"
-                  type="text"
-                  value={newBuilding.secretary}
-                  onChange={handleInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Building secretary"
-                />
-                <div className="mt-2">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretaryImage">
-                    Secretary Image (Optional)
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      id="secretaryImage"
-                      name="secretaryImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleSecretaryImageChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    {isEditMode && newBuilding.secretaryImageUrl && (
-                      <img 
-                        src={newBuilding.secretaryImageUrl} 
-                        alt="Current Secretary" 
-                        className="h-10 w-10 object-cover ml-2 rounded"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Treasurer Section */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
-                  Treasurer (Optional)
-                </label>
-                <input
-                  id="treasurer"
-                  name="treasurer"
-                  type="text"
-                  value={newBuilding.treasurer}
-                  onChange={handleInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Building treasurer"
-                />
-                <div className="mt-2">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurerImage">
-                    Treasurer Image (Optional)
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      id="treasurerImage"
-                      name="treasurerImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleTreasurerImageChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    {isEditMode && newBuilding.treasurerImageUrl && (
-                      <img 
-                        src={newBuilding.treasurerImageUrl} 
-                        alt="Current Treasurer" 
-                        className="h-10 w-10 object-cover ml-2 rounded"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                  Building Image {isEditMode ? "(Optional)" : "*"}
-                </label>
-                <div className="flex items-center">
-                  <input
-                    id="image"
-                    name="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className={`shadow appearance-none border ${formErrors.image ? 'border-red-500' : 'border-gray-300'} 
-                      rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-                  />
-                  {isEditMode && newBuilding.currentImageUrl && (
-                    <img 
-                      src={newBuilding.currentImageUrl} 
-                      alt="Current" 
-                      className="h-10 w-10 object-cover ml-2 rounded"
-                    />
-                  )}
-                </div>
-                {getFieldError('image')}
-              </div>
-
-              {/* Owners Section */}
-              <div className="mb-6 border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <User size={18} className="mr-2" />
-                  Owners
-                </h3>
-                
-                <div className="bg-gray-50 p-3 rounded-md mb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerName">
-                        Owner Name
-                      </label>
-                      <input
-                        id="ownerName"
-                        name="name"
-                        type="text"
-                        value={currentOwner.name}
-                        onChange={handleOwnerInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Owner's name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="flatNumber">
-                        Flat/Unit Number
-                      </label>
-                      <input
-                        id="flatNumber"
-                        name="flatNumber"
-                        type="text"
-                        value={currentOwner.flatNumber}
-                        onChange={handleOwnerInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Flat number"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-3">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerImage">
-                      Owner Image (Optional)
-                    </label>
-                    <input
-                      id="ownerImage"
-                      name="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleOwnerImageChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                  </div>
-                  
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={addOwner}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
-                    >
-                      {editingOwnerIndex !== null ? (
-                        <>
-                          <Edit size={16} className="mr-1" />
-                          Update Owner
-                        </>
-                      ) : (
-                        <>
-                          <Plus size={16} className="mr-1" />
-                          Add Owner
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {newBuilding.owners && newBuilding.owners.length > 0 && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Owners</h4>
-                    <div className="space-y-2">
-                      {newBuilding.owners.map((owner, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <div className="flex items-center">
-                            {owner.image ? (
-                              <img src={owner.image} alt={owner.name} className="h-8 w-8 rounded-full mr-2 object-cover" />
-                            ) : (
-                              <User size={18} className="mr-2 text-gray-400" />
-                            )}
-                            <span className="font-medium">{owner.name}</span>
-                            <span className="ml-2 text-gray-500 text-sm">({owner.flatNumber})</span>
-                          </div>
-                          <div className="flex gap-1">
-                            <button 
-                              type="button"
-                              onClick={() => editOwner(index)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => removeOwner(index)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Events Section */}
-              <div className="mb-6 border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <Calendar size={18} className="mr-2" />
-                  Events
-                </h3>
-                
-                <div className="bg-gray-50 p-3 rounded-md mb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
-                        Event Title
-                      </label>
-                      <input
-                        id="eventTitle"
-                        name="title"
-                        type="text"
-                        value={currentEvent.title}
-                        onChange={handleEventInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Event title"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
-                        Event Date
-                      </label>
-                      <input
-                        id="eventDate"
-                        name="date"
-                        type="date"
-                        value={currentEvent.date}
-                        onChange={handleEventInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-3">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
-                      Event Description (Optional)
-                    </label>
-                    <textarea
-                      id="eventDescription"
-                      name="description"
-                      value={currentEvent.description}
-                      onChange={handleEventInputChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
-                      placeholder="Event description"
-                    />
-                  </div>
-                  
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={addEvent}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
-                    >
-                      {editingEventIndex !== null ? (
-                        <>
-                          <Edit size={16} className="mr-1" />
-                          Update Event
-                        </>
-                      ) : (
-                        <>
-                          <Plus size={16} className="mr-1" />
-                          Add Event
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {newBuilding.events && newBuilding.events.length > 0 && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Events</h4>
-                    <div className="space-y-2">
-                      {newBuilding.events.map((event, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <div>
-                            <div className="font-medium">{event.title}</div>
-                            <div className="text-gray-500 text-sm">{new Date(event.date).toLocaleDateString()}</div>
-                          </div>
-                          <div className="flex gap-1">
-                            <button 
-                              type="button"
-                              onClick={() => editEvent(index)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => removeEvent(index)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Updates Section */}
-              {/* <div className="mb-6 border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <Megaphone size={18} className="mr-2" />
-                  Updates
-                </h3>
-                
-                <div className="bg-gray-50 p-3 rounded-md mb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateTitle">
-                        Update Title
-                      </label>
-                      <input
-                        id="updateTitle"
-                        name="title"
-                        type="text"
-                        value={currentUpdate.title}
-                        onChange={handleUpdateInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Update title"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDate">
-                        Date
-                      </label>
-                      <input
-                        id="updateDate"
-                        name="date"
-                        type="date"
-                        value={currentUpdate.date}
-                        onChange={handleUpdateInputChange}
-                        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-3">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDescription">
-                      Update Content
-                    </label>
-                    <textarea
-                      id="updateDescription"
-                      name="description"
-                      value={currentUpdate.description}
-                      onChange={handleUpdateInputChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
-                      placeholder="Update content"
-                    />
-                  </div>
-                  
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={addUpdate}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
-                    >
-                      {editingUpdateIndex !== null ? (
-                        <>
-                          <Edit size={16} className="mr-1" />
-                          Update
-                        </>
-                      ) : (
-                        <>
-                          <Plus size={16} className="mr-1" />
-                          Add Update
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {newBuilding.updates && newBuilding.updates.length > 0 && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Updates</h4>
-                    <div className="space-y-2">
-                      {newBuilding.updates.map((update, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <div>
-                            <div className="font-medium">{update.title}</div>
-                            <div className="text-gray-500 text-sm">
-                              {update.date ? new Date(update.date).toLocaleDateString() : 'No date'}
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <button 
-                              type="button"
-                              onClick={() => editUpdate(index)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => removeUpdate(index)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div> */}
-
-              {/* Documents Section */}
-              <div className="mb-6 border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <FileText size={18} className="mr-2" />
-                  Documents
-                </h3>
-                
-                <div className="bg-gray-50 p-3 rounded-md mb-3">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentTitle">
-                      Document Title
-                    </label>
-                    <input
-                      id="documentTitle"
-                      name="title"
-                      type="text"
-                      value={currentDocument.title}
-                      onChange={handleDocumentInputChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      placeholder="Document title"
-                    />
-                  </div>
-                  
-                  <div className="mt-3">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentFile">
-                      Document File
-                    </label>
-                    <input
-                      id="documentFile"
-                      name="file"
-                      type="file"
-                      onChange={handleDocumentFileChange}
-                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                  </div>
-                  
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={uploadDocument}
-                      disabled={documentUploading}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
-                    >
-                      {documentUploading ? (
-                        <>
-                          <Loader size={16} className="mr-1 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : editingDocumentIndex !== null ? (
-                        <>
-                          <Edit size={16} className="mr-1" />
-                          Update Document
-                        </>
-                      ) : (
-                        <>
-                          <FilePlus size={16} className="mr-1" />
-                          Upload Document
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {newBuilding.documents && newBuilding.documents.length > 0 && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Documents</h4>
-                    <div className="space-y-2">
-                      {newBuilding.documents.map((doc, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <div className="flex items-center">
-                            <File size={16} className="mr-2 text-gray-400" />
-                            <div>
-                              <div className="font-medium">{doc.title}</div>
-                              <div className="text-gray-500 text-xs">{doc.fileName}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center"
-                >
-                  {loading ? (
-                    <>
-                      <Loader size={16} className="mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    isEditMode ? "Save Changes" : "Add Building"
-                  )}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
-      )}
+
+        {/* Secretary Section */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
+            Secretary (Optional)
+          </label>
+          <input
+            id="secretary"
+            name="secretary"
+            type="text"
+            value={newBuilding.secretary}
+            onChange={handleInputChange}
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Building secretary"
+          />
+          <div className="mt-2">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretaryImage">
+              Secretary Image (Optional)
+            </label>
+            <div className="flex items-center">
+              <input
+                id="secretaryImage"
+                name="secretaryImage"
+                type="file"
+                accept="image/*"
+                onChange={handleSecretaryImageChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+              {isEditMode && newBuilding.secretaryImageUrl && (
+                <img 
+                  src={newBuilding.secretaryImageUrl} 
+                  alt="Current Secretary" 
+                  className="h-10 w-10 object-cover ml-2 rounded"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Treasurer Section */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
+            Treasurer (Optional)
+          </label>
+          <input
+            id="treasurer"
+            name="treasurer"
+            type="text"
+            value={newBuilding.treasurer}
+            onChange={handleInputChange}
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Building treasurer"
+          />
+          <div className="mt-2">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurerImage">
+              Treasurer Image (Optional)
+            </label>
+            <div className="flex items-center">
+              <input
+                id="treasurerImage"
+                name="treasurerImage"
+                type="file"
+                accept="image/*"
+                onChange={handleTreasurerImageChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+              {isEditMode && newBuilding.treasurerImageUrl && (
+                <img 
+                  src={newBuilding.treasurerImageUrl} 
+                  alt="Current Treasurer" 
+                  className="h-10 w-10 object-cover ml-2 rounded"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+            Building Image {isEditMode ? "(Optional)" : "*"}
+          </label>
+          <div className="flex items-center">
+            <input
+              id="image"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className={`shadow appearance-none border ${formErrors.image ? 'border-red-500' : 'border-gray-300'} 
+                rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+            />
+            {isEditMode && newBuilding.currentImageUrl && (
+              <img 
+                src={newBuilding.currentImageUrl} 
+                alt="Current" 
+                className="h-10 w-10 object-cover ml-2 rounded"
+              />
+            )}
+          </div>
+          {getFieldError('image')}
+        </div>
+
+        {/* Owners Section */}
+        <div className="mb-6 border-t border-gray-200 pt-4">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <User size={18} className="mr-2" />
+            Owners
+          </h3>
+          
+          <div className="bg-gray-50 p-3 rounded-md mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerName">
+                  Owner Name
+                </label>
+                <input
+                  id="ownerName"
+                  name="name"
+                  type="text"
+                  value={currentOwner.name}
+                  onChange={handleOwnerInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Owner's name"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="flatNumber">
+                  Flat/Unit Number
+                </label>
+                <input
+                  id="flatNumber"
+                  name="flatNumber"
+                  type="text"
+                  value={currentOwner.flatNumber}
+                  onChange={handleOwnerInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Flat number"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-3">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ownerImage">
+                Owner Image (Optional)
+              </label>
+              <input
+                id="ownerImage"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleOwnerImageChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            </div>
+            
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={addOwner}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+              >
+                {editingOwnerIndex !== null ? (
+                  <>
+                    <Edit size={16} className="mr-1" />
+                    Update Owner
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} className="mr-1" />
+                    Add Owner
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {newBuilding.owners && newBuilding.owners.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Owners</h4>
+              <div className="space-y-2">
+                {newBuilding.owners.map((owner, index) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div className="flex items-center">
+                      {owner.image ? (
+                        <img src={owner.image} alt={owner.name} className="h-8 w-8 rounded-full mr-2 object-cover" />
+                      ) : (
+                        <User size={18} className="mr-2 text-gray-400" />
+                      )}
+                      <span className="font-medium">{owner.name}</span>
+                      <span className="ml-2 text-gray-500 text-sm">({owner.flatNumber})</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <button 
+                        type="button"
+                        onClick={() => editOwner(index)}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => removeOwner(index)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Events Section */}
+        <div className="mb-6 border-t border-gray-200 pt-4">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <Calendar size={18} className="mr-2" />
+            Events
+          </h3>
+          
+          <div className="bg-gray-50 p-3 rounded-md mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
+                  Event Title
+                </label>
+                <input
+                  id="eventTitle"
+                  name="title"
+                  type="text"
+                  value={currentEvent.title}
+                  onChange={handleEventInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Event title"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
+                  Event Date & Time
+                </label>
+                <input
+                  id="eventDate"
+                  name="date"
+                  type="datetime-local"
+                  value={currentEvent.date}
+                  onChange={handleEventInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-3">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
+                Event Description (Optional)
+              </label>
+              <textarea
+                id="eventDescription"
+                name="description"
+                value={currentEvent.description}
+                onChange={handleEventInputChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
+                placeholder="Event description"
+              />
+            </div>
+            
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={addEvent}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+              >
+                {editingEventIndex !== null ? (
+                  <>
+                    <Edit size={16} className="mr-1" />
+                    Update Event
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} className="mr-1" />
+                    Add Event
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {newBuilding.events && newBuilding.events.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Events</h4>
+              <div className="space-y-2">
+                {newBuilding.events.map((event, index) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div>
+                      <div className="font-medium">{event.title}</div>
+                      <div className="text-gray-500 text-sm">{new Date(event.date).toLocaleString()}</div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button 
+                        type="button"
+                        onClick={() => editEvent(index)}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => removeEvent(index)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Updates Section */}
+        {/* <div className="mb-6 border-t border-gray-200 pt-4">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <Megaphone size={18} className="mr-2" />
+            Updates
+          </h3>
+          
+          <div className="bg-gray-50 p-3 rounded-md mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateTitle">
+                  Update Title
+                </label>
+                <input
+                  id="updateTitle"
+                  name="title"
+                  type="text"
+                  value={currentUpdate.title}
+                  onChange={handleUpdateInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Update title"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDate">
+                  Date & Time
+                </label>
+                <input
+                  id="updateDate"
+                  name="date"
+                  type="datetime-local"
+                  value={currentUpdate.date}
+                  onChange={handleUpdateInputChange}
+                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-3">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDescription">
+                Update Content
+              </label>
+              <textarea
+                id="updateDescription"
+                name="description"
+                value={currentUpdate.description}
+                onChange={handleUpdateInputChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
+                placeholder="Update content"
+              />
+            </div>
+            
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={addUpdate}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+              >
+                {editingUpdateIndex !== null ? (
+                  <>
+                    <Edit size={16} className="mr-1" />
+                    Update
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} className="mr-1" />
+                    Add Update
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {newBuilding.updates && newBuilding.updates.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Updates</h4>
+              <div className="space-y-2">
+                {newBuilding.updates.map((update, index) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div>
+                      <div className="font-medium">{update.title}</div>
+                      <div className="text-gray-500 text-sm">
+                        {update.date ? new Date(update.date).toLocaleString() : 'No date'}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button 
+                        type="button"
+                        onClick={() => editUpdate(index)}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => removeUpdate(index)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div> */}
+
+        {/* Documents Section */}
+        <div className="mb-6 border-t border-gray-200 pt-4">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <FileText size={18} className="mr-2" />
+            Documents
+          </h3>
+          
+          <div className="bg-gray-50 p-3 rounded-md mb-3">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentTitle">
+                Document Title
+              </label>
+              <input
+                id="documentTitle"
+                name="title"
+                type="text"
+                value={currentDocument.title}
+                onChange={handleDocumentInputChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="Document title"
+              />
+            </div>
+            
+            <div className="mt-3">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="documentFile">
+                Document File
+              </label>
+              <input
+                id="documentFile"
+                name="file"
+                type="file"
+                onChange={handleDocumentFileChange}
+                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            </div>
+            
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={uploadDocument}
+                disabled={documentUploading}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+              >
+                {documentUploading ? (
+                  <>
+                    <Loader size={16} className="mr-1 animate-spin" />
+                    Uploading...
+                  </>
+                ) : editingDocumentIndex !== null ? (
+                  <>
+                    <Edit size={16} className="mr-1" />
+                    Update Document
+                  </>
+                ) : (
+                  <>
+                    <FilePlus size={16} className="mr-1" />
+                    Upload Document
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {newBuilding.documents && newBuilding.documents.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Documents</h4>
+              <div className="space-y-2">
+                {newBuilding.documents.map((doc, index) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div className="flex items-center">
+                      <File size={16} className="mr-2 text-gray-400" />
+                      <div>
+                        <div className="font-medium">{doc.title}</div>
+                        <div className="text-gray-500 text-xs">{doc.fileName}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              setShowModal(false);
+              resetForm();
+            }}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center"
+          >
+            {loading ? (
+              <>
+                <Loader size={16} className="mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              isEditMode ? "Save Changes" : "Add Building"
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
       {showDocumentsPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">

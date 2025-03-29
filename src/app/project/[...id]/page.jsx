@@ -17,6 +17,37 @@ const BuildingPage = () => {
     const upcomingEvents = building?.events?.filter(event => new Date(event.date) > now) || [];
     const pastEvents = building?.events?.filter(event => new Date(event.date) <= now) || [];
     
+    // Function to format date and time
+    const formatDateTime = (dateString) => {
+        if (!dateString) return "No date available";
+        
+        const date = new Date(dateString);
+        
+        // Format date like "23rd March"
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        
+        // Add ordinal suffix to day
+        const ordinalSuffix = (day) => {
+            if (day > 3 && day < 21) return 'th';
+            switch (day % 10) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        };
+        
+        // Format time like "8:20 PM"
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        
+        return `${day}${ordinalSuffix(day)} ${month}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+    };
+    
     useEffect(() => {
         if (!id) return;
 
@@ -77,7 +108,7 @@ const BuildingPage = () => {
     const getImageSrc = (img) => {
         return img || "/avatar.jpg";
     };
-    console.log(building)
+    
     return (
         <div className='w-full min-h-screen'>
             <ServiceHeroSection
@@ -102,13 +133,15 @@ const BuildingPage = () => {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                                 {upcomingEvents.map((event, index) => (
-                                    <div key={index} className="rounded-lg p-5 transition duration-300">
+                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
                                         <div className="flex items-center gap-3">
                                             <Calendar className="text-black w-7 h-7" />
                                             <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                                         </div>
                                         <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                       
+                                        <p className="text-[#B57E10] mt-2 font-medium">
+                                            {formatDateTime(event.date)}
+                                        </p>
                                         <p className="text-gray-500 text-sm">{event.location}</p>
                                     </div>
                                 ))}
@@ -131,13 +164,15 @@ const BuildingPage = () => {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                                 {pastEvents.map((event, index) => (
-                                    <div key={index} className="rounded-lg p-5 transition duration-300">
+                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
                                         <div className="flex items-center gap-3">
                                             <Calendar className="text-black w-7 h-7" />
                                             <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                                         </div>
                                         <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                        
+                                        <p className="text-[#B57E10] mt-2 font-medium">
+                                            {formatDateTime(event.date)}
+                                        </p>
                                         <p className="text-gray-500 text-sm">{event.location}</p>
                                     </div>
                                 ))}
