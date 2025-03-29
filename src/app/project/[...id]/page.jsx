@@ -14,8 +14,8 @@ const BuildingPage = () => {
     const [building, setBuilding] = useState(null);
     const [updates, setUpdates] = useState([]);
     const now = new Date();
-    const upcomingEvents = building?.events?.filter(event => new Date(event.date) < now) || [];
-    const pastEvents = building?.events?.filter(event => new Date(event.date) >= now) || [];
+    const upcomingEvents = building?.events?.filter(event => new Date(event.date) > now) || [];
+    const pastEvents = building?.events?.filter(event => new Date(event.date) <= now) || [];
     
 
     useEffect(() => {
@@ -52,60 +52,74 @@ const BuildingPage = () => {
                 breadcrumbs={[{ label: "Home", link: "/" }, { label: "Project", link: "/project" }]}
             />
             <div className='w-full py-12 bg-white flex flex-col items-center'>
-            <div className="bg-white shadow-2xl rounded-lg p-6 flex flex-col gap-6 w-full items-center justify-center max-w-6xl">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
-                <h1 className="text-lg font-semibold text-[#B57E10]">Events & Meetings</h1>
-            </div>
+            <div className="bg-white shadow-2xl rounded-lg p-6 flex flex-col gap-6 w-full items-start justify-center max-w-6xl overflow-y-scroll">
+           <div className='flex flex-col items-start gap-5'>
+             {/* Header */}
+           {
+            upcomingEvents?.length >0 &&  <div className="flex items-center gap-4">
+            <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
+            <h1 className="text-lg font-semibold text-[#B57E10]">Upcoming Events</h1>
+        </div>
+           }
 
             {/* Upcoming Events */}
-            <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Events</h2>
-                {upcomingEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {upcomingEvents.map((event, index) => (
-                            <div key={index} className="bg-gray-100 shadow-md rounded-lg p-5 transition duration-300 hover:shadow-lg">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="text-blue-600 w-7 h-7" />
-                                    <h3 className="text-lg font-semibold text-gray-800">{event.title}</h3>
-                                </div>
-                                <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                <p className="text-gray-500 mt-1 text-sm font-medium">
-                                    {new Date(event.date).toLocaleDateString()} at {event.time}
-                                </p>
-                                <p className="text-gray-500 text-sm">{event.location}</p>
+           {
+            upcomingEvents?.length>0 &&  <div>
+            {upcomingEvents.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
+                    {upcomingEvents.map((event, index) => (
+                        <div key={index} className="  rounded-lg p-5 transition duration-300 ">
+                            <div className="flex items-center gap-3">
+                                <Calendar className="text-black w-7 h-7" />
+                                <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-center text-gray-500 text-sm">No upcoming events.</p>
-                )}
-            </div>
-
+                            <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+                            <p className="text-gray-500 mt-1 text-sm font-medium">
+                                {new Date(event.date).toLocaleDateString()} at {event.time}
+                            </p>
+                            <p className="text-gray-500 text-sm">{event.location}</p>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-gray-500 text-sm">No upcoming events.</p>
+            )}
+        </div>
+           }
+           </div>
+         <div className='flex flex-col items-start gap-5'>
+         {
+            pastEvents?.length>0 &&  <div className="flex items-center gap-4">
+            <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
+            <h1 className="text-lg font-semibold text-[#B57E10]">Past Events</h1>
+        </div>
+           }
             {/* Past Events */}
-            <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Past Events</h2>
-                {pastEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {pastEvents.map((event, index) => (
-                            <div key={index} className="bg-gray-200 shadow-md rounded-lg p-5 transition duration-300 hover:shadow-lg">
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="text-gray-600 w-7 h-7" />
-                                    <h3 className="text-lg font-semibold text-gray-700">{event.title}</h3>
-                                </div>
-                                <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                <p className="text-gray-500 mt-1 text-sm font-medium">
-                                    {new Date(event.date).toLocaleDateString()} at {event.time}
-                                </p>
-                                <p className="text-gray-500 text-sm">{event.location}</p>
+           {
+            pastEvents?.length > 0 &&  <div>
+            {pastEvents.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {pastEvents.map((event, index) => (
+                        <div key={index} className="rounded-lg p-5 transition duration-300 ">
+                            <div className="flex items-center gap-3">
+                                <Calendar className="text-black w-7 h-7" />
+                                <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-center text-gray-500 text-sm">No past events.</p>
-                )}
-            </div>
+                            <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+                            <p className="text-gray-500 mt-1 text-sm font-medium">
+                                {new Date(event.date).toLocaleDateString()} at {event.time}
+                            </p>
+                            <p className="text-gray-500 text-sm">{event.location}</p>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-gray-500 text-sm">No upcoming events.</p>
+            )}
+        </div>
+           }
+         </div>
+
         </div>
           
         
