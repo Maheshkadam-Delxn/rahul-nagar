@@ -29,9 +29,6 @@ export async function PUT(req) {
             validationErrors.push("Building name is required");
         }
 
-        if (!buildingData.description || buildingData.description.trim() === "") {
-            validationErrors.push("Building description is required");
-        }
 
         if (!buildingData.president || buildingData.president.trim() === "") {
             validationErrors.push("President name is required");

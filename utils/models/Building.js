@@ -1,5 +1,34 @@
 import mongoose from "mongoose";
 
+const DocumentSchema = new mongoose.Schema({
+    title: {
+      type: String,
+      required: [true, 'Document title is required'],
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    fileUrl: {
+      type: String,
+      required: [true, 'File URL is required'],
+      trim: true
+    },
+    fileType: {
+      type: String,
+      trim: true
+    },
+    uploadedBy: {
+      type: String,
+      default: 'unknown'
+    },
+    uploadedOn: {
+      type: Date,
+      default: Date.now
+    }
+  });
 const UpdateSchema = new mongoose.Schema({
     role: { 
         type: String, 
@@ -100,6 +129,7 @@ const BuildingSchema = new mongoose.Schema({
     events: [EventSchema],
     updates: [UpdateSchema],
     owners: [OwnerSchema],
+    documents: [DocumentSchema],
     createdBy: { 
         type: String, 
         default: 'unknown' 

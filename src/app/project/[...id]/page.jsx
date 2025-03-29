@@ -133,7 +133,7 @@ const BuildingPage = () => {
     return (
         <div className='w-full min-h-screen'>
             <ServiceHeroSection
-                name={`Building No. ${building.name}`}
+                name={`${building.name}`}
                 breadcrumbs={[{ label: "Home", link: "/" }, { label: "Project", link: "/project" }]}
             />
 
@@ -143,7 +143,7 @@ const BuildingPage = () => {
                         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                             <div className='md:col-span-2'>
                                 <div className='w-full h-64 bg-gray-300 rounded-lg'><Image src={building.image} width={1920} height={1080} className='w-full h-full object-cover'/></div>
-                               { building?.description ?  <h2 className='text-2xl font-bold mt-6'>About {building.name}</h2> :  <h2 className='text-2xl font-bold mt-6'>Building No. {building.name}</h2>}
+                               { building?.description ?  <h2 className='text-2xl font-bold mt-6'>About {building.name}</h2> :  <h2 className='text-2xl font-bold mt-6'>{building.name}</h2>}
                                 <p className='text-gray-700 mt-2'>{building.description}</p>
                                 {
                                     building?.events?.length>0 ?<div className='flex flex-col items-start'> <h3 className='text-xl font-bold mt-4'>Events Conducted</h3>
@@ -155,7 +155,7 @@ const BuildingPage = () => {
                                 }
                             </div>
                             <div className='bg-white shadow-lg rounded-lg overflow-hidden h-fit '>
-                                <div className='bg-[#b5831d] text-white px-4 py-3 text-lg font-bold'>Building No. {building.name}</div>
+                                <div className='bg-[#b5831d] text-white px-4 py-3 text-lg font-bold'>{building.name}</div>
                                 <div className='p-4'>
                                     {building.president === "none" ? null : <div className='flex flex-col items-start gap-2'>
                                       <p className='text-gray-700'><span className='font-semibold'>Chairman:</span> <strong>{building.president}</strong></p>

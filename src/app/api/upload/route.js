@@ -7,6 +7,7 @@ export async function POST(req) {
     // Parse form data
     const formData = await req.formData();
     const file = formData.get("file");
+    const folderId = formData.get("folderId") || process.env.GOOGLE_DRIVE_FOLDER_ID; 
  
     if (!file) {
       return NextResponse.json({ success: false, error: "No file uploaded." });
@@ -40,7 +41,7 @@ export async function POST(req) {
     // Upload file metadata
     const fileMetadata = {
       name: file.name,
-      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
+      parents: [folderId],
     };
  
     // Upload file to Google Drive
