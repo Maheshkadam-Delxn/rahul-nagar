@@ -143,7 +143,7 @@ const Contact = () => {
   </div>
   <h2 className="text-3xl font-bold mt-2 text-black">Have any query in Mind? Contact With Us</h2>
   <p className="mt-4 text-[#6A6A6A]">
-    If you are going to use a passage of Lorem Ipsum, you need this to be sure there isn't anything embarrassing hidden.
+  Got questions or suggestions? Reach out to us!Fill the form below or call/email directly. We&apos;re here to help.
   </p>
 </div>
 

@@ -77,7 +77,7 @@ const BuildingPage = () => {
     const getImageSrc = (img) => {
         return img || "/avatar.jpg";
     };
-
+    console.log(building)
     return (
         <div className='w-full min-h-screen'>
             <ServiceHeroSection
@@ -108,9 +108,7 @@ const BuildingPage = () => {
                                             <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                                         </div>
                                         <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                        <p className="text-gray-500 mt-1 text-sm font-medium">
-                                            {new Date(event.date).toLocaleDateString()} at {event.time}
-                                        </p>
+                                       
                                         <p className="text-gray-500 text-sm">{event.location}</p>
                                     </div>
                                 ))}
@@ -139,9 +137,7 @@ const BuildingPage = () => {
                                             <h3 className="text-lg font-semibold text-black">{event.title}</h3>
                                         </div>
                                         <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                        <p className="text-gray-500 mt-1 text-sm font-medium">
-                                            {new Date(event.date).toLocaleDateString()} at {event.time}
-                                        </p>
+                                        
                                         <p className="text-gray-500 text-sm">{event.location}</p>
                                     </div>
                                 ))}

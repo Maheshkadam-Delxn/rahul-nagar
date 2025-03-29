@@ -22,8 +22,7 @@ const EventSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, // Cloudinary image URL
-    required: true,
+    type: String, 
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -31,7 +30,7 @@ const EventSchema = new mongoose.Schema({
     required: true,
   },
 }, { timestamps: true });
-
+delete mongoose.models.Event
 const Event = mongoose.models.Event || mongoose.model("Event", EventSchema);
 
 export default Event;

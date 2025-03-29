@@ -120,7 +120,7 @@ const Events = () => {
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                      <Image src={event.image} alt={event.title} width={200} height={100} className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover" />
+                      {/* <Image src={event.image} alt={event.title} width={200} height={100} className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover" /> */}
                       <div className="flex flex-col gap-1 md:gap-2">
                         <h1 className="text-lg md:text-xl font-bold">{event.title}</h1>
                         <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(event.description, 100)}</p>

@@ -149,9 +149,9 @@ const Navbar = () => {
 
               <div className='flex flex-col mt-6 border-t border-gray-700 pt-6'>
                 <Link href={"/"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Home</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Updates</Link>
+                {/* <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Updates</Link> */}
                 <Link href={"/about"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>About</Link>
-                <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Redevelopment</Link>
+                {/* <Link href={"#"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Redevelopment</Link> */}
                 <Link href={"/gallery"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Gallery</Link>
                 <Link href={"/contact"} className='text-white py-4' onClick={closeMenu}>Contact Us</Link>
               </div>

@@ -13,7 +13,7 @@ export default function Home() {
     <HeroSection/>
     <Events/>
     <About/>
-    <QuickLinks/>
+    {/* <QuickLinks/> */}
     <Stats/>
     <Contact/>
   </>

@@ -263,7 +263,7 @@ export default function EventsManagement() {
       date: newEvent.date,
       time: newEvent.time,
       location: newEvent.location.trim(),
-      image: imageUrl,
+      image: imageUrl || "",
       createdBy: sessionStorage?.getItem('userId') || "defaultAdminId",
     };
   
@@ -478,11 +478,17 @@ export default function EventsManagement() {
                     required
                   >
                     <option value="">Select Time</option>
-                    <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
-                    <option value="12:00 PM - 2:00 PM">12:00 PM - 2:00 PM</option>
-                    <option value="2:00 PM - 4:00 PM">2:00 PM - 4:00 PM</option>
-                    <option value="4:00 PM - 6:00 PM">4:00 PM - 6:00 PM</option>
-                    <option value="6:00 PM - 8:00 PM">6:00 PM - 8:00 PM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="1:00 PM">1:00 PM</option>
+                    <option value="2:00 PM">2:00 PM</option>
+                    <option value="3:00 PM">3:00 PM</option>
+                    <option value="4:00 PM">4:00 PM</option>
+                    <option value="5:00 PM">5:00 PM</option>
+                    <option value="6:00 PM">6:00 PM</option>
+                    <option value="7:00 PM">7:00 PM</option>
+                    <option value="8:00 PM">8:00 PM</option>
                   </select>
                 </div>
               </div>
@@ -504,45 +510,53 @@ export default function EventsManagement() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                  Event Image{isEditMode ? "" : "*"}
-                </label>
-                {isEditMode && newEvent.currentImageUrl && (
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">Current Image:</p>
-                    <img 
-                      src={newEvent.currentImageUrl} 
-                      alt="Current event image" 
-                      className="h-32 object-cover rounded mt-1"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Upload a new image to replace the current one, or leave empty to keep the current image.
-                    </p>
-                  </div>
-                )}
-                <div className="mt-1 flex items-center">
-                  <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
-                    <span className="mx-auto flex items-center">
-                      <Image size={24} className="mr-2" />
-                      <span className="text-base leading-normal">Select a file</span>
-                    </span>
-                    <input 
-                      type='file' 
-                      id="image"
-                      name="image"
-                      onChange={handleImageChange}
-                      className="hidden" 
-                      accept="image/*"
-                      required={!isEditMode}
-                    />
-                  </label>
-                  {newEvent.image && (
-                    <span className="ml-3 text-sm text-gray-600">
-                      {newEvent.image.name}
-                    </span>
-                  )}
-                </div>
-              </div>
+  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+    Event Image
+  </label>
+  
+  {isEditMode && newEvent.currentImageUrl && (
+    <div className="mb-2">
+      <p className="text-sm text-gray-600">Current Image:</p>
+      <img 
+        src={newEvent.currentImageUrl} 
+        alt="Current event image" 
+        className="h-32 object-cover rounded mt-1"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        Upload a new image to replace the current one, or leave empty to keep the current image.
+      </p>
+    </div>
+  )}
+  
+  <div className="mt-1 flex items-center">
+    <label className="flex flex-col items-center px-4 py-6 bg-white text-purple-600 rounded-lg shadow-lg tracking-wide uppercase border border-purple-600 cursor-pointer hover:bg-purple-600 hover:text-white">
+      <span className="mx-auto flex items-center">
+        <Image size={24} className="mr-2" />
+        <span className="text-base leading-normal">Select a file</span>
+      </span>
+      <input 
+        type='file' 
+        id="image"
+        name="image"
+        onChange={handleImageChange}
+        className="hidden" 
+        accept="image/*"
+      />
+    </label>
+    
+    {newEvent.image && (
+      <span className="ml-3 text-sm text-gray-600">
+        {newEvent.image.name}
+      </span>
+    )}
+  </div>
+  
+  {!isEditMode && (
+    <p className="text-xs text-gray-500 mt-1">
+      Optional: Upload an image for this event
+    </p>
+  )}
+</div>
 
               <div className="flex justify-end gap-4">
                 <button

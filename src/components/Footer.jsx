@@ -111,7 +111,7 @@ const Footer = () => {
   const columnData = Array.from({ length: columns }, (_, colIndex) =>
     buildings.filter((_, index) => index % columns === colIndex)
   );
-
+  console.log(columnData)
   return (
     <footer className="bg-[#15181B] text-white py-12">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-8">
@@ -135,8 +135,8 @@ const Footer = () => {
           <h3 className="text-lg font-semibold">Pages</h3>
           <ul className="mt-4 space-y-2 text-gray-400">
             <li><Link href="/about" className="hover:text-white hover:underline transition duration-300">About Us</Link></li>
-            <li><Link href="/updates" className="hover:text-white hover:underline transition duration-300">Updates</Link></li>
-            <li><Link href="#" className="hover:text-white hover:underline transition duration-300">Redevelopment</Link></li>
+            {/* <li><Link href="/updates" className="hover:text-white hover:underline transition duration-300">Updates</Link></li>
+            <li><Link href="#" className="hover:text-white hover:underline transition duration-300">Redevelopment</Link></li> */}
             <li><Link href="/gallery" className="hover:text-white hover:underline transition duration-300">Gallery</Link></li>
             <li><Link href="/contact" className="hover:text-white hover:underline transition duration-300">Contact</Link></li>
           </ul>
@@ -144,24 +144,24 @@ const Footer = () => {
 
         {/* Buildings Section (Three-Column Layout) */}
         <div className="md:w-1/2 flex justify-between">
-          {columnData.map((column, index) => (
-            <div key={index} className="w-1/3">
-              <h3 className="text-lg font-semibold">Buildings</h3>
-              <ul className="mt-4 space-y-2 text-gray-400">
-                {column.map((building) => (
-                  <li key={building._id} className="transition-transform duration-300 hover:translate-x-2">
-                    <Link 
-                      href={`/project/${building._id}`} 
-                      className="hover:text-white hover:underline"
-                    >
-                      {building.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+  {columnData.map((column, index) => (
+    <div key={index} className="w-1/3">
+      <h3 className="text-lg font-semibold">Buildings</h3>
+      <ul className="mt-4 space-y-2 text-gray-400">
+        {column.map((building) => (
+          <li key={building._id} className="transition-transform duration-300 hover:translate-x-2">
+            <Link 
+              href={`/project/${building._id}`} 
+              className="hover:text-white hover:underline"
+            >
+              {building.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
 
       </div>
 
