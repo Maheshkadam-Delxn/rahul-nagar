@@ -247,6 +247,8 @@
             |-- page.jsx
             |-- [updateId]
                 |-- page.jsx
+    |-- assets
+        |-- welcom.json
     |-- components
         |-- About.jsx
         |-- Contact.jsx
