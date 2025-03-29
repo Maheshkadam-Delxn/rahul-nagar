@@ -350,12 +350,13 @@ const page = () => {
                                 className="w-36 sm:w-48 md:w-64 h-auto object-cover rounded-lg"
                             />
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
-                                    {building.name.split(" ").pop()}
-                                </div>
+                            <div className="bg-[#B57E10] text-white text-xl md:text-2xl font-bold w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full">
+    {building.name.match(/\w+$/)?.[0]}
+</div>
+
                             </div>
                         </div>
-                        <p className="mt-2 font-semibold text-sm md:text-base">Building No. {building.name}</p>
+                        <p className="mt-2 font-semibold text-sm md:text-base">{building.name}</p>
                     </div>
                 ))}
             </div>

@@ -85,14 +85,21 @@ export default function BuildingsManagement() {
         if (user?.role === "Super-Admin" || user?.role === "Admin") {
           setBuildings(data);
         } else {
+          const userBuildingNumber = user?.role ? user.role.replace(/\D/g, "") : "N/A";
+console.log("Bui - ", userBuildingNumber);
+// Extract numeric part from role
+           
           const filteredBuildings = data.filter(building => 
             building.president === user?.name || 
             building.secretary === user?.name || 
-            building.treasurer === user?.name
+            building.treasurer === user?.name || 
+            building.name === user?.role // Compare with extracted number
           );
+      
           setBuildings(filteredBuildings);
         }
       }
+      
       
     } catch (error) {
       console.error("Error fetching buildings:", error);
@@ -239,7 +246,7 @@ export default function BuildingsManagement() {
   //     });
   //   }
   // };
-
+  console.log(user)
   const removeUpdate = (index) => {
     setNewBuilding(prev => ({
       ...prev,
@@ -659,7 +666,7 @@ export default function BuildingsManagement() {
                   value={newBuilding.name}
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="For Example : A,B,C"
+                  placeholder="For Example : Building No.1,2,A,B,etc"
                   required
                 />
               </div>
