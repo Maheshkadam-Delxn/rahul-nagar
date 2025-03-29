@@ -17,19 +17,34 @@ export async function POST(req) {
             president, 
             secretary, 
             treasurer, 
-            image,  // This should be the image URL string from Cloudinary
+            image,  // Building image URL
+            presidentImage, // President image URL
+            secretaryImage, // Secretary image URL
+            treasurerImage, // Treasurer image URL
             events = [],
             updates = [],
             owners = [],
+            documents = [],
             createdBy 
         } = body;
 
-        console.log("Received image data:", image); // Debug log
+        console.log("Received building data:", { 
+            name, 
+            presidentImage,
+            secretaryImage,
+            treasurerImage
+        }); // Debug log
 
         // Comprehensive validation
         const validationErrors = [];
 
-       
+        if (!name || typeof name !== 'string') {
+            validationErrors.push('Building name is required and must be a string');
+        }
+
+        if (!image || typeof image !== 'string') {
+            validationErrors.push('Building image URL is required');
+        }
 
         // Check for validation errors
         if (validationErrors.length > 0) {
@@ -43,11 +58,14 @@ export async function POST(req) {
         // Sanitize and prepare data
         const buildingData = {
             name: name.trim(),
-            description: description.trim(),
-            president: president.trim(),
-            secretary: secretary.trim(),
-            treasurer: treasurer.trim(),
-            image: image.trim(), // Ensure the URL is trimmed
+            description: description?.trim() || "",
+            president: president?.trim() || "",
+            secretary: secretary?.trim() || "",
+            treasurer: treasurer?.trim() || "",
+            image: image.trim(),
+            presidentImage: presidentImage?.trim() || "",
+            secretaryImage: secretaryImage?.trim() || "",
+            treasurerImage: treasurerImage?.trim() || "",
             events: events.map(event => ({
                 title: event.title?.trim() || "",
                 description: event.description?.trim() || "",
@@ -67,6 +85,13 @@ export async function POST(req) {
                 flatNumber: owner.flatNumber?.trim() || "",
                 shopNumber: owner.shopNumber?.trim() || '',
                 image: owner.image?.trim() || ''
+            })),
+            documents: documents.map(doc => ({
+                title: doc.title?.trim() || "",
+                description: doc.description?.trim() || "",
+                fileUrl: doc.fileUrl?.trim() || "",
+                fileType: doc.fileType?.trim() || "",
+                uploadedBy: doc.uploadedBy?.trim() || "unknown"
             })),
             createdBy: createdBy || "unknown"
         };

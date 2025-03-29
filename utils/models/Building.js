@@ -28,7 +28,8 @@ const DocumentSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
-  });
+});
+
 const UpdateSchema = new mongoose.Schema({
     role: { 
         type: String, 
@@ -84,9 +85,8 @@ const EventSchema = new mongoose.Schema({
     description: { 
       type: String, 
       trim: true,
-      default: "" // Ensuring it always has a default value
-  },
-    // Optional fields to match frontend structure
+      default: ""
+    },
     date: { 
         type: Date 
     },
@@ -116,16 +116,30 @@ const BuildingSchema = new mongoose.Schema({
         type: String, 
         trim: true
     },
-    image:{
-      type:String,
-      required: [true, 'Image is required'],
-      trim:true
+    image: {
+      type: String,
+      required: [true, 'Building image is required'],
+      trim: true
+    },
+    presidentImage: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    secretaryImage: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    treasurerImage: {
+      type: String,
+      trim: true,
+      default: ""
     },
     description: { 
         type: String, 
         trim: true
     },
-   
     events: [EventSchema],
     updates: [UpdateSchema],
     owners: [OwnerSchema],

@@ -23,8 +23,8 @@ import Link from "next/link";
 
 export default function BuildingsManagement() {
   const [showDocumentsPopup, setShowDocumentsPopup] = useState(false);
-const [currentBuildingDocuments, setCurrentBuildingDocuments] = useState([]);
-const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [currentBuildingDocuments, setCurrentBuildingDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +42,9 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
   const [currentUpdate, setCurrentUpdate] = useState({ title: '', date: '', description: '' });
   const [currentDocument, setCurrentDocument] = useState([{ title: '', file: null }]);
   const [documentUploading, setDocumentUploading] = useState(false);
+  const [presidentImage, setPresidentImage] = useState(null);
+  const [secretaryImage, setSecretaryImage] = useState(null);
+  const [treasurerImage, setTreasurerImage] = useState(null);
   // Form validation states
   const [formErrors, setFormErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
@@ -64,6 +67,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     
     checkSessionStorage();
   }, []);
+
   const handleShowDocuments = async (building) => {
     setDocumentsLoading(true);
     setShowDocumentsPopup(true);
@@ -94,6 +98,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
       setDocumentsLoading(false);
     }
   };
+
   // Building folder mappings
   const buildingFolderMap = {
     "Building No.1": "1pk3BXv-NzVgPhSrAlwHerHwSbD-nnexQ",
@@ -116,12 +121,35 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     secretary: "",
     treasurer: "",
     image: null,
+    presidentImage: null,
+    secretaryImage: null,
+    treasurerImage: null,
     owners: [],
     events: [],
     updates: [],
     documents: []
   });
-  console.log(currentBuildingDocuments)
+
+  // Helper function to upload images to Cloudinary
+  const uploadImage = async (imageFile) => {
+    const imageData = new FormData();
+    imageData.append("file", imageFile);
+    imageData.append("upload_preset", "building-upload");
+
+    const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
+      method: "POST",
+      body: imageData,
+    });
+
+    const imageResult = await imageResponse.json();
+
+    if (!imageResponse.ok) {
+      throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
+    }
+
+    return imageResult.secure_url;
+  };
+
   // Form validation function
   const validateField = (name, value) => {
     let error = "";
@@ -211,6 +239,18 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     // Validate the field and update errors
     const error = validateField("image", file);
     setFormErrors(prev => ({ ...prev, image: error }));
+  };
+
+  const handlePresidentImageChange = (e) => {
+    setPresidentImage(e.target.files[0]);
+  };
+
+  const handleSecretaryImageChange = (e) => {
+    setSecretaryImage(e.target.files[0]);
+  };
+
+  const handleTreasurerImageChange = (e) => {
+    setTreasurerImage(e.target.files[0]);
   };
 
   const handleOwnerImageChange = (e) => {
@@ -317,8 +357,6 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     const documentToEdit = newBuilding.documents[index];
     setCurrentDocument({
       title: documentToEdit.title,
-      // We can't set the file here since it's already uploaded
-      // The user will need to select a new file if they want to change it
       file: null
     });
     setEditingDocumentIndex(index);
@@ -464,7 +502,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     // Map updates correctly (description → content)
     const mappedUpdates = building.updates?.map(update => ({
       title: update.title,
-      description: update.content, // Map content back to description for the form
+      description: update.content,
       date: update.date
     })) || [];
   
@@ -474,11 +512,14 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
       president: building.president,
       secretary: building.secretary,
       treasurer: building.treasurer,
-      image: null, // Reset image file input
-      currentImageUrl: building.image, // Store current image URL separately
+      image: null,
+      currentImageUrl: building.image,
+      presidentImageUrl: building.presidentImage,
+      secretaryImageUrl: building.secretaryImage,
+      treasurerImageUrl: building.treasurerImage,
       owners: building.owners || [],
       events: building.events || [],
-      updates: mappedUpdates, // Use the mapped updates
+      updates: mappedUpdates,
       documents: building.documents || []
     });
     
@@ -497,6 +538,9 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
       secretary: "",
       treasurer: "",
       image: null,
+      presidentImage: null,
+      secretaryImage: null,
+      treasurerImage: null,
       owners: [],
       events: [],
       updates: [],
@@ -509,6 +553,9 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     
     setIsEditMode(false);
     setCurrentBuildingId(null);
+    setPresidentImage(null);
+    setSecretaryImage(null);
+    setTreasurerImage(null);
   };
 
   // Validate entire form
@@ -548,31 +595,55 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
     setLoading(true);
     setError(null);
   
-    // Use current image URL if no new image is uploaded in edit mode
+    // Use current image URLs if no new images are uploaded in edit mode
     let imageUrl = isEditMode ? newBuilding.currentImageUrl : "";
+    let presidentImageUrl = isEditMode ? newBuilding.presidentImageUrl : "";
+    let secretaryImageUrl = isEditMode ? newBuilding.secretaryImageUrl : "";
+    let treasurerImageUrl = isEditMode ? newBuilding.treasurerImageUrl : "";
   
-    // Upload new image if provided
+    // Upload new building image if provided
     if (newBuilding.image) {
-      const imageData = new FormData();
-      imageData.append("file", newBuilding.image);
-      imageData.append("upload_preset", "building-upload");
-  
       try {
-        const imageResponse = await fetch("https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", {
-          method: "POST",
-          body: imageData,
-        });
-  
-        const imageResult = await imageResponse.json();
-  
-        if (!imageResponse.ok) {
-          throw new Error(`Image upload failed: ${imageResult.error?.message || "Unknown error"}`);
-        }
-  
-        imageUrl = imageResult.secure_url;
+        imageUrl = await uploadImage(newBuilding.image);
       } catch (error) {
-        console.error("Error uploading image:", error);
-        setError("Failed to upload image. Please try again.");
+        console.error("Error uploading building image:", error);
+        setError("Failed to upload building image. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Upload president image if provided
+    if (presidentImage) {
+      try {
+        presidentImageUrl = await uploadImage(presidentImage);
+      } catch (error) {
+        console.error("Error uploading president image:", error);
+        setError("Failed to upload president image. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Upload secretary image if provided
+    if (secretaryImage) {
+      try {
+        secretaryImageUrl = await uploadImage(secretaryImage);
+      } catch (error) {
+        console.error("Error uploading secretary image:", error);
+        setError("Failed to upload secretary image. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Upload treasurer image if provided
+    if (treasurerImage) {
+      try {
+        treasurerImageUrl = await uploadImage(treasurerImage);
+      } catch (error) {
+        console.error("Error uploading treasurer image:", error);
+        setError("Failed to upload treasurer image. Please try again.");
         setLoading(false);
         return;
       }
@@ -586,6 +657,9 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
       secretary: newBuilding.secretary.trim(),
       treasurer: newBuilding.treasurer.trim(),
       image: imageUrl,
+      presidentImage: presidentImageUrl,
+      secretaryImage: secretaryImageUrl,
+      treasurerImage: treasurerImageUrl,
       owners: newBuilding.owners.map(owner => ({
         name: owner.name?.trim() || "",
         flatNumber: owner.flatNumber?.trim() || "",
@@ -601,7 +675,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
       updates: newBuilding.updates.map(update => ({
         role: userRole,
         title: update.title?.trim() || "",
-        content: update.description?.trim() || "", // Map description to content
+        content: update.description?.trim() || "",
         date: update.date || new Date().toISOString(),
         link: update.link || ""
       })),
@@ -844,11 +918,6 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                   <span>Updates: {building.updates?.length || 0}</span>
                 </div>
 
-                {/* <div className="flex items-center text-gray-500 mb-2">
-                  <FileText size={16} className="mr-2 flex-shrink-0" />
-                  <span>Documents: {building.documents?.length || 0}</span>
-                </div> */}
-                
                 <div className="flex justify-between mt-4">
                   <button 
                     className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
@@ -929,6 +998,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                 />
               </div>
 
+              {/* President Section */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="president">
                   President (Optional)
@@ -942,8 +1012,31 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                   className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Building president"
                 />
+                <div className="mt-2">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="presidentImage">
+                    President Image (Optional)
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      id="presidentImage"
+                      name="presidentImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePresidentImageChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    {isEditMode && newBuilding.presidentImageUrl && (
+                      <img 
+                        src={newBuilding.presidentImageUrl} 
+                        alt="Current President" 
+                        className="h-10 w-10 object-cover ml-2 rounded"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
 
+              {/* Secretary Section */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretary">
                   Secretary (Optional)
@@ -957,8 +1050,31 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                   className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Building secretary"
                 />
+                <div className="mt-2">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="secretaryImage">
+                    Secretary Image (Optional)
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      id="secretaryImage"
+                      name="secretaryImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleSecretaryImageChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    {isEditMode && newBuilding.secretaryImageUrl && (
+                      <img 
+                        src={newBuilding.secretaryImageUrl} 
+                        alt="Current Secretary" 
+                        className="h-10 w-10 object-cover ml-2 rounded"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
 
+              {/* Treasurer Section */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurer">
                   Treasurer (Optional)
@@ -972,6 +1088,28 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                   className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Building treasurer"
                 />
+                <div className="mt-2">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="treasurerImage">
+                    Treasurer Image (Optional)
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      id="treasurerImage"
+                      name="treasurerImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleTreasurerImageChange}
+                      className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    {isEditMode && newBuilding.treasurerImageUrl && (
+                      <img 
+                        src={newBuilding.treasurerImageUrl} 
+                        alt="Current Treasurer" 
+                        className="h-10 w-10 object-cover ml-2 rounded"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="mb-4">
@@ -1218,7 +1356,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
               </div>
 
               {/* Updates Section */}
-              <div className="mb-6 border-t border-gray-200 pt-4">
+              {/* <div className="mb-6 border-t border-gray-200 pt-4">
                 <h3 className="text-lg font-semibold mb-3 flex items-center">
                   <Megaphone size={18} className="mr-2" />
                   Updates
@@ -1323,7 +1461,7 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                     </div>
                   </div>
                 )}
-              </div>
+              </div> */}
 
               {/* Documents Section */}
               <div className="mb-6 border-t border-gray-200 pt-4">
@@ -1401,30 +1539,6 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
                               <div className="text-gray-500 text-xs">{doc.fileName}</div>
                             </div>
                           </div>
-                          {/* <div className="flex gap-1">
-                            <a 
-                              href={doc.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Download size={16} />
-                            </a>
-                            <button 
-                              type="button"
-                              onClick={() => editDocument(index)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => removeDocument(index)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div> */}
                         </div>
                       ))}
                     </div>
@@ -1463,61 +1577,50 @@ const [documentsLoading, setDocumentsLoading] = useState(false);
         </div>
       )}
       {showDocumentsPopup && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-800">
-          Building Documents
-        </h2>
-        <button 
-          onClick={() => {
-            setShowDocumentsPopup(false);
-            setCurrentBuildingDocuments([]);
-          }}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <X size={24} />
-        </button>
-      </div>
-      
-      {documentsLoading ? (
-        <div className="flex justify-center items-center h-32">
-          <Loader size={40} className="animate-spin text-purple-600" />
-        </div>
-      ) : currentBuildingDocuments?.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium text-gray-700 mb-2">No Documents Found</h3>
-          <p className="text-gray-500">This building doesn't have any documents yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {currentBuildingDocuments?.map((doc, index) => (
-            <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <File size={18} className="mr-3 text-gray-400" />
-                <div>
-                  <Link href={doc.viewLink} className="font-medium underline text-blue-500" >{doc.title || doc.name}</Link>
-                  {/* <div className="text-gray-500 text-xs">
-                    {new Date(doc.createdTime).toLocaleDateString()} • {doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : ''}
-                  </div> */}
-                </div>
-              </div>
-              {/* <a 
-                href={doc.webViewLink || doc.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                Building Documents
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowDocumentsPopup(false);
+                  setCurrentBuildingDocuments([]);
+                }}
+                className="text-gray-500 hover:text-gray-700"
               >
-                <Download size={18} />
-              </a> */}
+                <X size={24} />
+              </button>
             </div>
-          ))}
+            
+            {documentsLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <Loader size={40} className="animate-spin text-purple-600" />
+              </div>
+            ) : currentBuildingDocuments?.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-medium text-gray-700 mb-2">No Documents Found</h3>
+                <p className="text-gray-500">This building doesn't have any documents yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {currentBuildingDocuments?.map((doc, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center">
+                      <File size={18} className="mr-3 text-gray-400" />
+                      <div>
+                        <Link href={doc.viewLink} className="font-medium underline text-blue-500" >{doc.title || doc.name}</Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </div>
-  </div>
-)}
     </div>
     :
     <div className="flex flex-col items-center justify-center h-screen">

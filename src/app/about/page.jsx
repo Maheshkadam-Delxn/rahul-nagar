@@ -8,8 +8,8 @@ import BuildingMap1 from "../../../public/home/layout/layout1.png";
 import BuildingMap2 from "../../../public/home/layout/layout2.png";
 import BuildingMap3 from "../../../public/home/layout/layout3.png";
 import BuildingMap4 from "../../../public/home/layout/layout4.png";
-import Image1 from "../../../public/home/about/build.jpg";
-import Image2 from "../../../public/home/about/associates.jpg";
+import Image1 from "../../../public/rahul-nagar.png";
+import Image2 from "../../../public/gallery/5.jpeg";
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -109,7 +109,7 @@ const page = () => {
             <div className="w-full h-full bg-white py-12 md:py-24 px-4 md:px-0 flex flex-col items-center justify-center">
                 <div className="w-full h-full max-w-6xl flex flex-col items-center gap-12 md:gap-18">
                     {/* Left Image Section */}
-                    <div className="w-full flex flex-col md:flex-row items-center gap-8 md:gap-10">
+                    <div className="w-full flex flex-col md:flex-row items-start gap-8 md:gap-10">
                         <div className="w-full md:w-1/2 h-[250px] md:h-[350px] rounded-2xl">
  <Image
               alt="Society Image"
@@ -130,11 +130,12 @@ const page = () => {
                                 Brief History of Rahul Nagar
                             </h2>
                             <p className="text-gray-600 mt-4">
-                            Founded in 1993, Rahul Nagar Society has been a pillar of community living in Pune, fostering a culture of transparency, inclusivity, and growth. As we step into the future, our redevelopment initiative aims to transform our neighborhood into a modern, sustainable, and vibrant living space. With a commitment to innovation and the well-being of our residents, we are shaping a community that blends tradition with contemporary living.
-                            </p>
+                            Nestled in the heart of Kothrud, Rahul Nagar was established in 1993 as a cooperative housing society with a vision to create a harmonious and well-planned residential community. Over the years, it has grown into a thriving neighborhood known for its strong community bonds, green spaces, and modern amenities.
+
+It is one of the most renowned and reputed housing society in Kothrud. </p>
 
                             {/* Bullet Points Section */}
-                            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-base md:text-lg font-semibold">
+                            {/* <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-base md:text-lg font-semibold">
                                 <div className="flex items-center gap-3">
                                     <Image
                                         src={CheckIcon}
@@ -175,7 +176,7 @@ const page = () => {
                                     />{" "}
                                     Building and Construction
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                     <div className="w-full flex flex-col items-start gap-8 md:gap-14">

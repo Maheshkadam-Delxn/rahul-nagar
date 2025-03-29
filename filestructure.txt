@@ -41,6 +41,7 @@
             |-- video.png
         |-- building
             |-- icon.svg
+        |-- building.png
         |-- call.png
         |-- contact
             |-- email.png
@@ -71,6 +72,7 @@
             |-- pexels-pixabay-257416.jpg
             |-- shreeganesh.png
             |-- shreeRam.png
+        |-- ganesh.png
         |-- homebg.png
         |-- homelogo.png
         |-- homelogo.svg
@@ -93,6 +95,7 @@
     |-- image.png
     |-- logo.png
     |-- logo2.png
+    |-- rahul-nagar.png
 |-- README.md
 |-- src
     |-- app

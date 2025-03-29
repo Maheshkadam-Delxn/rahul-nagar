@@ -29,7 +29,6 @@ export async function PUT(req) {
             validationErrors.push("Building name is required");
         }
 
-
         if (!buildingData.president || buildingData.president.trim() === "") {
             validationErrors.push("President name is required");
         }
@@ -43,7 +42,7 @@ export async function PUT(req) {
         }
 
         if (!buildingData.image || typeof buildingData.image !== "string") {
-            validationErrors.push("Valid image URL is required");
+            validationErrors.push("Valid building image URL is required");
         }
 
         // Check for validation errors
@@ -61,11 +60,14 @@ export async function PUT(req) {
         // Sanitize and prepare data
         const sanitizedData = {
             name: buildingData.name.trim(),
-            description: buildingData.description.trim(),
+            description: buildingData.description?.trim() || "",
             president: buildingData.president.trim(),
             secretary: buildingData.secretary.trim(),
             treasurer: buildingData.treasurer.trim(),
             image: buildingData.image.trim(),
+            presidentImage: buildingData.presidentImage?.trim() || "",
+            secretaryImage: buildingData.secretaryImage?.trim() || "",
+            treasurerImage: buildingData.treasurerImage?.trim() || "",
             events: buildingData.events?.map(event => ({
                 title: event.title?.trim() || "",
                 description: event.description?.trim() || "",
@@ -86,6 +88,13 @@ export async function PUT(req) {
                 shopNumber: owner.shopNumber?.trim() || "",
                 image: owner.image?.trim() || "",
             })) || [],
+            documents: buildingData.documents?.map(doc => ({
+                title: doc.title?.trim() || "",
+                description: doc.description?.trim() || "",
+                fileUrl: doc.fileUrl?.trim() || "",
+                fileType: doc.fileType?.trim() || "",
+                uploadedBy: doc.uploadedBy?.trim() || "unknown"
+            })) || []
         };
 
         // Find and update the building
@@ -93,10 +102,10 @@ export async function PUT(req) {
             buildingId,
             sanitizedData,
             { 
-                new: true, 
-                runValidators: true 
+                new: true,  // Return the updated document
+                runValidators: true  // Run schema validators on update
             }
-        );
+        ).lean(); // Use lean() for better performance
 
         if (!updatedBuilding) {
             return NextResponse.json(
@@ -146,6 +155,17 @@ export async function PUT(req) {
                     message: "Invalid building ID format",
                 },
                 { status: 400 }
+            );
+        }
+
+        // Handle duplicate key errors
+        if (error.code === 11000) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Building with this name already exists",
+                },
+                { status: 409 }
             );
         }
 

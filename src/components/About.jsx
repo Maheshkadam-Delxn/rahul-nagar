@@ -1,7 +1,8 @@
 import React from "react";
 import Image from "next/image";
-import Image1 from "../../public/home/about/sample.jpg";
-
+import Image1 from "../../public/rahul-nagar.png";
+import Image2 from "../../public/home/ganesh.png";
+import Image3 from "../../public/home/building.png";
 import Link from "next/link";
 
 const About = () => {
@@ -28,7 +29,7 @@ const About = () => {
               width={1920}
               height={1080}
               className="w-full h-full object-cover rounded-tl-[50px] rounded-br-[50px]"
-              src={Image1}
+              src={Image2}
             />
           </div>
           <div className="h-64 md:h-80 lg:h-[250px]">
@@ -37,7 +38,7 @@ const About = () => {
               width={1920}
               height={1080}
               className="w-full h-full object-cover rounded-tr-[50px] rounded-bl-[50px]"
-              src={Image1}
+              src={Image3}
             />
           </div>
         </div>
