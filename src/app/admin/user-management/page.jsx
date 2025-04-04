@@ -354,7 +354,8 @@ const UserManagement = () => {
           role: editedUser.role,
           status: editedUser.status,
           image: imageUrl, // Use the uploaded or existing image URL
-          post: editedUser.post
+          post: editedUser.post,
+          password: editedUser.password // Include password if provided
         }),
       });
       
@@ -1087,6 +1088,20 @@ const UserManagement = () => {
                   {editFormErrors.email && (
                     <p className="text-xs text-red-600 mt-1">{editFormErrors.email}</p>
                   )}
+                </div>
+                
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password (leave blank to keep current)
+                  </label>
+                  <input 
+                    type="password"
+                    value={editedUser.password || ''}
+                    onChange={(e) => setEditedUser({...editedUser, password: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="Enter new password"
+                  />
                 </div>
                 
                 {/* Post/Position */}
