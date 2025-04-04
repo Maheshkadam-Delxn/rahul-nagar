@@ -110,7 +110,7 @@ const BuildingPage = () => {
     const getImageSrc = (img) => {
         return img || "/avatar.jpg";
     };
-    
+    console.log(upcomingEvents)
     return (
         <div className='w-full min-h-screen'>
             <ServiceHeroSection

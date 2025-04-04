@@ -215,6 +215,8 @@
                     |-- route.js
                 |-- update-image
                     |-- route.js
+            |-- settings
+                |-- route.js
             |-- updates
                 |-- add-update
                     |-- route.js
@@ -277,6 +279,8 @@
         |-- Stats.jsx
     |-- context
         |-- AuthContext.jsx
+    |-- hooks
+        |-- useSiteSetting.js
     |-- middleware.js
     |-- scripts
         |-- fixDatabase.js
@@ -289,5 +293,6 @@
         |-- GalleryImage.js
         |-- members.js
         |-- Post.js
+        |-- SiteSetting.js
         |-- Updates.js
         |-- User.js

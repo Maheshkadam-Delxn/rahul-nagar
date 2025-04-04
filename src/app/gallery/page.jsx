@@ -4,8 +4,7 @@ import ServiceHeroSection from "@/components/ServiceHeroSection";
 import Image from "next/image";
 
 // Updated categories as per your request
-const categories = ["general", "event", "fascilities", "celebration", "meeting"];
-
+const categories = ["general", "event", "fascilities", "celebration", "meetings"];
 const Page = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [images, setImages] = useState([]);
@@ -34,7 +33,7 @@ const Page = () => {
 
     fetchImages();
   }, []);
-
+  console.log(images)
   // Add event listener for Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
