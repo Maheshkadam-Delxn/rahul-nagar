@@ -23,11 +23,13 @@ const BuildingPage = () => {
         
         const date = new Date(dateString);
         
-        // Format date like "23rd March"
+        // Get year component
+        const year = date.getFullYear();
+        
+        // Rest of existing date formatting logic
         const day = date.getDate();
         const month = date.toLocaleString('default', { month: 'long' });
         
-        // Add ordinal suffix to day
         const ordinalSuffix = (day) => {
             if (day > 3 && day < 21) return 'th';
             switch (day % 10) {
@@ -38,14 +40,14 @@ const BuildingPage = () => {
             }
         };
         
-        // Format time like "8:20 PM"
         const hours = date.getHours();
         const minutes = date.getMinutes();
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const formattedHours = hours % 12 || 12;
         const formattedMinutes = minutes.toString().padStart(2, '0');
         
-        return `${day}${ordinalSuffix(day)} ${month}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+        // Add year to the formatted string
+        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
     };
     
     useEffect(() => {
