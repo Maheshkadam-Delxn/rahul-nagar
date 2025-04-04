@@ -10,6 +10,7 @@ const Page = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Fetch images from the API
   useEffect(() => {
@@ -34,10 +35,36 @@ const Page = () => {
     fetchImages();
   }, []);
 
+  // Add event listener for Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && selectedImage) {
+        setSelectedImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    
+    // Clean up the event listener
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedImage]);
+
   const getFilteredImages = () =>
     activeFilter === "All" ? images : images.filter((img) => img.category === activeFilter);
 
   const filterOptions = ["All", ...categories];
+
+  // Open image in zoom view
+  const openZoomView = (image) => {
+    setSelectedImage(image);
+  };
+
+  // Close zoom view
+  const closeZoomView = () => {
+    setSelectedImage(null);
+  };
 
   return (
     <div className="w-full min-h-screen">
@@ -76,7 +103,8 @@ const Page = () => {
               {getFilteredImages().map((img) => (
                 <div
                   key={img._id}
-                  className="relative bg-gray-300 w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden group"
+                  className="relative bg-gray-300 w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden group cursor-pointer"
+                  onClick={() => openZoomView(img)}
                 >
                   <Image
                     src={img.imageUrl}
@@ -106,6 +134,51 @@ const Page = () => {
           )}
         </div>
       </div>
+
+      {/* Zoom Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-pointer"
+          onClick={closeZoomView}
+        >
+          <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center">
+            {/* Close button */}
+            <button 
+              className="absolute top-2 right-2 text-white bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors z-10"
+              onClick={closeZoomView}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Zoomed image */}
+            <div className="relative h-[80vh] w-full" onClick={(e) => e.stopPropagation()}>
+              <Image
+                src={selectedImage.imageUrl}
+                alt={selectedImage.title || `Gallery image - ${selectedImage.category}`}
+                layout="fill"
+                objectFit="contain"
+                className="pointer-events-none"
+              />
+            </div>
+            
+            {/* Image info */}
+            <div className="bg-black/70 p-4 text-white mt-2 w-full rounded-md">
+              <h3 className="font-semibold text-lg">{selectedImage.title}</h3>
+              {selectedImage.description && <p className="text-gray-300 mt-1">{selectedImage.description}</p>}
+              <div className="flex justify-between mt-2">
+                <p className="text-gray-400 text-sm">{selectedImage.category}</p>
+                <p className="text-gray-400 text-sm">
+                  {new Date(selectedImage.uploadDate).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            
+            <p className="text-gray-400 text-sm mt-2">Press ESC or click anywhere to close</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
