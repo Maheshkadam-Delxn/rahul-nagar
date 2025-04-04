@@ -127,6 +127,8 @@
                 |-- page.jsx
             |-- event
                 |-- page.jsx
+            |-- gallery-management
+                |-- page.jsx
             |-- layout.js
             |-- page.js
             |-- profile
@@ -204,6 +206,15 @@
                     |-- route.js
                 |-- [...folderId]
                     |-- route.js
+            |-- gallery
+                |-- add-image
+                    |-- route.js
+                |-- delete-image
+                    |-- route.js
+                |-- fetchAll
+                    |-- route.js
+                |-- update-image
+                    |-- route.js
             |-- updates
                 |-- add-update
                     |-- route.js
@@ -275,6 +286,7 @@
         |-- AssociateMember.js
         |-- Building.js
         |-- Events.js
+        |-- GalleryImage.js
         |-- members.js
         |-- Post.js
         |-- Updates.js
