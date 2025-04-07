@@ -20,16 +20,13 @@ const BuildingPage = () => {
     // Function to format date and time
     const formatDateTime = (dateString) => {
         if (!dateString) return "No date available";
-        
+    
         const date = new Date(dateString);
-        
-        // Get year component
-        const year = date.getFullYear();
-        
-        // Rest of existing date formatting logic
-        const day = date.getDate();
-        const month = date.toLocaleString('default', { month: 'long' });
-        
+    
+        const year = date.getUTCFullYear();
+        const day = date.getUTCDate();
+        const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
+    
         const ordinalSuffix = (day) => {
             if (day > 3 && day < 21) return 'th';
             switch (day % 10) {
@@ -39,16 +36,16 @@ const BuildingPage = () => {
                 default: return 'th';
             }
         };
-        
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
+    
+        const hours = date.getUTCHours();
+        const minutes = date.getUTCMinutes();
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const formattedHours = hours % 12 || 12;
         const formattedMinutes = minutes.toString().padStart(2, '0');
-        
-        // Add year to the formatted string
-        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+    
+        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} UTC`;
     };
+    
     
     useEffect(() => {
         if (!id) return;

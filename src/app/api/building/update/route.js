@@ -2,6 +2,35 @@ import { NextResponse } from "next/server";
 import Building from "../../../../../utils/models/Building";
 import connectDb from "../../../../../utils/connectDb";
 
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    
+    // Get local date components
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+    
+    // Get local time components
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    
+    // Add ordinal suffix to day
+    const ordinalSuffix = (day) => {
+        if (day > 3 && day < 21) return 'th';
+        switch (day % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+        }
+    };
+    
+    return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+};
+
 export async function PUT(req) {
     try {
         // Connect to database
@@ -72,6 +101,7 @@ export async function PUT(req) {
                 title: event.title?.trim() || "",
                 description: event.description?.trim() || "",
                 date: event.date || new Date(),
+                formattedDate: formatDate(event.date || new Date()),
                 time: event.time || "",
                 location: event.location || "",
             })) || [],
@@ -80,6 +110,7 @@ export async function PUT(req) {
                 title: update.title?.trim() || "",
                 content: update.content?.trim() || "",
                 date: update.date || new Date(),
+                formattedDate: formatDate(update.date || new Date()),
                 link: update.link || "",
             })) || [],
             owners: buildingData.owners?.map(owner => ({
