@@ -222,7 +222,7 @@ const BuildingPage = () => {
                             </div>
                         </div>
                     </div>
-
+{/* empty */}
                     {/* Owners Section */}
                     {building.owners?.length > 0 && (
                         <div className="w-full py-12 flex flex-col items-center justify-center"> 
