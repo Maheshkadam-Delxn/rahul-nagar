@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Calendar } from "lucide-react";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import ConstructionIcon from "../../../../public/home/events/icon.png";
+import { format, utcToZonedTime } from 'date-fns-tz';
+
 
 const BuildingPage = () => {
     const { id } = useParams();
@@ -17,38 +19,26 @@ const BuildingPage = () => {
     const upcomingEvents = building?.events?.filter(event => new Date(event.date) > now) || [];
     const pastEvents = building?.events?.filter(event => new Date(event.date) <= now) || [];
     
+   
     // Function to format date and time
-    const formatDateTime = (dateString) => {
-        if (!dateString) return "No date available";
-        
-        const date = new Date(dateString);
-        
-        // Get year component
-        const year = date.getFullYear();
-        
-        // Rest of existing date formatting logic
-        const day = date.getDate();
-        const month = date.toLocaleString('default', { month: 'long' });
-        
-        const ordinalSuffix = (day) => {
-            if (day > 3 && day < 21) return 'th';
-            switch (day % 10) {
-                case 1: return 'st';
-                case 2: return 'nd';
-                case 3: return 'rd';
-                default: return 'th';
-            }
-        };
-        
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12;
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        
-        // Add year to the formatted string
-        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-    };
+    const formatDateTime = (isoDate) => {
+        const date = new Date(isoDate);
+      
+        const formattedDate = date.toLocaleDateString('en-GB').replace(/\//g, '-'); // dd-mm-yyyy
+        const formattedTime = date.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }); // HH:MM (24-hour)
+      
+        return `${formattedDate} ${formattedTime}`;
+      };
+      
+  
+      
+      
+
+      
     
     useEffect(() => {
         if (!id) return;
