@@ -56,6 +56,9 @@ export async function PUT(req) {
                 { status: 400 }
             );
         }
+    
+
+// Save utcDate to the database
 
         // Sanitize and prepare data
         const sanitizedData = {
@@ -69,12 +72,12 @@ export async function PUT(req) {
             secretaryImage: buildingData.secretaryImage?.trim() || "",
             treasurerImage: buildingData.treasurerImage?.trim() || "",
             events: buildingData.events?.map(event => ({
-                title: event.title?.trim() || "",
-                description: event.description?.trim() || "",
-                date: event.date || new Date(),
-                time: event.time || "",
-                location: event.location || "",
-            })) || [],
+                title: event?.title?.trim() || "",
+                description: event?.description?.trim() || "",
+                date: event?.date ? new Date(event?.date).toISOString() : new Date().toISOString(), // Convert to UTC ISO string
+                time: event?.time || "",
+                location: event?.location || "",
+            })) || [],
             updates: buildingData.updates?.map(update => ({
                 role: update.role?.trim() || "admin",
                 title: update.title?.trim() || "",
