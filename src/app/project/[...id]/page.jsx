@@ -132,7 +132,7 @@ const BuildingPage = () => {
                                         </div>
                                         <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
                                         <p className="text-[#B57E10] mt-2 font-medium">
-                                            {formatDateTime(event.date)}
+                                            {event.date}
                                         </p>
                                         <p className="text-gray-500 text-sm">{event.location}</p>
                                     </div>
