@@ -1,145 +1,157 @@
-"use client"
+"use client";
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
-// Create the auth context
-const AuthContext = createContext({});
+const AuthContext = createContext();
 
-// Create the auth provider component
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
-
-  // Simple function to log session data for debugging
-  const logSessionData = () => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const data = {
-        token: sessionStorage.getItem('authToken') ? 'Present' : 'None',
-        userId: sessionStorage.getItem('userId'),
-        userName: sessionStorage.getItem('userName'), 
-        userRole: sessionStorage.getItem('userRole')
-      };
-      console.log("Session data:", data);
-      return data;
-    } catch (e) {
-      console.error("Error reading session data:", e);
-      return null;
-    }
-  };
 
   // Load user on initial render
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
-        // Check both cookie and sessionStorage
-        const tokenFromCookie = Cookies.get('authToken');
-        const tokenFromSession = sessionStorage.getItem('authToken');
+        const token = Cookies.get('authToken');
         
-       
-        
-        const token = tokenFromCookie || tokenFromSession;
-        
-        if (token) {
-          // If we have a token in either place, make sure it's in both places
-          if (tokenFromCookie && !tokenFromSession) {
-            sessionStorage.setItem('authToken', tokenFromCookie);
-          } else if (tokenFromSession && !tokenFromCookie) {
-            Cookies.set('authToken', tokenFromSession, { expires: 7 });
-          }
-          
-          // Get user data from sessionStorage
-          const userId = sessionStorage.getItem('userId');
-          const userName = sessionStorage.getItem('userName');
-          const userRole = sessionStorage.getItem('userRole');
-          
-          if (userId) {
-            setUser({
-              id: userId,
-              name: userName || 'User',
-              role: userRole || 'user'
-            });
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        // Get user data from cookies
+        const userId = Cookies.get('userId');
+        const userName = Cookies.get('userName');
+        const userRole = Cookies.get('userRole');
+
+        if (userId) {
+          setUser({
+            id: userId,
+            name: userName || 'User',
+            role: userRole || 'user'
+          });
+        } else {
+          // If cookies don't have user data but token exists
+          // Fetch user data from your API
+          const userData = await fetchUserData(token);
+          if (userData) {
+            setUser(userData);
+            // Update cookies with fresh data
+            Cookies.set('userId', userData.id, { expires: 30 });
+            Cookies.set('userName', userData.name, { expires: 30 });
+            Cookies.set('userRole', userData.role, { expires: 30 });
           }
         }
       } catch (error) {
         console.error("Error loading user:", error);
+        setError(error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadUser();
   }, []);
 
-  // Login function - stores user data and updates state
-  const login = (userData) => {
-    console.log("Login called with:", userData);
-    
-    if (!userData || !userData.token || !userData.user) {
-      console.error("Invalid login data", userData);
-      return;
-    }
-    
+  const fetchUserData = async (token) => {
     try {
-      // Store in sessionStorage
-      sessionStorage.setItem('authToken', userData.token);
-      sessionStorage.setItem('userId', userData.user.id);
-      sessionStorage.setItem('userName', userData.user.name || 'User');
-      sessionStorage.setItem('userRole', userData.user.role || 'user');
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      // CRITICAL: Store auth token in cookie for middleware with production-friendly settings
-      Cookies.set('authToken', userData.token, { 
-        expires: 7,
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Clear invalid auth data
+          Cookies.remove('authToken', { path: '/' });
+          Cookies.remove('userId', { path: '/' });
+          Cookies.remove('userName', { path: '/' });
+          Cookies.remove('userRole', { path: '/' });
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setError(error);
+      return null;
+    }
+  };
+
+  const login = async (userData) => {
+    try {
+      // Clear any previous errors
+      setError(null);
+      
+      // Store token and user data in cookies
+      Cookies.set('authToken', userData.token, {
+        expires: 30, // 30 days
         path: '/',
         sameSite: 'Lax',
         secure: process.env.NODE_ENV === 'production'
       });
       
-     
-      
+      Cookies.set('userId', userData.user.id, { expires: 30 });
+      Cookies.set('userName', userData.user.name || 'User', { expires: 30 });
+      Cookies.set('userRole', userData.user.role || 'user', { expires: 30 });
+
       // Update state
       setUser(userData.user);
     } catch (error) {
-      console.error("Error in login:", error);
+      console.error("Login error:", error);
+      setError(error);
+      throw error;
     }
-
-    console.log("After login attempt:");
-    console.log("Cookie exists:", !!Cookies.get('authToken'));
-    console.log("Session storage:", {
-      authToken: !!sessionStorage.getItem('authToken'),
-      userId: sessionStorage.getItem('userId')
-    });
   };
 
-  // Logout function - clears storage and state
   const logout = () => {
-    // Clear both sessionStorage and cookies
-    sessionStorage.clear();
-    
-    // Remove cookie with the same settings used to set it
-    Cookies.remove('authToken', { 
-      path: '/',
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
-    });
-    
-    // Update state
-    setUser(null);
-    
-    // Use window.location for a full page refresh instead of Next.js router
-    window.location.href = '/signin';
+    try {
+      // Remove all auth cookies
+      Cookies.remove('authToken', { path: '/' });
+      Cookies.remove('userId', { path: '/' });
+      Cookies.remove('userName', { path: '/' });
+      Cookies.remove('userRole', { path: '/' });
+      
+      // Clear state
+      setUser(null);
+      setError(null);
+      
+      // Redirect to login
+      router.push('/signin');
+    } catch (error) {
+      console.error("Logout error:", error);
+      setError(error);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      loading, 
+      error,
+      clearError 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to use auth context
 export const useAuth = () => {
-  return useContext(AuthContext);
-}; 
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

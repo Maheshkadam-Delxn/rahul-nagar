@@ -1,18 +1,19 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  BarChart3, 
-  Calendar, 
-  Users, 
-  ShieldCheck, 
-  RefreshCw, 
-  Settings, 
-  UserCircle, 
-  LogOut, 
+import { useRouter } from "next/navigation";
+import {
+  BarChart3,
+  Calendar,
+  Users,
+  ShieldCheck,
+  RefreshCw,
+  Settings,
+  UserCircle,
+  LogOut,
   Bell,
   Building,
   Menu,
@@ -30,8 +31,31 @@ const geistMono = Geist_Mono({
 });
 
 export default function AdminLayout({ children }) {
-  const { user, logout } = useAuth();
+  const router = useRouter();
+  const { user, logout, loading, error } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated and has the right role
+    if (!loading) {
+      // Only proceed with checks if loading is complete
+      const isAuthorized = user && ["Super-Admin", "Admin", "Building"].some(role => 
+        user.role?.startsWith(role)
+      );
+      
+      if (!user || error) {
+        console.log("No user or error, redirecting to signin");
+        router.push("/signin");
+        return; // Exit early
+      }
+      
+      if (!isAuthorized) {
+        console.log("User not authorized, redirecting to unauthorized");
+        router.push("/unauthorized");
+        return; // Exit early
+      }
+    }
+  }, [user, loading, error, router]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -40,7 +64,13 @@ export default function AdminLayout({ children }) {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
-  console.log(user?.role?.startsWith("Building"))
+
+  const handleLogout = async () => {
+    await logout(); // Make sure logout is complete before redirecting
+    closeSidebar();
+    router.push("/signin");
+  };
+
   // Render menu items based on user role
   const renderDashboardItems = () => {
     switch(true) {
@@ -99,6 +129,32 @@ export default function AdminLayout({ children }) {
     }
   };
 
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="spinner border-4 border-purple-500 border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-700">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If there's no user or unauthorized, show a brief loading before redirection happens
+  if (!user || error || !["Super-Admin", "Admin", "Building"].some(role => user?.role?.startsWith(role))) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="spinner border-4 border-purple-500 border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-700">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Main layout for authenticated and authorized users
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
