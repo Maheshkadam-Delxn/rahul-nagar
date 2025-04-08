@@ -34,37 +34,6 @@ const Events = () => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "No date available";
-    
-    const date = new Date(dateString);
-    
-    // Get local date components
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const year = date.getFullYear();
-    
-    // Get local time components
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    
-    // Add ordinal suffix to day
-    const ordinalSuffix = (day) => {
-      if (day > 3 && day < 21) return 'th';
-      switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
-    
-    return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
-
   return (
     <div className="w-full bg-[#f8f8f8] min-h-[50vh] flex items-center justify-center py-12 md:py-24 px-4">
       <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
@@ -104,7 +73,11 @@ const Events = () => {
                       </div>
                       <div className="flex items-center gap-1 md:gap-2">
                         <Calendar size={14} color="red" />
-                        {formatDate(update.createdAt)}
+                        {new Date(update.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
                       </div>
                     </div>
                     <h1 className="text-lg md:text-xl font-bold">{update.title}</h1>
@@ -143,7 +116,7 @@ const Events = () => {
                       </div>
                       <div className="flex items-center gap-1 md:gap-2">
                         <Calendar size={14} color="red" />
-                        {formatDate(event.date)}
+                        {new Date(event.date).toLocaleDateString()}
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row items-start md:items-center gap-3">

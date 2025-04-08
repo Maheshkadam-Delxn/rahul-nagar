@@ -49,10 +49,6 @@ const UpdateSchema = new mongoose.Schema({
         type: Date, 
         default: Date.now 
     },
-    formattedDate: {
-        type: String,
-        required: true
-    },
     link: { 
         type: String, 
         default: '' 
@@ -93,10 +89,6 @@ const EventSchema = new mongoose.Schema({
     },
     date: { 
         type: Date 
-    },
-    formattedDate: {
-        type: String,
-        required: true
     },
     time: { 
         type: String 

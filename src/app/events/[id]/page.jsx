@@ -27,37 +27,6 @@ const EventDetails = () => {
     fetchEvent();
   }, [id]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "No date available";
-    
-    const date = new Date(dateString);
-    
-    // Get local date components
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const year = date.getFullYear();
-    
-    // Get local time components
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    
-    // Add ordinal suffix to day
-    const ordinalSuffix = (day) => {
-      if (day > 3 && day < 21) return 'th';
-      switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
-    
-    return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
-
   if (loading) {
     return <p className="text-center text-gray-500 py-10">Loading event details...</p>;
   }
@@ -84,7 +53,7 @@ const EventDetails = () => {
         <div className="mt-4 flex flex-col gap-3 text-gray-700">
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-red-500" />
-            <span>{formatDate(event.date)}</span>
+            <span>{new Date(event.date).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock size={18} className="text-blue-500" />
