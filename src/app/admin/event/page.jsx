@@ -79,32 +79,41 @@ export default function EventsManagement() {
   };
 
   // Updated document change handler with immediate upload
-  const handleDocumentChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Get file extension
-      const fileExt = file.name.split(".").pop().toLowerCase();
-
-      // List of formats that are supported
-      const supportedFormats = ["pdf", "txt", "xls", "xlsx", "doc", "docx"];
-
-      if (supportedFormats.includes(fileExt)) {
-        // Set the file in state temporarily to show name
-        setNewEvent((prev) => ({
-          ...prev,
-          document: file,
-          isDocumentDeleted: false,
-        }));
-        
-        // Begin upload immediately
-        await uploadDocument(file);
-      } else {
-        alert(
-          `The file format "${fileExt}" is not supported. Please use one of the following formats: PDF, TXT, XLS, XLSX, DOC, DOCX.`
-        );
-      }
+ // Updated document change handler with file size validation and immediate upload
+const handleDocumentChange = async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    // Check file size - 256KB = 262144 bytes
+    const maxSizeInBytes = 256 * 1024; // 256KB in bytes
+    
+    if (file.size > maxSizeInBytes) {
+      alert(`File size exceeds the 256KB limit. Please upload a smaller file.`);
+      return;
     }
-  };
+    
+    // Get file extension
+    const fileExt = file.name.split(".").pop().toLowerCase();
+
+    // List of formats that are supported
+    const supportedFormats = ["pdf", "txt", "xls", "xlsx", "doc", "docx"];
+
+    if (supportedFormats.includes(fileExt)) {
+      // Set the file in state temporarily to show name
+      setNewEvent((prev) => ({
+        ...prev,
+        document: file,
+        isDocumentDeleted: false,
+      }));
+      
+      // Begin upload immediately
+      await uploadDocument(file);
+    } else {
+      alert(
+        `The file format "${fileExt}" is not supported. Please use one of the following formats: PDF, TXT, XLS, XLSX, DOC, DOCX.`
+      );
+    }
+  }
+};
 
   // New function for document upload with progress bar
   const uploadDocument = async (file) => {
