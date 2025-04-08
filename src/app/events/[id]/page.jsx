@@ -26,7 +26,7 @@ const EventDetails = () => {
 
     fetchEvent();
   }, [id]);
-
+  console.log(id);
   if (loading) {
     return <p className="text-center text-gray-500 py-10">Loading event details...</p>;
   }

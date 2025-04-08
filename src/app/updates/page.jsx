@@ -1,13 +1,18 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Calendar, MoveRight } from "lucide-react";
-import ConstructionIcon from "../../../public/home/events/icon.png"
-import { useRouter } from 'next/navigation';
+import { FileText, X } from "lucide-react";
+import ConstructionIcon from "../../../public/home/events/icon.png";
+
 const UpdatesPage = () => {
   const [updates, setUpdates] = useState([]);
+  const [modalImages, setModalImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const updatesPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,64 +25,129 @@ const UpdatesPage = () => {
         console.error("Error fetching updates:", error);
       }
     };
-
     fetchData();
   }, []);
 
-  const trimText = (text, maxLength) => {
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+        setModalImages([]);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
+
+  const openImageModal = (images) => {
+    setModalImages(images || []);
+    setIsModalOpen(true);
   };
 
-  return (
-    <div className="w-full bg-[#f8f8f8] min-h-screen flex items-center justify-center py-12 md:py-24 px-4">
-      <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
-        <div className="flex flex-col items-start gap-4 md:gap-5 w-full">
-          <div className="flex items-center gap-2 text-[#B57E10]">
-            <hr className="w-8 md:w-12 border-t border-2 rounded-full" />
-            <h1 className="text-sm md:text-base">Latest Updates</h1>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left w-full">
-            All Updates on Redevelopment
-          </h1>
-        </div>
+  const closeModal = () => {
+    setModalImages([]);
+    setIsModalOpen(false);
+  };
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 items-stretch justify-center gap-5">
-          {updates.length > 0 ? (
-            updates.map((update) => (
-              <div key={update._id} className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5">
-                <div className="flex items-center gap-3 md:gap-5">
-                  <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
-                  <h1 className="text-base md:text-lg text-[#B57E10] font-medium">
-                    {update.title}
-                  </h1>
-                </div>
-                <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <User size={14} color="red" />
-                    {update.createdBy.userName}
-                  </div>
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <Calendar size={14} color="red" />
-                    {new Date(update.createdAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-                <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(update.content, 100)}</p>
-                <Link href={`/updates/${update._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
-                  Read More <MoveRight size={16} />
-                </Link>
+  const totalPages = Math.ceil(updates.length / updatesPerPage);
+  const indexOfLast = currentPage * updatesPerPage;
+  const indexOfFirst = indexOfLast - updatesPerPage;
+  const currentUpdates = updates.slice(indexOfFirst, indexOfLast);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  return (
+    <div className="w-full min-h-screen bg-[#f8f8f8] py-12 px-4 flex flex-col items-center">
+      <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
+            <Image src={ConstructionIcon} alt="Icon" width={32} height={32} className="w-6 h-6" />
+            Past Updates
+          </div>
+
+          {currentUpdates.length === 0 ? (
+            <p className="text-gray-500 text-sm">No Updates available.</p>
+          ) : (
+            currentUpdates.map((update) => (
+              <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
+                <h2 className="font-bold text-md">
+                  {update.title} held on{" "}
+                  {new Date(update.createdAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </h2>
+                <p className="text-sm text-gray-600">{update.content}</p>
+                {update.images?.length > 0 && (
+                  <button
+                    onClick={() => openImageModal(update.images)}
+                    className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+                  >
+                    <FileText size={14} /> Images
+                  </button>
+                )}
               </div>
             ))
-          ) : (
-            <p className="text-center text-gray-500 text-sm">No updates available.</p>
           )}
-        </div>
+        </section>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex gap-2 flex-wrap justify-center items-center">
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => paginate(page)}
+              className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
+                currentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      {isModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+    <div className="bg-white rounded-lg p-4 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+      <button
+        onClick={closeModal}
+        className="sticky top-2 right-2 ml-auto block text-gray-600 hover:text-red-500 z-10"
+      >
+        <X size={24} />
+      </button>
+      <div
+        className={`mt-6 ${
+          modalImages.length === 1
+            ? "flex justify-center"
+            : "grid grid-cols-1 sm:grid-cols-2 gap-4"
+        }`}
+      >
+        {modalImages.map((img) => (
+          <Image
+            key={img._id}
+            src={img.url}
+            alt={img.alt || "Event image"}
+            width={600}
+            height={400}
+            className="w-full max-w-md rounded-md object-cover"
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
 
+
 export default UpdatesPage;
+

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { User, Calendar, MoveRight } from "lucide-react";
-import ConstructionIcon from "../../../public/home/events/icon.png"
+import ConstructionIcon from "../../../public/home/events/icon.png";
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -44,10 +44,19 @@ const EventsPage = () => {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 items-stretch justify-center gap-5">
           {events.length > 0 ? (
             events.map((event) => (
-              <div key={event._id} className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5">
+              <div
+                key={event._id}
+                className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 md:gap-5">
-                    <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
+                    <Image
+                      src={ConstructionIcon}
+                      alt="Construction Icon"
+                      width={64}
+                      height={64}
+                      className="w-12 h-12 md:w-16 md:h-16"
+                    />
                     <h1 className="text-base md:text-lg text-[#B57E10] font-medium">
                       {event.title}
                     </h1>
@@ -65,12 +74,35 @@ const EventsPage = () => {
                     </div>
                   </div>
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                    <Image src={event.image} alt={event.title} width={200} height={100} className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover" />
+                    {event.image && (
+                      <Image
+                        src={event.image}
+                        alt={event.title}
+                        width={200}
+                        height={100}
+                        className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover"
+                      />
+                    )}
                     <div className="flex flex-col gap-1 md:gap-2">
-                      <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(event.description, 100)}</p>
-                      <Link href={`/events/${event._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
+                      <p className="text-xs md:text-sm opacity-45 font-medium">
+                        {trimText(event.description, 100)}
+                      </p>
+                      <Link
+                        href={`/events/${event._id}`}
+                        className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]"
+                      >
                         Read More <MoveRight size={16} />
                       </Link>
+                      {event.document && (
+                        <Link
+                          href={event.document}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs md:text-sm text-yellow-600 hover:text-yellow-800 transition"
+                        >
+                          View Document
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
