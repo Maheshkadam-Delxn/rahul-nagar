@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Calendar } from "lucide-react";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import ConstructionIcon from "../../../../public/home/events/icon.png";
-
+//sample 
 const BuildingPage = () => {
     const { id } = useParams();
     const [building, setBuilding] = useState(null);
