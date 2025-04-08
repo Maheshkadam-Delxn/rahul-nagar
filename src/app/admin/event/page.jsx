@@ -23,6 +23,8 @@ export default function EventsManagement() {
   const [events, setEvents] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentEventId, setCurrentEventId] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -32,6 +34,7 @@ export default function EventsManagement() {
     location: "",
     image: null,
     document: null,
+    documentUrl: "",
     isImageDeleted: false,
     isDocumentDeleted: false,
   });
@@ -75,7 +78,8 @@ export default function EventsManagement() {
     }
   };
 
-  const handleDocumentChange = (e) => {
+  // Updated document change handler with immediate upload
+  const handleDocumentChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       // Get file extension
@@ -85,16 +89,94 @@ export default function EventsManagement() {
       const supportedFormats = ["pdf", "txt", "xls", "xlsx", "doc", "docx"];
 
       if (supportedFormats.includes(fileExt)) {
+        // Set the file in state temporarily to show name
         setNewEvent((prev) => ({
           ...prev,
           document: file,
           isDocumentDeleted: false,
         }));
+        
+        // Begin upload immediately
+        await uploadDocument(file);
       } else {
         alert(
           `The file format "${fileExt}" is not supported. Please use one of the following formats: PDF, TXT, XLS, XLSX, DOC, DOCX.`
         );
       }
+    }
+  };
+
+  // New function for document upload with progress bar
+  const uploadDocument = async (file) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    const documentData = new FormData();
+    documentData.append("file", file);
+    documentData.append("folderId", "1TcVRn4Af47yQ2mVq3AzBHRHINSXpbPia");
+
+    try {
+      // Create XMLHttpRequest to track progress
+      const xhr = new XMLHttpRequest();
+      
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percentComplete);
+          }
+        });
+        
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (error) {
+              reject(new Error("Invalid response format"));
+            }
+          } else {
+            reject(new Error(`HTTP error: ${xhr.status}`));
+          }
+        });
+        
+        xhr.addEventListener("error", () => reject(new Error("Network error")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
+        
+        xhr.open("POST", "/api/upload");
+        xhr.send(documentData);
+      });
+
+      const documentResult = await uploadPromise;
+      console.log("Document upload response:", documentResult);
+      
+      let documentUrl = "";
+      if (documentResult.viewLink) {
+        documentUrl = documentResult.viewLink;
+      } else if (documentResult.url) {
+        documentUrl = documentResult.url;
+      } else if (documentResult.data && documentResult.data.fileUrl) {
+        documentUrl = documentResult.data.fileUrl;
+      } else if (documentResult.data && documentResult.data.url) {
+        documentUrl = documentResult.data.url;
+      } else {
+        console.error("Could not extract document URL from response:", documentResult);
+        throw new Error("Failed to get document URL from upload response");
+      }
+      
+      // Update state with the document URL
+      setNewEvent((prev) => ({
+        ...prev,
+        documentUrl: documentUrl,
+      }));
+      
+      return documentUrl;
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      setError("Failed to upload document. Please try again.");
+      throw error;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -111,6 +193,7 @@ export default function EventsManagement() {
     setNewEvent((prev) => ({
       ...prev,
       document: null,
+      documentUrl: "",
       currentDocumentUrl: null,
       isDocumentDeleted: true,
     }));
@@ -165,6 +248,7 @@ export default function EventsManagement() {
       location: event.location,
       image: null,
       document: null,
+      documentUrl: event.document || "",
       currentImageUrl: event.image,
       currentDocumentUrl: event.document,
       isImageDeleted: false,
@@ -183,6 +267,7 @@ export default function EventsManagement() {
       location: "",
       image: null,
       document: null,
+      documentUrl: "",
       isImageDeleted: false,
       isDocumentDeleted: false,
     });
@@ -195,7 +280,7 @@ export default function EventsManagement() {
     setError(null);
 
     let imageUrl = newEvent.currentImageUrl || "";
-    let documentUrl = newEvent.currentDocumentUrl || "";
+    let documentUrl = newEvent.documentUrl || newEvent.currentDocumentUrl || "";
 
     // Handle image
     if (newEvent.isImageDeleted) {
@@ -233,48 +318,9 @@ export default function EventsManagement() {
       }
     }
 
-    // Handle document upload to Google Drive
+    // Handle document deletion
     if (newEvent.isDocumentDeleted) {
       documentUrl = "";
-    } else if (newEvent.document) {
-      const documentData = new FormData();
-      documentData.append("file", newEvent.document);
-      documentData.append("folderId", "1TcVRn4Af47yQ2mVq3AzBHRHINSXpbPia");
-
-      try {
-        const documentResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: documentData,
-        });
-
-        const documentResult = await documentResponse.json();
-        console.log("Document upload response:", documentResult);
-        if (!documentResponse.ok) {
-          throw new Error(
-            `Document upload failed: ${documentResult.error || "Unknown error"}`
-          );
-        }
-        if (documentResult.viewLink) {
-          documentUrl = documentResult.viewLink;
-        } else if (documentResult.url) {
-          documentUrl = documentResult.url;
-        } else if (documentResult.data && documentResult.data.fileUrl) {
-          documentUrl = documentResult.data.fileUrl;
-        } else if (documentResult.data && documentResult.data.url) {
-          documentUrl = documentResult.data.url;
-        } else {
-          console.error(
-            "Could not extract document URL from response:",
-            documentResult
-          );
-          throw new Error("Failed to get document URL from upload response");
-        }
-      } catch (error) {
-        console.error("Error uploading document:", error);
-        setError("Failed to upload document. Please try again.");
-        setLoading(false);
-        return;
-      }
     }
 
     // Prepare update data
@@ -335,7 +381,8 @@ export default function EventsManagement() {
     setError(null);
 
     let imageUrl = "";
-    let documentUrl = "";
+    // Use the already uploaded document URL if available
+    let documentUrl = newEvent.documentUrl || "";
 
     // Handle image upload
     if (newEvent.image) {
@@ -366,48 +413,6 @@ export default function EventsManagement() {
       } catch (error) {
         console.error("Error uploading image:", error);
         setError("Failed to upload image. Please try again.");
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Handle document upload to Google Drive
-    if (newEvent.document) {
-      const documentData = new FormData();
-      documentData.append("file", newEvent.document);
-      documentData.append("folderId", "1TcVRn4Af47yQ2mVq3AzBHRHINSXpbPia");
-
-      try {
-        const documentResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: documentData,
-        });
-
-        const documentResult = await documentResponse.json();
-        console.log("Document upload response:", documentResult);
-        if (!documentResponse.ok) {
-          throw new Error(
-            `Document upload failed: ${documentResult.error || "Unknown error"}`
-          );
-        }
-        if (documentResult.viewLink) {
-          documentUrl = documentResult.viewLink;
-        } else if (documentResult.url) {
-          documentUrl = documentResult.url;
-        } else if (documentResult.data && documentResult.data.fileUrl) {
-          documentUrl = documentResult.data.fileUrl;
-        } else if (documentResult.data && documentResult.data.url) {
-          documentUrl = documentResult.data.url;
-        } else {
-          console.error(
-            "Could not extract document URL from response:",
-            documentResult
-          );
-          throw new Error("Failed to get document URL from upload response");
-        }
-      } catch (error) {
-        console.error("Error uploading document:", error);
-        setError("Failed to upload document. Please try again.");
         setLoading(false);
         return;
       }
@@ -847,6 +852,31 @@ export default function EventsManagement() {
                   )}
                 </div>
 
+                {/* Progress bar for document upload */}
+                {isUploading && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-purple-600 h-2.5 rounded-full" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Uploading: {uploadProgress}%
+                    </p>
+                  </div>
+                )}
+                
+                {/* Show upload success message */}
+                {newEvent.documentUrl && !isUploading && (
+                  <div className="mt-2 text-sm text-green-600 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                    </svg>
+                    Document uploaded successfully
+                  </div>
+                )}
+
                 <p className="text-xs text-gray-500 mt-1">
                   Optional: Upload a document for this event (.pdf, .doc, .docx,
                   .xls, .xlsx, .txt)
@@ -861,44 +891,21 @@ export default function EventsManagement() {
                     resetForm();
                   }}
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  disabled={loading}
-                >
-                  Cancel
+                  disabled={loading || isUploading}
+                >Cancel
                 </button>
-
                 <button
                   type="submit"
                   className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-                  disabled={loading}
+                  disabled={loading || isUploading}
                 >
                   {loading ? (
                     <>
-                      <svg
-                        className="animate-spin h-5 w-5 mr-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        ></path>
-                      </svg>
-                      {isEditMode ? "Updating..." : "Saving..."}
+                      <Loader size={16} className="animate-spin mr-2" />
+                      {isEditMode ? "Updating..." : "Creating..."}
                     </>
-                  ) : isEditMode ? (
-                    "Update Event"
                   ) : (
-                    "Save Event"
+                    <>{isEditMode ? "Update Event" : "Create Event"}</>
                   )}
                 </button>
               </div>
@@ -908,6 +915,17 @@ export default function EventsManagement() {
       )}
     </div>
   ) : (
-    <p>You are not authorized to access this page</p>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+      <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+      <p className="text-gray-700 mb-6">
+        You don't have permission to view this page.
+      </p>
+      <button
+        onClick={() => window.history.back()}
+        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
+      >
+        Go Back
+      </button>
+    </div>
   );
 }
