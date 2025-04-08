@@ -36,23 +36,22 @@ export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is authenticated and has the right role
     if (!loading) {
-      // Only proceed with checks if loading is complete
-      const isAuthorized = user && ["Super-Admin", "Admin", "Building"].some(role => 
-        user.role?.startsWith(role)
+      // More precise role checking
+      const isAuthorized = user && (
+        user.role === "Super-Admin" || 
+        user.role === "Admin" || 
+        user.role.startsWith("Building")
       );
       
       if (!user || error) {
-        console.log("No user or error, redirecting to signin");
         router.push("/signin");
-        return; // Exit early
+        return;
       }
       
       if (!isAuthorized) {
-        console.log("User not authorized, redirecting to unauthorized");
         router.push("/unauthorized");
-        return; // Exit early
+        return;
       }
     }
   }, [user, loading, error, router]);
@@ -66,9 +65,15 @@ export default function AdminLayout({ children }) {
   };
 
   const handleLogout = async () => {
-    await logout(); // Make sure logout is complete before redirecting
-    closeSidebar();
-    router.push("/signin");
+    try {
+      await logout();
+      // Ensure we wait for the logout to complete before redirecting
+      router.push("/signin");
+      // No need to close sidebar here as we're redirecting
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Handle logout error if needed
+    }
   };
 
   // Render menu items based on user role
@@ -198,8 +203,16 @@ export default function AdminLayout({ children }) {
               {renderDashboardItems()}
               
               <div className="mt-6 border-t border-[#3D1F56] pt-4">
-                <MenuItem href="/signin" icon={<LogOut size={18} />} label="Logout" onClick={logout} />
-              </div>
+  <button 
+    onClick={handleLogout}
+    className="flex items-center w-full px-4 py-3 text-gray-300 hover:bg-[#341452] hover:text-white transition-colors duration-200"
+  >
+    <span className="mr-3">
+      <LogOut size={18} />
+    </span>
+    <span>Logout</span>
+  </button>
+</div>
             </nav>
           </aside>
 
