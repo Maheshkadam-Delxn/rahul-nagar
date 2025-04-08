@@ -4,9 +4,8 @@ import { Readable } from "stream";
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '50mb'
-    }
+    bodyParser: false, // Disable default bodyParser to handle large files
+    sizeLimit: '50mb'
   }
 }
 
