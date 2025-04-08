@@ -73,24 +73,20 @@ export default function GalleryManagement() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this image?")) {
       try {
-        const userId = sessionStorage.getItem("userId");
-        const token = sessionStorage.getItem("authToken");
+        const userId = user?.user?.id;
+       
 
         if (!userId) {
           alert("User not found. Please log in again.");
           return;
         }
 
-        if (!token) {
-          alert("Authentication token missing. Please log in again.");
-          return;
-        }
 
         const response = await fetch("/api/gallery/delete-image", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+           
           },
           body: JSON.stringify({ imageId: id, userId }),
         });

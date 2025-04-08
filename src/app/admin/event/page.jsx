@@ -211,24 +211,19 @@ const handleDocumentChange = async (e) => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        const userId = sessionStorage.getItem("userId");
-        const token = sessionStorage.getItem("authToken");
+        const userId = user?.user?.id;
+       
 
         if (!userId) {
           alert("User not found. Please log in again.");
           return;
         }
 
-        if (!token) {
-          alert("Authentication token missing. Please log in again.");
-          return;
-        }
 
         const response = await fetch("/api/events/delete-event", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ eventId: id, userId }),
         });
@@ -435,7 +430,7 @@ const handleDocumentChange = async (e) => {
       location: newEvent.location.trim(),
       image: imageUrl || "",
       document: documentUrl || "",
-      createdBy: sessionStorage?.getItem("userId") || "defaultAdminId",
+      createdBy: user?.user?.id,
     };
 
     try {
@@ -462,7 +457,7 @@ const handleDocumentChange = async (e) => {
       setLoading(false);
     }
   };
-
+  console.log(user)
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {

@@ -466,10 +466,10 @@ export default function BuildingsManagement() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this building?")) {
       try {
-        const userId = sessionStorage.getItem("userId");
-        const token = sessionStorage.getItem("authToken");
+        const userId = user?.user?.id;
+       
   
-        if (!userId || !token) {
+        if (!userId) {
           alert("Authentication required. Please log in again.");
           return;
         }
@@ -478,7 +478,6 @@ export default function BuildingsManagement() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({ buildingId: id, userId }),
         });
