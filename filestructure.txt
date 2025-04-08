@@ -1,4 +1,4 @@
-|-- .env
+|-- .env.local
 |-- .gitignore
 |-- jsconfig.json
 |-- next.config.mjs
@@ -163,6 +163,8 @@
                         |-- route.js
                     |-- update-member
                         |-- route.js
+                |-- me
+                    |-- route.js
                 |-- signin
                     |-- route.js
                 |-- signup
