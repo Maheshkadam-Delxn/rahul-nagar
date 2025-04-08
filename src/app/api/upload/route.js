@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { Readable } from "stream";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb'
+    }
+  }
+}
+
 export async function POST(req) {
   try {
     // Parse form data
