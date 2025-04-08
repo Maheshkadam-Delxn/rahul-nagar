@@ -8,63 +8,48 @@ import ConstructionIcon from "../../../../public/home/events/icon.png";
 import { format, utcToZonedTime } from "date-fns-tz";
 
 const BuildingPage = () => {
-  const { id } = useParams();
-  const [building, setBuilding] = useState(null);
-  const [updates, setUpdates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const now = new Date();
-  console.log(now.toLocaleString());
-  const upcomingEvents =
-    building?.events?.filter((event) => new Date(event.date) > now) || [];
-
-  const pastEvents =
-    building?.events?.filter((event) => new Date(event.date) <= now) || [];
-
-  // Function to format date and time
-  const formatDateTime = (isoDate , timezone) => {
-    const date = new Date(isoDate);
-
-    const formattedDate = date.toLocaleDateString("en-GB").replace(/\//g, "-"); // dd-mm-yyyy
-    const formattedTime = date.toLocaleTimeString("en-GB", {
-      timeZone: timezone,
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }); // HH:MM (24-hour)
-
-    return `${formattedDate} ${formattedTime}`;
-  };
-
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/building/fetchById?id=${id}`);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Check if response has content
-        const text = await response.text();
-        if (!text) {
-          throw new Error("Empty response from server");
-        }
-
-        const data = JSON.parse(text);
-        setBuilding(data);
-        setUpdates(data.updates || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
+    const { id } = useParams();
+    const [building, setBuilding] = useState(null);
+    const [updates, setUpdates] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    const now = new Date();
+    const upcomingEvents = building?.events?.filter(event => new Date(event.date) > now) || [];
+    const pastEvents = building?.events?.filter(event => new Date(event.date) <= now) || [];
+    
+    // Function to format date and time
+    const formatDateTime = (dateString) => {
+        if (!dateString) return "No date available";
+    
+        const date = new Date(dateString);
+    
+        const year = date.getUTCFullYear();
+        const day = date.getUTCDate();
+        const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
+    
+        const ordinalSuffix = (day) => {
+            if (day > 3 && day < 21) return 'th';
+            switch (day % 10) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        };
+    
+        const hours = date.getUTCHours();
+        const minutes = date.getUTCMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+    
+        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} UTC`;
     };
+    
+    
+    useEffect(() => {
+        if (!id) return;
 
     fetchData();
   }, [id]);
