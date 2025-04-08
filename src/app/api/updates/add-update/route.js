@@ -11,7 +11,7 @@ export async function POST(req) {
         
         // Extract user data
         const { userData, ...updateData } = body;
-        
+        console.log(updateData)
         // Prepare the data for saving
         const notificationData = {
             ...updateData,

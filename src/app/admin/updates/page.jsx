@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Bell, Plus, Edit, Trash2, X, Calendar, Clock, PenTool, Users, Eye, Filter, Search, Tag } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, X, Calendar, Clock, PenTool, Users, Eye, Filter, Search, Tag, Upload, Image as ImageIcon, XCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const UpdatesManagement = () => {
@@ -30,13 +30,17 @@ const UpdatesManagement = () => {
   const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false);
   const [isEditUpdateOpen, setIsEditUpdateOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleteImageConfirmOpen, setIsDeleteImageConfirmOpen] = useState(false);
   const [selectedUpdate, setSelectedUpdate] = useState(null);
   const [updateToDelete, setUpdateToDelete] = useState(null);
+  const [imageToDelete, setImageToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [deletingImage, setDeletingImage] = useState(false);
   const [error, setError] = useState(null);
   
   const [newUpdate, setNewUpdate] = useState({
@@ -47,6 +51,8 @@ const UpdatesManagement = () => {
     status: 'Draft',
     visibility: 'All Users',
     expiresAt: '',
+    images: [],
+    imagesToDelete: []
   });
   
   const categories = ['Announcement', 'Maintenance', 'Feature', 'Update', 'Security', 'Other'];
@@ -90,9 +96,278 @@ const UpdatesManagement = () => {
     return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
   });
   
+  // Handle file input change for image upload
+  const handleImageChange = (e, isNewUpdate = true) => {
+    const files = Array.from(e.target.files);
+    
+    if (files.length === 0) return;
+    
+    // Preview images before upload
+    const newImages = files.map(file => ({
+      file: file,
+      preview: URL.createObjectURL(file),
+      alt: file.name
+    }));
+    
+    if (isNewUpdate) {
+      setNewUpdate({
+        ...newUpdate,
+        images: [...newUpdate.images, ...newImages]
+      });
+    } else {
+      setSelectedUpdate({
+        ...selectedUpdate,
+        newImages: [...(selectedUpdate.newImages || []), ...newImages]
+      });
+    }
+  };
+  
+  // Remove image from preview
+  // const removeImage = (index, isNewUpdate = true) => {
+  //   if (isNewUpdate) {
+  //     const updatedImages = [...newUpdate.images];
+  //     // Revoke object URL to prevent memory leaks
+  //     if (updatedImages[index].preview) {
+  //       URL.revokeObjectURL(updatedImages[index].preview);
+  //     }
+  //     updatedImages.splice(index, 1);
+  //     setNewUpdate({
+  //       ...newUpdate,
+  //       images: updatedImages
+  //     });
+  //   } else {
+  //     if (selectedUpdate.newImages) {
+  //       // For new images that haven't been uploaded yet
+  //       const updatedNewImages = [...selectedUpdate.newImages];
+  //       if (index < updatedNewImages.length) {
+  //         if (updatedNewImages[index].preview) {
+  //           URL.revokeObjectURL(updatedNewImages[index].preview);
+  //         }
+  //         updatedNewImages.splice(index, 1);
+  //         setSelectedUpdate({
+  //           ...selectedUpdate,
+  //           newImages: updatedNewImages
+  //         });
+  //       }
+  //     } else if (selectedUpdate.images) {
+  //       // For existing images
+  //       const updatedImages = [...selectedUpdate.images];
+  //       const imageToDelete = updatedImages[index];
+  //       updatedImages.splice(index, 1);
+  //       setSelectedUpdate({
+  //         ...selectedUpdate,
+  //         images: updatedImages,
+  //         imagesToDelete: [...(selectedUpdate.imagesToDelete || []), imageToDelete]
+  //       });
+  //     }
+  //   }
+  // };
+
+  // Show delete confirmation for an uploaded image
+  const showDeleteImageConfirmation = (image, index, updateId) => {
+    setImageToDelete({
+      image,
+      index,
+      updateId
+    });
+    setIsDeleteImageConfirmOpen(true);
+  };
+
+  // Handle delete image directly from an update
+ const handleDeleteUploadedImage = async () => {
+  if (!imageToDelete) return;
+  
+  try {
+    const { image, updateId, index } = imageToDelete;
+    
+    // Update local state to reflect the deleted image
+    const updatedUpdates = updates.map(update => {
+      if (update._id === updateId) {
+        return {
+          ...update,
+          images: null // Set images to null instead of filtering
+        };
+      }
+      return update;
+    });
+    
+    setUpdates(updatedUpdates);
+    setIsDeleteImageConfirmOpen(false);
+    setImageToDelete(null);
+    
+    // If we're in edit mode for this update, update the selected update too
+    if (isEditUpdateOpen && selectedUpdate && selectedUpdate._id === updateId) {
+      setSelectedUpdate({
+        ...selectedUpdate,
+        images: null // Set images to null
+      });
+    }
+    
+  } catch (err) {
+    console.error('Error handling image deletion:', err);
+    setError('Failed to process image deletion. Please try again.');
+  }
+};
+
+// const handleUpdateSubmit = async () => {
+//   if (!selectedUpdate._id) {
+//     console.error("Error: Update ID is missing.");
+//     alert("Update ID is missing.");
+//     return;
+//   }
+
+//   try {
+//     setLoading(true);
+//     console.log("Updating ID:", selectedUpdate._id);
+    
+//     // Upload new images
+//     let uploadedImages = [];
+//     if (selectedUpdate.newImages && selectedUpdate.newImages.length > 0) {
+//       try {
+//         uploadedImages = await uploadImages(selectedUpdate.newImages);
+//       } catch (error) {
+//         setError("Failed to upload images. Please try again.");
+//         setLoading(false);
+//         return;
+//       }
+//     }
+    
+//     // Use existing images only if they're not null
+//     const existingImages = selectedUpdate.images || [];
+    
+//     // Combine existing images (if not null) with newly uploaded ones
+//     const combinedImages = selectedUpdate.images === null ? 
+//                           uploadedImages : 
+//                           [...existingImages, ...uploadedImages];
+    
+//     const response = await fetch('/api/updates/edit-update', {
+//       method: 'PUT',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ 
+//         id: selectedUpdate._id, 
+//         ...selectedUpdate,
+//         images: selectedUpdate.images === null ? null : combinedImages
+//       }),
+//     });
+
+//     if (!response.ok) {
+//       throw new Error('Failed to update');
+//     }
+
+//     // Refresh the updates list after editing
+//     fetchUpdates();
+//     setIsEditUpdateOpen(false);
+//   } catch (err) {
+//     console.error('Error updating update:', err);
+//     setError('Failed to update. Please try again.');
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+// Update the removeImage function to set images to null when removing an image
+const removeImage = (index, isNewUpdate = true) => {
+  if (isNewUpdate) {
+    const updatedImages = [...newUpdate.images];
+    // Revoke object URL to prevent memory leaks
+    if (updatedImages[index].preview) {
+      URL.revokeObjectURL(updatedImages[index].preview);
+    }
+    updatedImages.splice(index, 1);
+    setNewUpdate({
+      ...newUpdate,
+      images: updatedImages.length > 0 ? updatedImages : null
+    });
+  } else {
+    if (selectedUpdate.newImages && selectedUpdate.newImages.length > 0) {
+      // For new images that haven't been uploaded yet
+      const updatedNewImages = [...selectedUpdate.newImages];
+      if (index < updatedNewImages.length) {
+        if (updatedNewImages[index].preview) {
+          URL.revokeObjectURL(updatedNewImages[index].preview);
+        }
+        updatedNewImages.splice(index, 1);
+        setSelectedUpdate({
+          ...selectedUpdate,
+          newImages: updatedNewImages.length > 0 ? updatedNewImages : null
+        });
+      }
+    } else if (selectedUpdate.images) {
+      // For existing images - set to null when removing
+      setSelectedUpdate({
+        ...selectedUpdate,
+        images: null
+      });
+    }
+  }
+};
+  
+  // Helper function to extract Cloudinary public ID from URL
+  const extractPublicIdFromUrl = (url) => {
+    try {
+      const urlParts = url.split('/');
+      const filename = urlParts[urlParts.length - 1];
+      const publicId = filename.split('.')[0]; // Remove extension
+      return publicId;
+    } catch (error) {
+      console.error("Error extracting public ID:", error);
+      return null;
+    }
+  };
+  
+  // Upload images to Cloudinary
+  const uploadImages = async (images) => {
+    if (!images || images.length === 0) return [];
+    
+    setUploadingImages(true);
+    const uploadedImages = [];
+    
+    try {
+      for (const image of images) {
+        if (!image.file) continue; // Skip if no file exists (already uploaded)
+        
+        const imageData = new FormData();
+        imageData.append("file", image.file);
+        imageData.append("upload_preset", "event-upload"); // Use your preset
+        
+        const imageResponse = await fetch(
+          "https://api.cloudinary.com/v1_1/rahul-nagar/image/upload", // Use your cloud name
+          {
+            method: "POST",
+            body: imageData,
+          }
+        );
+        
+        const imageResult = await imageResponse.json();
+        
+        if (!imageResponse.ok) {
+          throw new Error(
+            `Image upload failed: ${imageResult.error?.message || "Unknown error"}`
+          );
+        }
+        
+        uploadedImages.push({
+          url: imageResult.secure_url,
+          publicId: imageResult.public_id,
+          alt: image.alt || "Update image"
+        });
+      }
+      
+      return uploadedImages;
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      throw error;
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+  
   // Handle adding a new update
   const handleAddUpdate = async () => {
     try {
+      setLoading(true);
       console.log("Current user:", user);
       
       // Get user data - prefer context, fallback to session storage
@@ -113,6 +388,18 @@ const UpdatesManagement = () => {
         };
       }
       
+      // Upload images first
+      let uploadedImages = [];
+      if (newUpdate.images && newUpdate.images.length > 0) {
+        try {
+          uploadedImages = await uploadImages(newUpdate.images);
+        } catch (error) {
+          setError("Failed to upload images. Please try again.");
+          setLoading(false);
+          return;
+        }
+      }
+      
       // Log what we're sending
       console.log("Sending user data:", userData);
       
@@ -123,6 +410,7 @@ const UpdatesManagement = () => {
         },
         body: JSON.stringify({
           ...newUpdate,
+          images: uploadedImages,
           userData: userData,
         }),
       });
@@ -146,51 +434,83 @@ const UpdatesManagement = () => {
         status: 'Draft', 
         visibility: 'All Users',
         expiresAt: '',
+        images: [],
+        imagesToDelete: []
       });
       setIsAddUpdateOpen(false);
     } catch (err) {
       console.error('Error adding update:', err);
-      alert('Failed to add update. Please try again.');
+      setError('Failed to add update. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
   
   // Handle editing an update
   const handleEditUpdate = (update) => {
-    setSelectedUpdate(update);
+    setSelectedUpdate({
+      ...update,
+      newImages: [],
+      imagesToDelete: []
+    });
     setIsEditUpdateOpen(true);
   };
   
   // Handle update submission
   const handleUpdateSubmit = async () => {
     if (!selectedUpdate._id) {
-        console.error("Error: Update ID is missing.");
-        alert("Update ID is missing.");
-        return;
+      console.error("Error: Update ID is missing.");
+      alert("Update ID is missing.");
+      return;
     }
 
     try {
-        console.log("Updating ID:", selectedUpdate._id); // Debugging log
-        const response = await fetch('/api/updates/edit-update', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: selectedUpdate._id, ...selectedUpdate }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update');
+      setLoading(true);
+      console.log("Updating ID:", selectedUpdate._id);
+      
+      // Upload new images
+      let uploadedImages = [];
+      if (selectedUpdate.newImages && selectedUpdate.newImages.length > 0) {
+        try {
+          uploadedImages = await uploadImages(selectedUpdate.newImages);
+        } catch (error) {
+          setError("Failed to upload images. Please try again.");
+          setLoading(false);
+          return;
         }
+      }
+      
+      // Combine existing images (that weren't deleted) with newly uploaded ones
+      const existingImages = selectedUpdate.images || [];
+      const combinedImages = [...existingImages, ...uploadedImages];
+      
+      const response = await fetch('/api/updates/edit-update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          id: selectedUpdate._id, 
+          ...selectedUpdate,
+          images: combinedImages,
+          imagesToDelete: selectedUpdate.imagesToDelete || [] 
+        }),
+      });
 
-        // Refresh the updates list after editing
-        fetchUpdates();
-        setIsEditUpdateOpen(false);
+      if (!response.ok) {
+        throw new Error('Failed to update');
+      }
+
+      // Refresh the updates list after editing
+      fetchUpdates();
+      setIsEditUpdateOpen(false);
     } catch (err) {
-        console.error('Error updating update:', err);
-        alert('Failed to update. Please try again.');
+      console.error('Error updating update:', err);
+      setError('Failed to update. Please try again.');
+    } finally {
+      setLoading(false);
     }
-};
-
+  };
   
   // Handle delete confirmation
   const handleDeleteConfirmation = (update) => {
@@ -202,12 +522,13 @@ const UpdatesManagement = () => {
   const handleDeleteUpdate = async () => {
     if (updateToDelete) {
       try {
+        setLoading(true);
         const response = await fetch('/api/updates/delete-update', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ id: updateToDelete}),
+          body: JSON.stringify({ id: updateToDelete._id }),
         });
         
         if (!response.ok) {
@@ -220,7 +541,9 @@ const UpdatesManagement = () => {
         setUpdateToDelete(null);
       } catch (err) {
         console.error('Error deleting update:', err);
-        alert('Failed to delete update. Please try again.');
+        setError('Failed to delete update. Please try again.');
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -381,7 +704,7 @@ const UpdatesManagement = () => {
         <div className="space-y-4">
           {filteredUpdates.length > 0 ? (
             filteredUpdates.map(update => (
-              <div key={update.id} className="border rounded-lg overflow-hidden">
+              <div key={update.id || update._id} className="border rounded-lg overflow-hidden">
                 <div className="flex justify-between items-center p-4 bg-gray-50">
                   <div className="flex items-center">
                     <div className={`p-2 rounded-full mr-3 ${getPriorityColorClass(update.priority)}`}>
@@ -422,6 +745,30 @@ const UpdatesManagement = () => {
                 <div className="p-4 border-t">
                   <p className="text-gray-700 mb-4">{update.content}</p>
                   
+                  {/* Display images if any */}
+                  {update.images && update.images.length > 0 && (
+                    <div className="mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        {update.images.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={image.url} 
+                              alt={image.alt || "Update image"} 
+                              className="h-24 w-full object-cover rounded"
+                            />
+                            {/* <button
+                              type="button"
+                              onClick={() => showDeleteImageConfirmation(image, index, update._id)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button> */}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex flex-wrap justify-between text-sm text-gray-500">
                     <div className="space-y-1">
                       <div className="flex items-center">
@@ -449,7 +796,7 @@ const UpdatesManagement = () => {
                       </div>
                       <div className="flex items-center">
                         <PenTool className="h-4 w-4 mr-1" />
-                        <span>Author: {update.author}</span>
+                        <span>Author: {update.createdBy?.userName || update.author || 'Unknown'}</span>
                       </div>
                     </div>
                   </div>
@@ -509,6 +856,51 @@ const UpdatesManagement = () => {
                 ></textarea>
               </div>
               
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Images</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                  <div className="flex items-center justify-center">
+                    <label className="flex flex-col items-center justify-center w-full cursor-pointer">
+                      <div className="flex flex-col items-center justify-center">
+                        <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload images</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*" 
+                        multiple 
+                        onChange={(e) => handleImageChange(e)}
+                      />
+                    </label>
+                  </div>
+                  
+                  {/* Image Previews */}
+                  {newUpdate.images && newUpdate.images.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {newUpdate.images.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img 
+                            src={image.preview || image.url} 
+                            alt={image.alt || "Preview"} 
+                            className="h-24 w-full object-cover rounded" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Category</label>
@@ -563,7 +955,7 @@ const UpdatesManagement = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Expiration Date</label>
+                  <label className="block text-sm font-medium mb-1">Expires At (Optional)</label>
                   <input
                     type="datetime-local"
                     value={newUpdate.expiresAt}
@@ -572,22 +964,22 @@ const UpdatesManagement = () => {
                   />
                 </div>
               </div>
-            </div>
-            
-            <div className="mt-6 flex justify-end space-x-3">
-              <button 
-                onClick={() => setIsAddUpdateOpen(false)}
-                className="px-4 py-2 border rounded-md"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleAddUpdate}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                disabled={!newUpdate.title || !newUpdate.content}
-              >
-                Publish Update
-              </button>
+              
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <button
+                  onClick={() => setIsAddUpdateOpen(false)}
+                  className="px-4 py-2 border rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddUpdate}
+                  disabled={loading || uploadingImages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-400"
+                >
+                  {loading || uploadingImages ? 'Saving...' : 'Save Update'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -612,6 +1004,7 @@ const UpdatesManagement = () => {
                   value={selectedUpdate.title}
                   onChange={(e) => setSelectedUpdate({...selectedUpdate, title: e.target.value})}
                   className="w-full p-2 border rounded-md"
+                  placeholder="Enter update title"
                 />
               </div>
               
@@ -621,7 +1014,80 @@ const UpdatesManagement = () => {
                   value={selectedUpdate.content}
                   onChange={(e) => setSelectedUpdate({...selectedUpdate, content: e.target.value})}
                   className="w-full p-2 border rounded-md h-32"
+                  placeholder="Enter update content"
                 ></textarea>
+              </div>
+              
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Images</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                  <div className="flex items-center justify-center">
+                    <label className="flex flex-col items-center justify-center w-full cursor-pointer">
+                      <div className="flex flex-col items-center justify-center">
+                        <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload images</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*" 
+                        multiple 
+                        onChange={(e) => handleImageChange(e, false)}
+                      />
+                    </label>
+                  </div>
+                  
+                  {/* Image Previews */}
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {/* Show existing images */}
+                    {selectedUpdate.images && selectedUpdate.images.map((image, index) => (
+                      <div key={`existing-${index}`} className="relative group">
+                        <img 
+                          src={image.url} 
+                          alt={image.alt || "Update image"} 
+                          className="h-24 w-full object-cover rounded" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index, false)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {/* Show new images to be uploaded */}
+                    {selectedUpdate.newImages && selectedUpdate.newImages.map((image, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <img 
+                          src={image.preview} 
+                          alt={image.alt || "Preview"} 
+                          className="h-24 w-full object-cover rounded" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updatedNewImages = [...selectedUpdate.newImages];
+                            if (updatedNewImages[index].preview) {
+                              URL.revokeObjectURL(updatedNewImages[index].preview);
+                            }
+                            updatedNewImages.splice(index, 1);
+                            setSelectedUpdate({
+                              ...selectedUpdate,
+                              newImages: updatedNewImages
+                            });
+                          }}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -678,7 +1144,7 @@ const UpdatesManagement = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Expiration Date</label>
+                  <label className="block text-sm font-medium mb-1">Expires At (Optional)</label>
                   <input
                     type="datetime-local"
                     value={selectedUpdate.expiresAt ? new Date(selectedUpdate.expiresAt).toISOString().slice(0, 16) : ''}
@@ -687,89 +1153,105 @@ const UpdatesManagement = () => {
                   />
                 </div>
               </div>
-            </div>
-            
-            <div className="mt-6 flex justify-end space-x-3">
-              <button 
-                onClick={() => setIsEditUpdateOpen(false)}
-                className="px-4 py-2 border rounded-md"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleUpdateSubmit}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                disabled={!selectedUpdate.title || !selectedUpdate.content}
-              >
-                Update
-              </button>
+              
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <button
+                  onClick={() => setIsEditUpdateOpen(false)}
+                  className="px-4 py-2 border rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateSubmit}
+                  disabled={loading || uploadingImages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-400"
+                >
+                  {loading || uploadingImages ? 'Updating...' : 'Update'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
       
       {/* Delete Confirmation Modal */}
-      {isDeleteConfirmOpen && updateToDelete && (
+      {isDeleteConfirmOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-red-100 p-3 rounded-full">
-                  <Trash2 className="h-6 w-6 text-red-600" />
-                </div>
-              </div>
-              
-              <h2 className="text-xl font-bold mb-2">Delete Update</h2>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete the update "{updateToDelete.title}"? This action cannot be undone.
-              </p>
-              
-              <div className="flex justify-center space-x-3">
-                <button 
-                  onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="px-4 py-2 border rounded-md"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleDeleteUpdate}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-                >
-                  Delete
-                </button>
-              </div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Confirm Deletion</h2>
+              <button onClick={() => setIsDeleteConfirmOpen(false)}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <p className="mb-6">Are you sure you want to delete this update? This action cannot be undone.</p>
+            
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="px-4 py-2 border rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUpdate}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
       )}
       
-      {!isAddUpdateOpen && !isEditUpdateOpen && !isDeleteConfirmOpen && (
-        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
-          <h3 className="font-bold">Auth Debug Info</h3>
-          <div>Auth Loading: {authLoading ? 'Yes' : 'No'}</div>
-          <div>User: {user ? JSON.stringify(user) : 'null'}</div>
-          <div>Session Data: 
-            <button 
-              onClick={() => {
-                try {
-                  console.log({
-                    token: sessionStorage.getItem('authToken') ? 'Present' : 'Missing',
-                    userId: sessionStorage.getItem('userId'),
-                    userName: sessionStorage.getItem('userName'),
-                    userRole: sessionStorage.getItem('userRole')
-                  });
-                } catch(e) {
-                  console.error("Error accessing sessionStorage", e);
-                }
-              }}
-              className="ml-2 px-2 py-1 bg-blue-500 text-white rounded"
-            >
-              Log to Console
-            </button>
+      {/* Delete Image Confirmation Modal */}
+      {isDeleteImageConfirmOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Confirm Image Deletion</h2>
+              <button onClick={() => setIsDeleteImageConfirmOpen(false)}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <p className="mb-4">Are you sure you want to delete this image? This action cannot be undone.</p>
+            
+            {imageToDelete && imageToDelete.image && (
+              <div className="mb-4 flex justify-center">
+                <img 
+                  src={imageToDelete.image.url} 
+                  alt="To be deleted" 
+                  className="h-32 object-contain rounded" 
+                />
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setIsDeleteImageConfirmOpen(false)}
+                className="px-4 py-2 border rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUploadedImage}
+                disabled={deletingImage}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md disabled:bg-red-400"
+              >
+                {deletingImage ? 'Deleting...' : 'Delete Image'}
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div> : <p>You DOnt have access</p>
+    </div>
+    :
+    <div className="flex flex-col items-center justify-center h-64">
+      <p className="text-xl font-semibold mb-4">Access Denied</p>
+      <p className="text-gray-600">You don't have permission to view this page.</p>
+    </div>
   );
 };
 

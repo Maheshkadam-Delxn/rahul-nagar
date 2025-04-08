@@ -9,7 +9,7 @@ export async function PUT(req) {
   try {
     await connectDb();
 
-    const { eventId, title, description, date, time, location, image, userId, role } = await req.json();
+    const { eventId, title, description, date, time, location, image, userId, role,document } = await req.json();
 
     // Find the event by ID
     const event = await Event.findById(eventId);
@@ -25,6 +25,7 @@ export async function PUT(req) {
     event.time = time || event.time;
     event.location = location || event.location;
     event.image = image;
+    event.document = document
     console.log(event.image)
     await event.save();
 

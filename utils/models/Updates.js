@@ -9,6 +9,14 @@ const UpdatesSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  images: [{
+    url: {
+      type: String
+    },
+    alt: {
+      type: String
+    }
+  }],
   category: {
     type: String,
     required: true

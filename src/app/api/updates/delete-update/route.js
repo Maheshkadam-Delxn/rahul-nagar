@@ -6,7 +6,7 @@ export async function DELETE(req) {
     await connectDb();
     try {
         const body= await req.json();
-        const id = body?.id?._id
+        const id = body?.id
         console.log(id)
         const notification = await Notification.findByIdAndDelete(id);
         if (!notification) {

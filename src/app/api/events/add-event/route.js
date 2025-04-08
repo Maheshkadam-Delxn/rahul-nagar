@@ -6,8 +6,16 @@ export async function POST(req) {
   try {
     await connectDb();
 
-    // ✅ Handle FormData instead of JSON
-    const { title, description, date, time, location, image, createdBy } = await req.json();
+    const { 
+      title, 
+      description, 
+      date, 
+      time, 
+      location, 
+      image, 
+      document,
+      createdBy 
+    } = await req.json();
 
     if (!createdBy) {
       return NextResponse.json({ error: "createdBy (Admin ID) is required" }, { status: 400 });
@@ -19,7 +27,8 @@ export async function POST(req) {
       date,
       time,
       location,
-      image, // If handling file uploads, store file path instead
+      image,
+      document, // Store the Google Drive URL
       createdBy,
     });
 
