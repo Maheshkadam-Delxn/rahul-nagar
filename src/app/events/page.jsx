@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Calendar, MoveRight } from "lucide-react";
+import { FileText, X, User, Calendar, MoveRight } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
+  const [modalImages, setModalImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [upcomingCurrentPage, setUpcomingCurrentPage] = useState(1);
+  const [pastCurrentPage, setPastCurrentPage] = useState(1);
+  const eventsPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,95 +29,212 @@ const EventsPage = () => {
     fetchData();
   }, []);
 
-  const trimText = (text, maxLength) => {
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+        setModalImages([]);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
+
+  const openImageModal = (image) => {
+    setModalImages([{ _id: "main", url: image }]);
+    setIsModalOpen(true);
   };
 
-  return (
-    <div className="w-full bg-[#f8f8f8] min-h-screen flex items-center justify-center py-12 md:py-24 px-4">
-      <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
-        <div className="flex flex-col items-start gap-4 md:gap-5 w-full">
-          <div className="flex items-center gap-2 text-[#B57E10]">
-            <hr className="w-8 md:w-12 border-t border-2 rounded-full" />
-            <h1 className="text-sm md:text-base">Upcoming Events</h1>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left w-full">
-            All Upcoming Events & Meetings
-          </h1>
-        </div>
+  const closeModal = () => {
+    setModalImages([]);
+    setIsModalOpen(false);
+  };
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 items-stretch justify-center gap-5">
-          {events.length > 0 ? (
-            events.map((event) => (
-              <div
-                key={event._id}
-                className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 md:gap-5">
-                    <Image
-                      src={ConstructionIcon}
-                      alt="Construction Icon"
-                      width={64}
-                      height={64}
-                      className="w-12 h-12 md:w-16 md:h-16"
-                    />
-                    <h1 className="text-base md:text-lg text-[#B57E10] font-medium">
-                      {event.title}
-                    </h1>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 md:gap-3">
-                  <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <User size={14} color="red" />
-                      By Admin
-                    </div>
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <Calendar size={14} color="red" />
-                      {new Date(event.date).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                    {event.image && (
-                      <Image
-                        src={event.image}
-                        alt={event.title}
-                        width={200}
-                        height={100}
-                        className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover"
-                      />
-                    )}
-                    <div className="flex flex-col gap-1 md:gap-2">
-                      <p className="text-xs md:text-sm opacity-45 font-medium">
-                        {trimText(event.description, 100)}
-                      </p>
-                      <Link
-                        href={`/events/${event._id}`}
-                        className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]"
-                      >
-                        Read More <MoveRight size={16} />
-                      </Link>
-                      {event.document && (
-                        <Link
-                          href={event.document}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs md:text-sm text-yellow-600 hover:text-yellow-800 transition"
-                        >
-                          View Document
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500 text-sm">No upcoming events.</p>
-          )}
+  const trimText = (text, maxLength) => {
+    return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  // Filter events based on current date
+  const currentDate = new Date();
+  const upcomingEvents = events
+    .filter((event) => new Date(event.date) >= currentDate)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const pastEvents = events
+    .filter((event) => new Date(event.date) < currentDate)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const upcomingTotalPages = Math.ceil(upcomingEvents.length / eventsPerPage);
+  const upcomingIndexOfLast = upcomingCurrentPage * eventsPerPage;
+  const upcomingIndexOfFirst = upcomingIndexOfLast - eventsPerPage;
+  const currentUpcomingEvents = upcomingEvents.slice(upcomingIndexOfFirst, upcomingIndexOfLast);
+
+  const pastTotalPages = Math.ceil(pastEvents.length / eventsPerPage);
+  const pastIndexOfLast = pastCurrentPage * eventsPerPage;
+  const pastIndexOfFirst = pastIndexOfLast - eventsPerPage;
+  const currentPastEvents = pastEvents.slice(pastIndexOfFirst, pastIndexOfLast);
+
+  const paginateUpcoming = (pageNumber) => setUpcomingCurrentPage(pageNumber);
+  const paginatePast = (pageNumber) => setPastCurrentPage(pageNumber);
+
+  // Event Item Component to avoid repetition
+  const EventItem = ({ event, isPast }) => (
+    <div key={event._id} className="space-y-2 border-b pb-4 last:border-b-0">
+      <h2 className="font-bold text-md">
+        {event.title} {isPast ? "held on" : "scheduled for"}{" "}
+        {new Date(event.date).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+      </h2>
+      <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
+        <div className="flex items-center gap-1">
+          <User size={14} color="#6B46C1" />
+          By Admin
+        </div>
+        <div className="flex items-center gap-1">
+          <Calendar size={14} color="#6B46C1" />
+          {new Date(event.date).toLocaleDateString()}
         </div>
       </div>
+      <div className="flex flex-col md:flex-row gap-3">
+        {event.image && (
+          <div className="flex-shrink-0">
+            <Image
+              src={event.image}
+              alt={event.title}
+              width={200}
+              height={100}
+              className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover cursor-pointer"
+              onClick={() => openImageModal(event.image)}
+            />
+          </div>
+        )}
+        <div className="flex-grow">
+          <p className="text-sm text-gray-600">{trimText(event.description, 200)}</p>
+          <div className="mt-2 flex items-center gap-3">
+            <Link
+              href={`/events/${event._id}`}
+              className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
+            >
+              Read More <MoveRight size={16} />
+            </Link>
+            {event.document && (
+              <Link
+                href={event.document}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+              >
+                <FileText size={14} /> View Document
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full min-h-screen bg-[#f8f8f8] py-12 px-4 flex flex-col items-center">
+      {/* Upcoming Events Section */}
+      <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8 mb-8">
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
+            <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
+            Upcoming Events
+          </div>
+
+          {currentUpcomingEvents.length === 0 ? (
+            <p className="text-gray-500 text-sm">No upcoming events available.</p>
+          ) : (
+            currentUpcomingEvents.map((event) => (
+              <EventItem key={event._id} event={event} isPast={false} />
+            ))
+          )}
+        </section>
+      </div>
+
+      {/* Upcoming Events Pagination */}
+      {upcomingTotalPages > 1 && (
+        <div className="mt-2 mb-8 flex gap-2 flex-wrap justify-center items-center">
+          {Array.from({ length: upcomingTotalPages }, (_, index) => index + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => paginateUpcoming(page)}
+              className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
+                upcomingCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Past Events Section */}
+      <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
+          <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
+          Past Events
+          </div>
+
+          {currentPastEvents.length === 0 ? (
+            <p className="text-gray-500 text-sm">No past events available.</p>
+          ) : (
+            currentPastEvents.map((event) => (
+              <EventItem key={event._id} event={event} isPast={true} />
+            ))
+          )}
+        </section>
+      </div>
+
+      {/* Past Events Pagination */}
+      {pastTotalPages > 1 && (
+        <div className="mt-6 flex gap-2 flex-wrap justify-center items-center">
+          {Array.from({ length: pastTotalPages }, (_, index) => index + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => paginatePast(page)}
+              className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
+                pastCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={closeModal}
+              className="sticky top-2 right-2 ml-auto block text-gray-600 hover:text-red-500 z-10"
+            >
+              <X size={24} />
+            </button>
+            <div className="mt-6 flex justify-center">
+              {modalImages.map((img) => (
+                <Image
+                  key={img._id}
+                  src={img.url}
+                  alt="Event image"
+                  width={600}
+                  height={400}
+                  className="w-full max-w-md rounded-md object-cover"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

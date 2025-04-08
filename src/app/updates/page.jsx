@@ -63,8 +63,8 @@ const UpdatesPage = () => {
       <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
         <section className="space-y-4">
           <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
-            <Image src={ConstructionIcon} alt="Icon" width={32} height={32} className="w-6 h-6" />
-            Past Updates
+          <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
+          Past Updates
           </div>
 
           {currentUpdates.length === 0 ? (
