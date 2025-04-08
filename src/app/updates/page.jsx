@@ -68,7 +68,7 @@ const UpdatesPage = () => {
           </div>
 
           {currentUpdates.length === 0 ? (
-            <p className="text-gray-500 text-sm">No events available.</p>
+            <p className="text-gray-500 text-sm">No Updates available.</p>
           ) : (
             currentUpdates.map((update) => (
               <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
