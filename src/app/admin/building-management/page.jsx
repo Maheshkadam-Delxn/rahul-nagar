@@ -438,6 +438,35 @@ export default function BuildingsManagement() {
       });
     }
   };
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "No date available";
+
+    const date = new Date(dateString);
+
+    const year = date.getUTCFullYear();
+    const day = date.getUTCDate();
+    const month = date.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
+
+    const ordinalSuffix = (day) => {
+        if (day > 3 && day < 21) return 'th';
+        switch (day % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+        }
+    };
+
+    const hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+
+    return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} `;
+};
+
+    
   
   const editEvent = (index) => {
     const eventToEdit = newBuilding.events[index];
@@ -1329,7 +1358,7 @@ export default function BuildingsManagement() {
                   <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <div>
                       <div className="font-medium">{event.title}</div>
-                      <div className="text-gray-500 text-sm">{new Date(event.date).toLocaleString()}</div>
+                      <div className="text-gray-500 text-sm">{formatDateTime(event.date)}</div>
                     </div>
                     <div className="flex gap-1">
                       <button 
