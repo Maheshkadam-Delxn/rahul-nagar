@@ -43,7 +43,7 @@ const BuildingPage = () => {
         const formattedHours = hours % 12 || 12;
         const formattedMinutes = minutes.toString().padStart(2, '0');
     
-        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} UTC`;
+        return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} `;
     };
     
     
@@ -130,21 +130,22 @@ const BuildingPage = () => {
                                 />
                                 <h1 className="text-lg font-semibold text-[#B57E10]">Upcoming Events</h1>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-                                {upcomingEvents.map((event, index) => (
-                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
-                                        <div className="flex items-center gap-3">
-                                            <Calendar className="text-black w-7 h-7" />
-                                            <h3 className="text-lg font-semibold text-black">{event.title}</h3>
-                                        </div>
-                                        <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                        <p className="text-[#B57E10] mt-2 font-medium">
-                                            {formatDateTime(event.date)}
-                                        </p>
-                                        <p className="text-gray-500 text-sm">{event.location}</p>
-                                    </div>
-                                ))}
+                            <div className="grid grid-cols-1 gap-6 w-full">
+  {upcomingEvents.map((event, index) => (
+    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
+      <div className="flex items-center gap-3">
+        <Calendar className="text-black w-7 h-7" />
+        <h3 className="text-lg font-semibold text-black">{event.title}</h3>
+      </div>
+      <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+      <p className="text-[#B57E10] mt-2 font-medium">
+        {formatDateTime(event.date)}
+      </p>
+      <p className="text-gray-500 text-sm">{event.location}</p>
+    </div>
+  ))}
                             </div>
+
                         </div>
                     )}
 
@@ -161,21 +162,22 @@ const BuildingPage = () => {
                                 />
                                 <h1 className="text-lg font-semibold text-[#B57E10]">Past Events</h1>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                                {pastEvents.map((event, index) => (
-                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
-                                        <div className="flex items-center gap-3">
-                                            <Calendar className="text-black w-7 h-7" />
-                                            <h3 className="text-lg font-semibold text-black">{event.title}</h3>
-                                        </div>
-                                        <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-                                        <p className="text-[#B57E10] mt-2 font-medium">
-                                            {formatDateTime(event.date)}
-                                        </p>
-                                        <p className="text-gray-500 text-sm">{event.location}</p>
-                                    </div>
-                                ))}
-                            </div>
+                            <div className="grid grid-cols-1 gap-6 w-full">
+  {pastEvents.map((event, index) => (
+    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
+      <div className="flex items-center gap-3">
+        <Calendar className="text-black w-7 h-7" />
+        <h3 className="text-lg font-semibold text-black">{event.title}</h3>
+      </div>
+      <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+      <p className="text-[#B57E10] mt-2 font-medium">
+        {formatDateTime(event.date)}
+      </p>
+      <p className="text-gray-500 text-sm">{event.location}</p>
+    </div>
+  ))}
+</div>
+
                         </div>
                     )}
 
