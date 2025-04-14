@@ -64,7 +64,7 @@ const UpdatesPage = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
           <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
-          Past Updates
+           Updates
           </div>
 
           {currentUpdates.length === 0 ? (
@@ -72,14 +72,14 @@ const UpdatesPage = () => {
           ) : (
             currentUpdates.map((update) => (
               <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
-                <h2 className="font-bold text-md">
+                <Link href={`/updates/${update._id}`} className="font-bold text-md">
                   {update.title} held on{" "}
                   {new Date(update.createdAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })}
-                </h2>
+                </Link>
                 <p className="text-sm text-gray-600">{update.content}</p>
                 {update.images?.length > 0 && (
                   <button
