@@ -55,6 +55,8 @@
             |-- arrow-right.png
             |-- calander.png
             |-- icon.png
+            |-- iconn.png
+            |-- iconn.svg
             |-- shape1.svg
             |-- shape2.png
             |-- shape2.svg
@@ -262,6 +264,8 @@
         |-- project
             |-- [...id]
                 |-- page.jsx
+        |-- redevelopment
+            |-- page.jsx
         |-- signin
             |-- page.jsx
         |-- updates
