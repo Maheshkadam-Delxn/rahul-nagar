@@ -1,183 +1,173 @@
 "use client";
-import React from 'react'
+import React, { useEffect, useState } from "react";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { User, Calendar, MoveRight, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 import ConstructionIconn from "../../../public/home/events/iconn.svg";
-import toast, { Toaster } from "react-hot-toast";
-
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-
-// Add the necessary Swiper CSS imports
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/autoplay';
-
-import BuildingMap1 from "../../../public/home/layout/layout1.png";
-import BuildingMap2 from "../../../public/home/layout/layout2.png";
-import BuildingMap3 from "../../../public/home/layout/layout3.png";
-import BuildingMap4 from "../../../public/home/layout/layout4.png";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/autoplay";
 
 const Page = () => {
-    //currently we have directly fetched the default events and the default updates but in future we will be using the API calls for this redevelopment 
-    const [events, setEvents] = useState([]);
-    const [updates, setUpdates] = useState([]);
-    const [openFaqItem, setOpenFaqItem] = useState(0);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const maps = [BuildingMap1, BuildingMap2, BuildingMap3, BuildingMap4];
-    
-    // State for form data
-    const [formData, setFormData] = useState({
-      name: "",
-      phone: "",
-      email: "",
-      website: "",
-      message: ""
-    });
+  const [events, setEvents] = useState([]);
+  const [updates, setUpdates] = useState([]);
+  const [advertisements, setAdvertisements] = useState([]);
+  const [openFaqItem, setOpenFaqItem] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // State for form errors
-    const [errors, setErrors] = useState({});
-    
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const updatesRes = await fetch("/api/redevelopment/update/fetchAll?limit=3");
-          if (!updatesRes.ok) throw new Error("Failed to fetch updates");
-          const updatesData = await updatesRes.json();
-          setUpdates(updatesData);
-  
-          const eventsRes = await fetch("/api/redevelopment/event/fetchAll?limit=3");
-          if (!eventsRes.ok) throw new Error("Failed to fetch events");
-          const eventsData = await eventsRes.json();
-          setEvents(eventsData.events);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
-  
-      fetchData();
-    }, []);
-  
-    const trimText = (text, maxLength) => {
-      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
-    };
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    website: "",
+    message: "",
+  });
 
-    const faqData = [
-      {
-        title: "What is Project Timing in Construction?",
-        content: "Bennings appetite disposed me an at subjects an. To no indulgence diminution so discovered mr apartments. Are off under folly death wrote cause her way spite. Plan upon yet way get cold spot its week. Almost do am or limits hearts. Resolve parties but why she shewing. She sang know now minute exact dear open to reaching out."
-      },
-      {
-        title: "What Are The Charges of Renovation?",
-        content: "Renovation charges vary based on the scope of work, materials used, and labor costs. Our transparent pricing structure includes demolition, materials, labor, permits, and finishing touches. We provide detailed quotes before beginning any project to ensure you understand all associated costs."
-      },
-      {
-        title: "How to contact our Support Team?",
-        content: "Our support team is available Monday through Friday from 8am to 6pm. You can reach us by phone at (555) 123-4567, by email at support@constructionco.com, or through the contact form on our website. For urgent matters outside business hours, please use our emergency hotline at (555) 987-6543."
-      },
-      {
-        title: "How Are Construction Permits Obtained?",
-        content: "Construction permits are obtained through your local building department. Our team handles the entire process, including preparing documentation, submitting applications, and following up with authorities. We ensure all necessary permits are secured before beginning work to avoid potential delays or legal issues."
-      }
-    ];
-    
-    const toggleFaqItem = (index) => {
-      setOpenFaqItem(openFaqItem === index ? -1 : index);
-    };
+  const [errors, setErrors] = useState({});
 
-    // Handle input change
-    const handleChange = (e) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    // Validate Form
-    const validateForm = () => {
-      let newErrors = {};
-
-      if (!formData.name.trim()) newErrors.name = "Developer name is required";
-      else if (formData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
-
-      if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-      else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Invalid phone number (10 digits required)";
-
-      if (!formData.email.trim()) newErrors.email = "Email is required";
-      else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email))
-        newErrors.email = "Invalid email address";
-
-      if (formData.website && !/^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+([\/\w-]*)*\/?$/.test(formData.website))
-        newErrors.website = "Invalid website URL";
-
-      if (!formData.message.trim()) newErrors.message = "Message is required";
-      else if (formData.message.length < 10) newErrors.message = "Message must be at least 10 characters";
-
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    };
-
-    // Handle form submission
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      
-      if (!validateForm()) {
-        toast.error("Please fix the errors in the form");
-        return;
-      }
-
-      setIsSubmitting(true);
-
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/redevelopmentContact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+        const updatesRes = await fetch("/api/redevelopment/update/fetchAll?limit=3");
+        if (!updatesRes.ok) throw new Error("Failed to fetch updates");
+        const updatesData = await updatesRes.json();
+        setUpdates(updatesData);
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Something went wrong');
-        }
+        const eventsRes = await fetch("/api/redevelopment/event/fetchAll?limit=3");
+        if (!eventsRes.ok) throw new Error("Failed to fetch events");
+        const eventsData = await eventsRes.json();
+        setEvents(eventsData.events);
 
-        toast.success("Message sent successfully!");
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          website: "",
-          message: "",
-        });
-        setErrors({});
+        const adsRes = await fetch("/api/redevelopment/advertisement/fetchAll");
+        if (!adsRes.ok) throw new Error("Failed to fetch advertisements");
+        const adsData = await adsRes.json();
+        setAdvertisements(adsData?.advertisements || []);
       } catch (error) {
-        toast.error(error.message || "Failed to send message. Please try again.");
-      } finally {
-        setIsSubmitting(false);
+        console.error("Error fetching data:", error);
       }
     };
-  // console.log("usdp",updates);
+
+    fetchData();
+  }, []);
+
+  const toggleFaqItem = (index) => {
+    setOpenFaqItem(openFaqItem === index ? -1 : index);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = "Developer name is required";
+    else if (formData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
+
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Invalid phone number (10 digits required)";
+
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email))
+      newErrors.email = "Invalid email address";
+
+    if (
+      formData.website &&
+      !/^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+([\/\w-]*)*\/?$/.test(formData.website)
+    )
+      newErrors.website = "Invalid website URL";
+
+    if (!formData.message.trim()) newErrors.message = "Message is required";
+    else if (formData.message.length < 10) newErrors.message = "Message must be at least 10 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/redevelopmentContact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
+
+      toast.success("Message sent successfully!");
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        website: "",
+        message: "",
+      });
+      setErrors({});
+    } catch (error) {
+      toast.error(error.message || "Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const faqData = [
+    {
+      title: "What is Project Timing in Construction?",
+      content: "Bennings appetite disposed me an at subjects an. To no indulgence diminution so discovered mr apartments. Are off under folly death wrote cause her way spite. Plan upon yet way get cold spot its week. Almost do am or limits hearts. Resolve parties but why she shewing. She sang know now minute exact dear open to reaching out."
+    },
+    {
+      title: "What Are The Charges of Renovation?",
+      content: "Renovation charges vary based on the scope of work, materials used, and labor costs. Our transparent pricing structure includes demolition, materials, labor, permits, and finishing touches. We provide detailed quotes before beginning any project to ensure you understand all associated costs."
+    },
+    {
+      title: "How to contact our Support Team?",
+      content: "Our support team is available Monday through Friday from 8am to 6pm. You can reach us by phone at (555) 123-4567, by email at support@constructionco.com, or through the contact form on our website. For urgent matters outside business hours, please use our emergency hotline at (555) 987-6543."
+    },
+    {
+      title: "How Are Construction Permits Obtained?",
+      content: "Construction permits are obtained through your local building department. Our team handles the entire process, including preparing documentation, submitting applications, and following up with authorities. We ensure all necessary permits are secured before beginning work to avoid potential delays or legal issues."
+    }
+  ];
+  const trimText = (text, maxLength) => {
+    return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+
   return (
     <>
-    <div className='w-full min-h-screen'>
-      <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
-      <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
-  
-      <Toaster />
-      
-      <ServiceHeroSection
-        name="Redevelopment"
-        breadcrumbs={[
-          { label: "Home", link: "/" },
-          { label: "Redevelopment", link: "/Redevelopment" },
-        ]}
-      />
-      
-      {/* Updates Section and events */}
+      <div className="w-full min-h-screen">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
+        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
+
+        <Toaster />
+
+        <ServiceHeroSection
+          name="Redevelopment"
+          breadcrumbs={[
+            { label: "Home", link: "/" },
+            { label: "Redevelopment", link: "/Redevelopment" },
+          ]}
+        />
       <div className="w-full bg-[#f8f8f8] min-h-[50vh] flex items-center justify-center py-12 md:py-24 px-4">
         <div className="w-full max-w-6xl flex flex-col items-center gap-8 md:gap-10">
           <div className="flex flex-col items-start gap-4 md:gap-5 w-full">
@@ -309,45 +299,51 @@ const Page = () => {
           </div>
         </div>
       </div>
-      {/* End of Updates section */}
-    </div>
-    
-    {/* Layout map section */}
-    <div className="w-full bg-white py-12 md:py-24 px-4 md:px-0 flex flex-col items-center justify-center">
-      <div className="w-full max-w-6xl mx-auto flex flex-col items-start gap-8 md:gap-14">
-        <h1 className="text-3xl md:text-4xl mx-auto font-semibold">Notice & Advertisements</h1>
-        
-        <div className="w-full h-[400px] md:h-[500px]"> {/* Fixed height container for the swiper */}
-          <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={30}
-            slidesPerView={1}
-            navigation
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            loop={true}
-            className="w-full h-full rounded-lg overflow-hidden"
-          >
-            {maps.map((map, index) => (
-              <SwiperSlide key={index}>
-                <div className="w-full h-full flex items-center justify-center">
-                  <Image
-                    width={1920}
-                    height={1080}
-                    src={map}
-                    alt={`Building Map ${index + 1}`}
-                    className="w-full h-full object-contain"
-                    priority={index === 0}
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+      </div>
+
+      {/* Advertisement Swiper Section */}
+      <div className="w-full bg-white py-12 md:py-24 px-4 md:px-0 flex flex-col items-center justify-center">
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-start gap-8 md:gap-14">
+          <h1 className="text-3xl md:text-4xl mx-auto font-semibold">Notice & Advertisements</h1>
+
+          <div className="w-full h-[400px] md:h-[500px]">
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              spaceBetween={30}
+              slidesPerView={1}
+              navigation
+              pagination={{ clickable: true }}
+              autoplay={{ delay: 5000, disableOnInteraction: false }}
+              loop={true}
+              className="w-full h-full rounded-lg overflow-hidden"
+            >
+              {advertisements.length > 0 ? (
+                advertisements.map((ad, index) => (
+                  <SwiperSlide key={index}>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Image
+                        src={ad.imageUrl} // Update this if your API uses a different key
+                        alt={`Advertisement ${index + 1}`}
+                        width={1920}
+                        height={1080}
+                        className="w-full h-full object-contain"
+                        priority={index === 0}
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))
+              ) : (
+                <SwiperSlide>
+                  <div className="w-full h-full flex items-center justify-center text-center text-gray-500">
+                    No advertisements found
+                  </div>
+                </SwiperSlide>
+              )}
+            </Swiper>
+          </div>
         </div>
       </div>
-    </div>
-
-    {/* Tender Information Section */}
+      {/* Tender Information Section */}
     <div className="w-full bg-gray-50 py-12 md:py-16">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col items-center gap-8 mb-10">
@@ -703,9 +699,8 @@ const Page = () => {
         </div>
       </div>
     </div>
-    
-  </>
-  )
-}
+    </>
+  );
+};
 
 export default Page;

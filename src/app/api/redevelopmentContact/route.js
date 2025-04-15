@@ -392,7 +392,7 @@ export async function POST(request) {
               </div>
               
               <div style="text-align: center; margin-top: 25px;">
-                  <a href="https://docs.google.com/spreadsheets/d/10meH9FPNeqhZXHvJzbiDmbr-_KsEGUsHcAdOM0Ghwqo" class="cta-button">View in Google Sheets</a>
+                  <a href="https://docs.google.com/spreadsheets/d/1BmJYnSKSPUnlimPMK9Hh_hvbLifP80xP3aLcv2uB-Z8/edit?gid=0#gid=0" class="cta-button">View in Google Sheets</a>
               </div>
           </div>
           
