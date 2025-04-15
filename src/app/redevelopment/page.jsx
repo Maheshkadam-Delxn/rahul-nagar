@@ -4,9 +4,10 @@ import ServiceHeroSection from "@/components/ServiceHeroSection";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Calendar, MoveRight, ChevronDown, ChevronUp } from "lucide-react";
+import { User, Calendar, MoveRight, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 import ConstructionIconn from "../../../public/home/events/iconn.svg";
+import toast, { Toaster } from "react-hot-toast";
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -27,17 +28,30 @@ const Page = () => {
     const [events, setEvents] = useState([]);
     const [updates, setUpdates] = useState([]);
     const [openFaqItem, setOpenFaqItem] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const maps = [BuildingMap1, BuildingMap2, BuildingMap3, BuildingMap4];
+    
+    // State for form data
+    const [formData, setFormData] = useState({
+      name: "",
+      phone: "",
+      email: "",
+      website: "",
+      message: ""
+    });
+
+    // State for form errors
+    const [errors, setErrors] = useState({});
     
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const updatesRes = await fetch("/api/updates/fetchAll?limit=3");
+          const updatesRes = await fetch("/api/redevelopment/update/fetchAll?limit=3");
           if (!updatesRes.ok) throw new Error("Failed to fetch updates");
           const updatesData = await updatesRes.json();
           setUpdates(updatesData);
   
-          const eventsRes = await fetch("/api/events/fetchAll?limit=3");
+          const eventsRes = await fetch("/api/redevelopment/event/fetchAll?limit=3");
           if (!eventsRes.ok) throw new Error("Failed to fetch events");
           const eventsData = await eventsRes.json();
           setEvents(eventsData.events);
@@ -75,6 +89,77 @@ const Page = () => {
     const toggleFaqItem = (index) => {
       setOpenFaqItem(openFaqItem === index ? -1 : index);
     };
+
+    // Handle input change
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Validate Form
+    const validateForm = () => {
+      let newErrors = {};
+
+      if (!formData.name.trim()) newErrors.name = "Developer name is required";
+      else if (formData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
+
+      if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+      else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Invalid phone number (10 digits required)";
+
+      if (!formData.email.trim()) newErrors.email = "Email is required";
+      else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email))
+        newErrors.email = "Invalid email address";
+
+      if (formData.website && !/^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+([\/\w-]*)*\/?$/.test(formData.website))
+        newErrors.website = "Invalid website URL";
+
+      if (!formData.message.trim()) newErrors.message = "Message is required";
+      else if (formData.message.length < 10) newErrors.message = "Message must be at least 10 characters";
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      
+      if (!validateForm()) {
+        toast.error("Please fix the errors in the form");
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const response = await fetch('/api/redevelopmentContact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Something went wrong');
+        }
+
+        toast.success("Message sent successfully!");
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          website: "",
+          message: "",
+        });
+        setErrors({});
+      } catch (error) {
+        toast.error(error.message || "Failed to send message. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
   
   return (
     <>
@@ -82,6 +167,8 @@ const Page = () => {
       <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-lg"></div>
       <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-purple-400 rounded-full opacity-25 blur-3xl"></div>
   
+      <Toaster />
+      
       <ServiceHeroSection
         name="Redevelopment"
         breadcrumbs={[
@@ -114,39 +201,66 @@ const Page = () => {
                     Latest Updates of Redevelopment
                   </h1>
                 </div>
-                <Link href="/updates" className="text-xs md:text-sm text-[#B57E10] font-medium">
+                <Link href="/redevlopmentUpdates" className="text-xs md:text-sm text-[#B57E10] font-medium">
                   Check All →
                 </Link>
               </div>
               <div className="flex flex-col gap-4 md:gap-10 w-full">
-                {updates.length > 0 ? (
-                  updates.map((update) => (
-                    <div key={update._id} className="flex flex-col gap-2 md:gap-3">
-                      <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <User size={14} color="red" />
-                          {update.createdBy.userName}
-                        </div>
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <Calendar size={14} color="red" />
-                          {new Date(update.createdAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </div>
-                      </div>
-                      <h1 className="text-lg md:text-xl font-bold">{update.title}</h1>
-                      <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(update.content, 100)}</p>
-                      <Link href={`/updates/${update._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
-                        Read More <MoveRight size={16} />
-                      </Link>
+          {updates.length > 0 ? (
+            updates.map((update) => (
+              <div key={update._id} className="bg-white p-2 ">
+                <div className="flex flex-col gap-2 md:gap-3">
+                  {/* Author & Date Info */}
+                  <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <User size={14} color="red" />
+                      {update.createdBy?.userName || "Unknown User"}
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500 text-sm">No latest updates.</p>
-                )}
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <Calendar size={14} color="red" />
+                      {new Date(update.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  
+                  {/* Title */}
+                  <h2 className="text-lg md:text-xl font-bold">{update.title}</h2>
+                  
+                  {/* Image (if available) */}
+                  {/* {update.image && (
+                    <div className="my-2">
+                      <Image 
+                        src={update.image} 
+                        alt={update.title} 
+                        width={600} 
+                        height={300} 
+                        className="w-full rounded-lg object-cover h-40" 
+                      />
+                    </div>
+                  )}
+                   */}
+                  {/* Description or Content */}
+                  <p className="text-xs md:text-sm opacity-45 font-medium">
+                    {trimText(update.description || update.content, 70)}
+                  </p>
+                  
+                  {/* Read More Link */}
+                  <Link 
+                    href={`/redevlopmentUpdates/${update._id}`} 
+                    className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]"
+                  >
+                    Read More <MoveRight size={16} />
+                  </Link>
+                </div>
               </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 text-sm">No latest updates.</p>
+          )}
+        </div>
             </div>
   
             <div className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5">
@@ -157,14 +271,14 @@ const Page = () => {
                     Upcoming Events / Meetings
                   </h1>
                 </div>
-                <Link href="/events" className="text-xs md:text-sm text-[#B57E10] font-medium">
+                <Link href="/redevelopmentEvents" className="text-xs md:text-sm text-[#B57E10] font-medium">
                   Check All →
                 </Link>
               </div>
               <div className="flex flex-col gap-4 md:gap-5 w-full">
                 {events.length > 0 ? (
                   events.map((event) => (
-                    <div key={event._id} className="flex flex-col gap-2 md:gap-3">
+                    <div key={event._id} className="flex flex-col gap-2 md:gap-3 bg-white  p-2  ">
                       <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
                         <div className="flex items-center gap-1 md:gap-2">
                           <User size={14} color="red" />
@@ -178,8 +292,8 @@ const Page = () => {
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
                         <div className="flex flex-col gap-1 md:gap-2">
                           <h1 className="text-lg md:text-xl font-bold">{event.title}</h1>
-                          <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(event.description, 100)}</p>
-                          <Link href={`/events/${event._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
+                          <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(event.description, 70)}</p>
+                          <Link href={`/redevelopmentEvents/${event._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
                             Read More <MoveRight size={16} />
                           </Link>
                         </div>
@@ -470,46 +584,93 @@ const Page = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-6">Reach out for Redevelopment</h2>
           <p className="text-gray-600 mb-8">In nec diam egestas, aliquot turpis at, vehicula rist. Cras eget mauris in nisl tempus lobortis.</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input 
-              type="text" 
-              placeholder="Name of the Developer" 
-              className="p-3 rounded border border-gray-300 w-full bg-white"
-            />
-            <input 
-              type="tel" 
-              placeholder="Phone Number" 
-              className="p-3 rounded border border-gray-300 w-full bg-white"
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input 
-              type="email" 
-              placeholder="Email Address" 
-              className="p-3 rounded border border-gray-300 w-full bg-white"
-            />
-            <input 
-              type="text" 
-              placeholder="Website of Developer" 
-              className="p-3 rounded border border-gray-300 w-full bg-white"
-            />
-          </div>
-          
-          <textarea 
-            placeholder="Type Your Message" 
-            className="p-3 rounded border border-gray-300 w-full h-40 mb-6 bg-white"
-          ></textarea>
-          
-          <button className="bg-[#B57E10] hover:bg-amber-700 text-white font-medium py-3 px-8 rounded-md transition-colors">
-            Send Message
-          </button>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <input 
+                  type="text" 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Name of the Developer" 
+                  className="p-3 rounded border border-gray-300 w-full bg-white"
+                  disabled={isSubmitting}
+                />
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              </div>
+              <div>
+                <input 
+                  type="tel" 
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number" 
+                  className="p-3 rounded border border-gray-300 w-full bg-white"
+                  disabled={isSubmitting}
+                />
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <input 
+                  type="email" 
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email Address" 
+                  className="p-3 rounded border border-gray-300 w-full bg-white"
+                  disabled={isSubmitting}
+                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+              <div>
+                <input 
+                  type="text" 
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  placeholder="Website of Developer" 
+                  className="p-3 rounded border border-gray-300 w-full bg-white"
+                  disabled={isSubmitting}
+                />
+                {errors.website && <p className="text-red-500 text-sm mt-1">{errors.website}</p>}
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <textarea 
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Type Your Message" 
+                className="p-3 rounded border border-gray-300 w-full h-40 bg-white"
+                disabled={isSubmitting}
+              ></textarea>
+              {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
+            </div>
+            
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className={`bg-[#B57E10] hover:bg-amber-700 text-white font-medium py-3 px-8 rounded-md transition-colors flex items-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                  Sending...
+                </>
+              ) : (
+                'Send Message'
+              )}
+            </button>
+          </form>
         </div>
       </div>
     </div>
-
-    {/* FAQ Section */}
-    <div className="w-full bg-white py-16 md:py-24">
+ {/* FAQ Section */}
+ <div className="w-full bg-white py-16 md:py-24">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col items-center mb-10">
           <h2 className="text-3xl md:text-4xl font-semibold  mb-6">Common Questions For This Project</h2>
@@ -541,6 +702,7 @@ const Page = () => {
         </div>
       </div>
     </div>
+    
   </>
   )
 }

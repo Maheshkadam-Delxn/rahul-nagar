@@ -87,8 +87,10 @@ export default function AdminLayout({ children }) {
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Content</div>
             <MenuItem href="/admin/event" icon={<Calendar size={18} />} label="Event Management" onClick={closeSidebar} />
+            <MenuItem href="/admin/redevelopment" icon={<Calendar size={18} />} label="Redevelopment " onClick={closeSidebar} />
             <MenuItem href="/admin/building-management" icon={<Building size={18} />} label="Building Management" onClick={closeSidebar} />
             <MenuItem href="/admin/gallery-management" icon={<Building size={18} />} label="Gallery Management" onClick={closeSidebar} />
+
            
             <MenuItem href="/admin/updates" icon={<RefreshCw size={18} />} label="Updates" onClick={closeSidebar} />
             
