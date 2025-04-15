@@ -177,7 +177,7 @@ const Page = () => {
             </div>
             <div className="flex flex-col md:flex-row items-center w-full justify-between gap-4">
               <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left w-full">
-                Redevelopment Latest Updates & Upcoming Events
+                Redevelopment Latest Updates &  Events
               </h1>
             </div>
           </div>
@@ -259,7 +259,7 @@ const Page = () => {
                 <div className="flex items-center gap-3 md:gap-5">
                   <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
                   <h1 className="text-base md:text-lg text-[#B57E10] font-medium">
-                    Upcoming Events / Meetings
+                     Events / Meetings
                   </h1>
                 </div>
                 <Link href="/redevelopmentEvents" className="text-xs md:text-sm text-[#B57E10] font-medium">
@@ -292,7 +292,7 @@ const Page = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-gray-500 text-sm">No upcoming events.</p>
+                  <p className="text-center text-gray-500 text-sm">No  events.</p>
                 )}
               </div>
             </div>

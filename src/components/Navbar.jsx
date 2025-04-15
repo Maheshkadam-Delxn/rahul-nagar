@@ -105,6 +105,7 @@ const Navbar = () => {
               <Link href={"/"}>Home</Link>
               <Link href={"/about"}>About</Link>
               <Link href={"/gallery"}>Gallery</Link>
+              <Link href={"/redevelopment"}>Redevelopment</Link>
               <Link href={"/contact"}>Contact Us</Link>
             </div>
             <div className='flex items-center gap-5 text-white py-1 px-3'>
