@@ -160,7 +160,7 @@ const Page = () => {
         setIsSubmitting(false);
       }
     };
-  
+  // console.log("usdp",updates);
   return (
     <>
     <div className='w-full min-h-screen'>
@@ -214,7 +214,8 @@ const Page = () => {
                   <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
                     <div className="flex items-center gap-1 md:gap-2">
                       <User size={14} color="red" />
-                      {update.createdBy?.userName || "Unknown User"}
+                      {/* {update.createdBy?.userName || "Admin User"} */}
+                      By Admin
                     </div>
                     <div className="flex items-center gap-1 md:gap-2">
                       <Calendar size={14} color="red" />

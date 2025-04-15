@@ -416,7 +416,7 @@ export default function RedevelopmentManagement() {
       setLoading(false);
     }
   };
-
+  console.log("check the user",user);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -476,9 +476,9 @@ export default function RedevelopmentManagement() {
       }),
       image: imageUrl || "",
       document: documentUrl || "",
-      createdBy: user?.user?.id,
+      createdBy: user?.user?.name,
     };
-
+    
     try {
       const endpoint = activeTab === "events" 
         ? "/api/redevelopment/event/add-event" 

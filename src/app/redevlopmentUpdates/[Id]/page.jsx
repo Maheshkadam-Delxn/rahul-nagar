@@ -8,14 +8,15 @@ import { User, Calendar, ArrowLeft, FileText, Link as LinkIcon } from "lucide-re
 import ConstructionIcon from "../../../../public/home/events/icon.png";
 
 const UpdateDetailPage = () => {
-  const { updateId } = useParams();
+  const { Id } = useParams();
+  console.log(Id);
   const [update, setUpdate] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUpdate = async () => {
       try {
-        const res = await fetch(`/api/redevelopment/update/${updateId}`);
+        const res = await fetch(`/api/redevelopment/update/${Id}`);
         if (!res.ok) throw new Error("Failed to fetch update");
 
         const data = await res.json();
@@ -27,13 +28,13 @@ const UpdateDetailPage = () => {
       }
     };
 
-    if (updateId) fetchUpdate();
-  }, [updateId]);
+    if (Id) fetchUpdate();
+  }, [Id]);
 
   if (loading) {
     return <p className="text-center text-gray-500 mt-10">Loading update...</p>;
   }
-
+  console.log("wewewe",update);
   if (!update) {
     return <p className="text-center text-gray-500 mt-10">Update not found.</p>;
   }
@@ -64,7 +65,8 @@ const UpdateDetailPage = () => {
           <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <User size={16} color="red" />
-              {update.createdBy?.userName || "Unknown User"}
+              {/* {update.createdBy?.userName || "Unknown User"} */}
+              Admin User
             </div>
             
             {/* Created Date */}
