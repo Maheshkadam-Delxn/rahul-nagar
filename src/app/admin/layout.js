@@ -119,7 +119,7 @@ export default function AdminLayout({ children }) {
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Users</div>
             <MenuItem href="/admin/user-management" icon={<Users size={18} />} label="User Management" onClick={closeSidebar} />
-            <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} />
+            {/* <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} /> */}
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Settings</div>
             <MenuItem href="/admin/profile" icon={<UserCircle size={18} />} label="Your Profile" onClick={closeSidebar} />
@@ -130,7 +130,7 @@ export default function AdminLayout({ children }) {
             <>
               <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Content</div>
               <MenuItem href="/admin/building-management" icon={<Building size={18} />} label="Building Management" onClick={closeSidebar} />
-              <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} />
+              {/* <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} /> */}
             </>
           );
       default:
