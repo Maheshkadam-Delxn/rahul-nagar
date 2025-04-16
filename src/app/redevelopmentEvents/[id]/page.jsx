@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { Calendar, Clock, MapPin, FileText } from "lucide-react";
+import { Calendar, Clock, MapPin, FileText, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -38,6 +39,9 @@ const EventDetails = () => {
   return (
     <div className="w-full min-h-screen flex items-center justify-center py-12 px-4 bg-gray-100">
       <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6 md:p-10">
+      <Link href="/redevelopmentEvents" className="flex items-center gap-2 text-[#B57E10] mb-4">
+          <ArrowLeft size={18} /> Back to Events
+        </Link>
         {event.image && (
           <Image
             src={event.image}

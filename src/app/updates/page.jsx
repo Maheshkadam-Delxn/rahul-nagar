@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, X } from "lucide-react";
+import { FileText, X, MoveRight } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 
 const UpdatesPage = () => {
@@ -81,6 +81,13 @@ const UpdatesPage = () => {
                   })}
                 </Link>
                 <p className="text-sm text-gray-600">{update.content}</p>
+               
+                <Link
+                  href={`/updates/${update._id}`}  
+                  className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
+                >
+              Read More <MoveRight size={16} />
+            </Link>
                 {update.images?.length > 0 && (
                   <button
                     onClick={() => openImageModal(update.images)}

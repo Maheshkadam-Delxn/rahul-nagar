@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Calendar, Clock, MapPin, FileText } from "lucide-react";
+import { Calendar, Clock, MapPin, FileText, ChevronLeft, ArrowLeft } from "lucide-react"; // Add ChevronLeft for the back arrow
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 const EventDetails = () => {
   const { id } = useParams();
+  const router = useRouter(); // Hook to navigate back
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,8 +38,22 @@ const EventDetails = () => {
   }
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center py-12 px-4 bg-gray-100">
-      <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6 md:p-10">
+    <div className="w-full bg-gray-100 px-4 pt-10 flex justify-center">
+      <div className="w-full max-w-5xl bg-white shadow-lg rounded-lg p-6 md:p-10 mb-10" style={{ minWidth: "80%" }}>
+      <Link href="/events" className="flex items-center gap-2 text-[#B57E10] ">
+          <ArrowLeft size={18} /> Back to Events
+        </Link>
+        <div className="flex items-center  gap-4">
+        
+          <h1 className="text-2xl md:text-3xl font-bold mt-5 text-[#B57E10]">{event.title}</h1>
+          {/* <button
+            onClick={() => router.back()}
+            className="text-[#B57E10] flex items-center gap-2 font-medium hover:text-[#9f660d] transition"
+          >
+            <ChevronLeft size={20} /> Back
+          </button> */}
+        </div>
+
         {event.image && (
           <Image
             src={event.image}
@@ -48,7 +64,6 @@ const EventDetails = () => {
           />
         )}
 
-        <h1 className="text-2xl md:text-3xl font-bold mt-5 text-[#B57E10]">{event.title}</h1>
         <p className="text-gray-600 mt-2">{event.description}</p>
 
         <div className="mt-4 flex flex-col gap-3 text-gray-700">

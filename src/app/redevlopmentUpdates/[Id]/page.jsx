@@ -49,10 +49,10 @@ const UpdateDetailPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#f8f8f8] py-12 px-4 flex items-center justify-center">
-      <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6 md:p-8">
+<div className="w-full bg-[#f8f8f8] pt-12 px-4 pb-20 flex justify-center">
+<div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6 md:p-8">
         {/* Back Button */}
-        <Link href="/redevelopmentUpdates" className="flex items-center gap-2 text-[#B57E10] mb-4">
+        <Link href="/redevlopmentUpdates" className="flex items-center gap-2 text-[#B57E10] mb-4">
           <ArrowLeft size={18} /> Back to Updates
         </Link>
 

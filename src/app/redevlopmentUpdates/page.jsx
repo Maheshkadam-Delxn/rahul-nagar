@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, X, Calendar, Clock } from "lucide-react";
+import { FileText, X, Calendar, Clock, MoveRight } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
+// import { FileText, X, User, Calendar, MoveRight } from "lucide-react";
 
 const UpdatesPage = () => {
   const [updates, setUpdates] = useState([]);
@@ -134,8 +135,16 @@ const UpdatesPage = () => {
                       <FileText size={14} /> View Document
                     </Link>
                   )}
+                  
                 </div>
+                <Link
+                               href={`/redevlopmentUpdates/${update._id}`}
+                                className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
+                              >
+                                Read More <MoveRight size={16} />
+                              </Link>
               </div>
+              
             ))
           )}
         </section>
