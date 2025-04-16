@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from "next/image";
-import { Calendar } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import ConstructionIcon from "../../../../public/home/events/icon.png";
-//sample 
+
 const BuildingPage = () => {
     const { id } = useParams();
     const [building, setBuilding] = useState(null);
@@ -45,7 +45,6 @@ const BuildingPage = () => {
     
         return `${day}${ordinalSuffix(day)} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm} `;
     };
-    
     
     useEffect(() => {
         if (!id) return;
@@ -107,13 +106,27 @@ const BuildingPage = () => {
     const getImageSrc = (img) => {
         return img || "/avatar.jpg";
     };
-    console.log(upcomingEvents)
+    console.log("building ",building)
     return (
         <div className='w-full min-h-screen'>
             <ServiceHeroSection
                 name={`${building.name}`}
                 breadcrumbs={[{ label: "Home", link: "/" }, { label: "Project", link: "/project" }]}
             />
+            
+            {/* Building Description */}
+            {/* <div className="w-full bg-gray-50 py-8">
+                <div className="max-w-6xl mx-auto px-4">
+                    <div className="bg-white shadow-md rounded-lg p-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-2">About {building.name}</h2>
+                        <p className="text-gray-600">{building.description}</p>
+                        <div className="mt-4 flex items-center">
+                            <span className="text-gray-700 font-medium">Total Owners:</span>
+                            <span className="ml-2 text-gray-600">{building.totalOwners}</span>
+                        </div>
+                    </div>
+                </div>
+            </div> */}
             
             <div className='w-full py-12 bg-white flex flex-col items-center'>
                 <div className="bg-white shadow-2xl rounded-lg p-6 flex flex-col gap-6 w-full items-start justify-center max-w-6xl">
@@ -131,21 +144,38 @@ const BuildingPage = () => {
                                 <h1 className="text-lg font-semibold text-[#B57E10]">Upcoming Events</h1>
                             </div>
                             <div className="grid grid-cols-1 gap-6 w-full">
-  {upcomingEvents.map((event, index) => (
-    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
-      <div className="flex items-center gap-3">
-        <Calendar className="text-black w-7 h-7" />
-        <h3 className="text-lg font-semibold text-black">{event.title}</h3>
-      </div>
-      <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-      <p className="text-[#B57E10] mt-2 font-medium">
-        {formatDateTime(event.date)}
-      </p>
-      <p className="text-gray-500 text-sm">{event.location}</p>
-    </div>
-  ))}
+                                {upcomingEvents.map((event, index) => (
+                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="text-black w-7 h-7" />
+                                            <h3 className="text-lg font-semibold text-black">{event.title}</h3>
+                                        </div>
+                                        <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+                                        <p className="text-[#B57E10] mt-2 font-medium">
+                                            {formatDateTime(event.date)}
+                                        </p>
+                                        <p className="text-gray-500 text-sm">{event.location}</p>
+                                        
+                                        {/* Document section - only show when documentUrl exists */}
+                                        {event.documentUrl && (
+                                            <div className="mt-4 p-3 bg-gray-50 rounded-md flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="text-gray-700 w-5 h-5" />
+                                                    <span className="text-sm font-medium">{event.documentName || "Document"}</span>
+                                                </div>
+                                                <a 
+                                                    href={event.documentUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-
                         </div>
                     )}
 
@@ -163,23 +193,67 @@ const BuildingPage = () => {
                                 <h1 className="text-lg font-semibold text-[#B57E10]">Past Events</h1>
                             </div>
                             <div className="grid grid-cols-1 gap-6 w-full">
-  {pastEvents.map((event, index) => (
-    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
-      <div className="flex items-center gap-3">
-        <Calendar className="text-black w-7 h-7" />
-        <h3 className="text-lg font-semibold text-black">{event.title}</h3>
-      </div>
-      <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
-      <p className="text-[#B57E10] mt-2 font-medium">
-        {formatDateTime(event.date)}
-      </p>
-      <p className="text-gray-500 text-sm">{event.location}</p>
-    </div>
-  ))}
-</div>
-
+                                {pastEvents.map((event, index) => (
+                                    <div key={index} className="rounded-lg p-5 transition duration-300 border border-gray-200">
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="text-black w-7 h-7" />
+                                            <h3 className="text-lg font-semibold text-black">{event.title}</h3>
+                                        </div>
+                                        <p className="text-gray-600 mt-2 text-sm">{event.description}</p>
+                                        <p className="text-[#B57E10] mt-2 font-medium">
+                                            {formatDateTime(event.date)}
+                                        </p>
+                                        <p className="text-gray-500 text-sm">{event.location}</p>
+                                        
+                                        {/* Document section - only show when documentUrl exists */}
+                                        {event.documentUrl && (
+                                            <div className="mt-4 p-3 bg-gray-50 rounded-md flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="text-gray-700 w-5 h-5" />
+                                                    <span className="text-sm font-medium">{event.documentName || "Document"}</span>
+                                                </div>
+                                                <a 
+                                                    href={event.documentUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
+
+                    {/* Recent Updates Section */}
+                    {/* {building.updates && building.updates.length > 0 && (
+                        <div className="w-full py-8">
+                            <div className="flex items-center gap-4 mb-6">
+                                <Image 
+                                    src={ConstructionIcon} 
+                                    alt="Updates Icon" 
+                                    width={64} 
+                                    height={64} 
+                                    className="w-12 h-12 md:w-16 md:h-16" 
+                                />
+                                <h1 className="text-lg font-semibold text-[#B57E10]">Recent Updates</h1>
+                            </div>
+                            <div className="space-y-4">
+                                {building.updates.map((update, index) => (
+                                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                                        <h3 className="font-medium text-gray-800">{update.title}</h3>
+                                        <p className="text-gray-600 mt-2">{update.description}</p>
+                                        <p className="text-sm text-gray-500 mt-2">
+                                            {new Date(update.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )} */}
 
                     {/* Leadership Team Section */}
                     <div className="w-full bg-white px-4 md:px-0 py-12">

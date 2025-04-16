@@ -16,7 +16,8 @@ import {
   FileText,
   Download,
   FilePlus,
-  File
+  File, 
+  CheckCircle
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -38,8 +39,16 @@ export default function BuildingsManagement() {
   const [editingUpdateIndex, setEditingUpdateIndex] = useState(null);
   const [editingDocumentIndex, setEditingDocumentIndex] = useState(null);
   const [currentOwner, setCurrentOwner] = useState({ name: '', flatNumber: '' });
-  const [currentEvent, setCurrentEvent] = useState({ title: '', date: '', description: '' });
-  const [currentUpdate, setCurrentUpdate] = useState({ title: '', date: '', description: '' });
+  const [currentEvent, setCurrentEvent] = useState({ 
+    title: '', 
+    date: '', 
+    description: '', 
+    document: null, 
+    documentUrl: '', 
+    documentName: '',
+    documentUploading: false 
+  });
+    const [currentUpdate, setCurrentUpdate] = useState({ title: '', date: '', description: '' });
   const [currentDocument, setCurrentDocument] = useState([{ title: '', file: null }]);
   const [documentUploading, setDocumentUploading] = useState(false);
   const [presidentImage, setPresidentImage] = useState(null);
@@ -68,6 +77,63 @@ export default function BuildingsManagement() {
     checkSessionStorage();
   }, []);
 
+  const handleEventDocumentChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    // Update current event state with the file
+    setCurrentEvent(prev => ({
+      ...prev,
+      document: file,
+      documentUploading: true
+    }));
+  
+    try {
+      // Get the folder ID for the current building
+      const folderId = getFolderIdForBuilding(newBuilding.name);
+      
+      if (!folderId) {
+        throw new Error("No folder configured for this building");
+      }
+  
+      // Upload the document
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folderId", folderId);
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to upload event document");
+      }
+  
+      const result = await response.json();
+  
+      // Update current event state with document info
+      setCurrentEvent(prev => ({
+        ...prev,
+        documentUrl: result.viewLink || "",
+        documentId: result.fileId || result.id,
+        documentName: file.name,
+        documentUploading: false
+      }));
+  
+    } catch (error) {
+      console.error("Error uploading event document:", error);
+      alert(error.message || "Failed to upload event document");
+      
+      // Reset document upload state on error
+      setCurrentEvent(prev => ({
+        ...prev,
+        document: null,
+        documentUploading: false
+      }));
+    }
+  };
+  
   const handleShowDocuments = async (building) => {
     setDocumentsLoading(true);
     setShowDocumentsPopup(true);
@@ -402,13 +468,22 @@ export default function BuildingsManagement() {
   
   const addEvent = () => {
     if (currentEvent.title && currentEvent.date) {
+      // Don't add event if document is still uploading
+      if (currentEvent.documentUploading) {
+        alert("Please wait for document upload to complete");
+        return;
+      }
+      
       // If we're in editing mode, update the existing event
       if (editingEventIndex !== null) {
         const updatedEvents = [...newBuilding.events];
         updatedEvents[editingEventIndex] = { 
           title: currentEvent.title,
           date: currentEvent.date,
-          description: currentEvent.description || ""
+          description: currentEvent.description || "",
+          documentUrl: currentEvent.documentUrl || "",
+          documentId: currentEvent.documentId || "",
+          documentName: currentEvent.documentName || ""
         };
         
         setNewBuilding(prev => ({
@@ -425,7 +500,10 @@ export default function BuildingsManagement() {
           events: [...(prev.events || []), { 
             title: currentEvent.title,
             date: currentEvent.date,
-            description: currentEvent.description || ""
+            description: currentEvent.description || "",
+            documentUrl: currentEvent.documentUrl || "",
+            documentId: currentEvent.documentId || "",
+            documentName: currentEvent.documentName || ""
           }]
         }));
       }
@@ -434,7 +512,12 @@ export default function BuildingsManagement() {
       setCurrentEvent({
         title: "",
         date: "",
-        description: ""
+        description: "",
+        document: null,
+        documentUrl: "",
+        documentId: "",
+        documentName: "",
+        documentUploading: false
       });
     }
   };
@@ -468,15 +551,33 @@ export default function BuildingsManagement() {
 
     
   
-  const editEvent = (index) => {
-    const eventToEdit = newBuilding.events[index];
-    setCurrentEvent({ 
-      title: eventToEdit.title,
-      date: eventToEdit.date,
-      description: eventToEdit.description || ""
-    });
-    setEditingEventIndex(index);
-  };
+const editEvent = (index) => {
+  const eventToEdit = newBuilding.events[index];
+  setCurrentEvent({ 
+    title: eventToEdit.title,
+    date: eventToEdit.date,
+    description: eventToEdit.description || "",
+    document: null,
+    documentUrl: eventToEdit.documentUrl || "",
+    documentId: eventToEdit.documentId || "",
+    documentName: eventToEdit.documentName || "",
+    documentUploading: false
+  });
+  setEditingEventIndex(index);
+};
+
+// Make sure to update your handleSubmit function to include event documents
+// In the buildingData preparation section:
+events: newBuilding.events.map(event => ({
+  title: event.title?.trim() || "",
+  description: event.description?.trim() || "",
+  date: event.date,
+  time: event.time || "",
+  location: event.location || "",
+  documentUrl: event.documentUrl || "",
+  documentId: event.documentId || "",
+  documentName: event.documentName || ""
+}))
 
   const removeEvent = (index) => {
     setNewBuilding(prev => ({
@@ -698,7 +799,10 @@ export default function BuildingsManagement() {
         description: event.description?.trim() || "",
         date: event.date,
         time: event.time || "",
-        location: event.location || ""
+        location: event.location || "",
+        documentUrl:event.documentUrl || "",
+        documentId:event.documentId || "",
+        documentName:event.documentName || ""
       })),
       updates: newBuilding.updates.map(update => ({
         role: userRole,
@@ -871,6 +975,7 @@ export default function BuildingsManagement() {
     user?.role === "Super-Admin" || user?.role === "Admin" || user?.role?.startsWith("Building")? 
 
     <div className="container mx-auto px-4 py-8">
+      {/* code to pase it starts here part 1 */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Housing Society Buildings</h1>
       {
@@ -974,7 +1079,7 @@ export default function BuildingsManagement() {
           ))}
         </div>
       )}
-
+      {/* part-1 ends here */}
       {/* Add/Edit Building Modal */}
       {showModal && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1279,217 +1384,143 @@ export default function BuildingsManagement() {
 
         {/* Events Section */}
         <div className="mb-6 border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-semibold mb-3 flex items-center">
-            <Calendar size={18} className="mr-2" />
-            Events
-          </h3>
-          
-          <div className="bg-gray-50 p-3 rounded-md mb-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
-                  Event Title
-                </label>
-                <input
-                  id="eventTitle"
-                  name="title"
-                  type="text"
-                  value={currentEvent.title}
-                  onChange={handleEventInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Event title"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
-                  Event Date & Time
-                </label>
-                <input
-                  id="eventDate"
-                  name="date"
-                  type="datetime-local"
-                  value={currentEvent.date}
-                  onChange={handleEventInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-            </div>
-            
-            <div className="mt-3">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
-                Event Description (Optional)
-              </label>
-              <textarea
-                id="eventDescription"
-                name="description"
-                value={currentEvent.description}
-                onChange={handleEventInputChange}
-                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
-                placeholder="Event description"
-              />
-            </div>
-            
-            <div className="mt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={addEvent}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
-              >
-                {editingEventIndex !== null ? (
-                  <>
-                    <Edit size={16} className="mr-1" />
-                    Update Event
-                  </>
-                ) : (
-                  <>
-                    <Plus size={16} className="mr-1" />
-                    Add Event
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-          
-          {newBuilding.events && newBuilding.events.length > 0 && (
-            <div className="mt-2">
-              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Events</h4>
-              <div className="space-y-2">
-                {newBuilding.events.map((event, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <div>
-                      <div className="font-medium">{event.title}</div>
-                      <div className="text-gray-500 text-sm">{formatDateTime(event.date)}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      <button 
-                        type="button"
-                        onClick={() => editEvent(index)}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => removeEvent(index)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+  <h3 className="text-lg font-semibold mb-3 flex items-center">
+    <Calendar size={18} className="mr-2" />
+    Events
+  </h3>
+  
+  <div className="bg-gray-50 p-3 rounded-md mb-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventTitle">
+          Event Title
+        </label>
+        <input
+          id="eventTitle"
+          name="title"
+          type="text"
+          value={currentEvent.title}
+          onChange={handleEventInputChange}
+          className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          placeholder="Event title"
+        />
+      </div>
+      <div>
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDate">
+          Event Date & Time
+        </label>
+        <input
+          id="eventDate"
+          name="date"
+          type="datetime-local"
+          value={currentEvent.date}
+          onChange={handleEventInputChange}
+          className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
+      </div>
+    </div>
+    
+    <div className="mt-3">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDescription">
+        Event Description (Optional)
+      </label>
+      <textarea
+        id="eventDescription"
+        name="description"
+        value={currentEvent.description}
+        onChange={handleEventInputChange}
+        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
+        placeholder="Event description"
+      />
+    </div>
 
-        {/* Updates Section */}
-        {/* <div className="mb-6 border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-semibold mb-3 flex items-center">
-            <Megaphone size={18} className="mr-2" />
-            Updates
-          </h3>
-          
-          <div className="bg-gray-50 p-3 rounded-md mb-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateTitle">
-                  Update Title
-                </label>
-                <input
-                  id="updateTitle"
-                  name="title"
-                  type="text"
-                  value={currentUpdate.title}
-                  onChange={handleUpdateInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Update title"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDate">
-                  Date & Time
-                </label>
-                <input
-                  id="updateDate"
-                  name="date"
-                  type="datetime-local"
-                  value={currentUpdate.date}
-                  onChange={handleUpdateInputChange}
-                  className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
+    {/* Event Document Upload */}
+    <div className="mt-3">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventDocument">
+        Event Document (Optional)
+      </label>
+      <input
+        id="eventDocument"
+        name="document"
+        type="file"
+        onChange={(e) => handleEventDocumentChange(e)}
+        className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      />
+      {currentEvent.documentUploading && (
+        <div className="mt-2 flex items-center text-sm text-gray-600">
+          <Loader size={14} className="mr-2 animate-spin" />
+          Uploading document...
+        </div>
+      )}
+      {currentEvent.documentName && (
+        <div className="mt-2 flex items-center text-sm text-green-600">
+          <CheckCircle size={14} className="mr-2" />
+          {currentEvent.documentName} attached
+        </div>
+      )}
+    </div>
+    
+    <div className="mt-3 flex justify-end">
+      <button
+        type="button"
+        onClick={addEvent}
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+        disabled={currentEvent.documentUploading}
+      >
+        {editingEventIndex !== null ? (
+          <>
+            <Edit size={16} className="mr-1" />
+            Update Event
+          </>
+        ) : (
+          <>
+            <Plus size={16} className="mr-1" />
+            Add Event
+          </>
+        )}
+      </button>
+    </div>
+  </div>
+  
+  {newBuilding.events && newBuilding.events.length > 0 && (
+    <div className="mt-2">
+      <h4 className="text-sm font-medium text-gray-600 mb-2">Added Events</h4>
+      <div className="space-y-2">
+        {newBuilding.events.map((event, index) => (
+          <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <div>
+              <div className="font-medium">{event.title}</div>
+              <div className="text-gray-500 text-sm">{formatDateTime(event.date)}</div>
+              {event.documentUrl && (
+                <div className="text-blue-500 text-xs flex items-center mt-1">
+                  <FileText size={12} className="mr-1" />
+                  {event.documentName || "Document attached"}
+                </div>
+              )}
             </div>
-            
-            <div className="mt-3">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="updateDescription">
-                Update Content
-              </label>
-              <textarea
-                id="updateDescription"
-                name="description"
-                value={currentUpdate.description}
-                onChange={handleUpdateInputChange}
-                className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-20"
-                placeholder="Update content"
-              />
-            </div>
-            
-            <div className="mt-3 flex justify-end">
-              <button
+            <div className="flex gap-1">
+              <button 
                 type="button"
-                onClick={addUpdate}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center"
+                onClick={() => editEvent(index)}
+                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
               >
-                {editingUpdateIndex !== null ? (
-                  <>
-                    <Edit size={16} className="mr-1" />
-                    Update
-                  </>
-                ) : (
-                  <>
-                    <Plus size={16} className="mr-1" />
-                    Add Update
-                  </>
-                )}
+                <Edit size={16} />
+              </button>
+              <button 
+                type="button"
+                onClick={() => removeEvent(index)}
+                className="p-1 text-red-600 hover:bg-red-50 rounded"
+              >
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
-          
-          {newBuilding.updates && newBuilding.updates.length > 0 && (
-            <div className="mt-2">
-              <h4 className="text-sm font-medium text-gray-600 mb-2">Added Updates</h4>
-              <div className="space-y-2">
-                {newBuilding.updates.map((update, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <div>
-                      <div className="font-medium">{update.title}</div>
-                      <div className="text-gray-500 text-sm">
-                        {update.date ? new Date(update.date).toLocaleString() : 'No date'}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <button 
-                        type="button"
-                        onClick={() => editUpdate(index)}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => removeUpdate(index)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div> */}
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
 
         {/* Documents Section */}
         <div className="mb-6 border-t border-gray-200 pt-4">

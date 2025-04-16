@@ -95,7 +95,10 @@ const EventSchema = new mongoose.Schema({
     },
     location: { 
         type: String 
-    }
+    },
+    documentUrl: {type: String},   // URL to access the document
+  documentId: {type: String},    // ID from your file storage system (like Google Drive)
+  documentName: {type: String},  
 });
 
 const BuildingSchema = new mongoose.Schema({

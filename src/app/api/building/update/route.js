@@ -9,6 +9,7 @@ export async function PUT(req) {
 
         // Parse request body
         const body = await req.json();
+        console.log(body)
         const { buildingId, ...buildingData } = body;
 
         // Validate building ID
@@ -58,7 +59,7 @@ export async function PUT(req) {
         }
     
 
-// Save utcDate to the database
+// Save utcDate to the database
 
         // Sanitize and prepare data
         const sanitizedData = {
@@ -76,8 +77,11 @@ export async function PUT(req) {
                 description: event?.description?.trim() || "",
                 date: event?.date ? new Date(event?.date).toISOString() : new Date().toISOString(), // Convert to UTC ISO string
                 time: event?.time || "",
-                location: event?.location || "",
-            })) || [],
+                location: event?.location || "",
+                documentUrl: event?.documentUrl || "",  // Added document fields for events
+                documentId: event?.documentId || "",    // Added document fields for events
+                documentName: event?.documentName || "" // Added document fields for events
+            })) || [],
             updates: buildingData.updates?.map(update => ({
                 role: update.role?.trim() || "admin",
                 title: update.title?.trim() || "",
@@ -169,6 +173,148 @@ export async function PUT(req) {
                     message: "Building with this name already exists",
                 },
                 { status: 409 }
+            );
+        }
+
+        // Generic server error response
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            },
+            { status: 500 }
+        );
+    }
+}
+
+// Added new API endpoint for direct document uploads to buildings
+export async function POST(req) {
+    try {
+        // Connect to database
+        await connectDb();
+
+        // Parse request body
+        const body = await req.json();
+        const { buildingId, eventId, document } = body;
+
+        // Validate building ID
+        if (!buildingId) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Building ID is required",
+                },
+                { status: 400 }
+            );
+        }
+
+        // Validate document data
+        if (!document || !document.title || !document.fileUrl) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Document title and fileUrl are required",
+                },
+                { status: 400 }
+            );
+        }
+
+        // Find the building
+        const building = await Building.findById(buildingId);
+
+        if (!building) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Building not found",
+                },
+                { status: 404 }
+            );
+        }
+
+        // If eventId is provided, update the specific event
+        if (eventId) {
+            const eventIndex = building.events.findIndex(
+                event => event._id.toString() === eventId
+            );
+
+            if (eventIndex === -1) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: "Event not found in this building",
+                    },
+                    { status: 404 }
+                );
+            }
+
+            // Update the document details for the specific event
+            building.events[eventIndex].documentUrl = document.fileUrl;
+            building.events[eventIndex].documentId = document.documentId || "";
+            building.events[eventIndex].documentName = document.title;
+
+            await building.save();
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    message: "Document uploaded to event successfully",
+                    event: building.events[eventIndex],
+                },
+                { status: 200 }
+            );
+        } else {
+            // If no eventId, add document to building's document collection
+            const newDocument = {
+                title: document.title,
+                description: document.description || "",
+                fileUrl: document.fileUrl,
+                fileType: document.fileType || "application/pdf",
+                uploadedBy: document.uploadedBy || "unknown",
+                uploadedOn: new Date()
+            };
+
+            building.documents.push(newDocument);
+            await building.save();
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    message: "Document uploaded to building successfully",
+                    document: newDocument,
+                },
+                { status: 201 }
+            );
+        }
+    } catch (error) {
+        console.error("Error uploading document:", error);
+
+        // Handle validation errors from mongoose
+        if (error.name === "ValidationError") {
+            const errors = Object.values(error.errors).map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Validation error",
+                    errors,
+                },
+                { status: 400 }
+            );
+        }
+
+        // Handle cast errors (invalid ID format)
+        if (error.name === "CastError") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Invalid ID format",
+                },
+                { status: 400 }
             );
         }
 
