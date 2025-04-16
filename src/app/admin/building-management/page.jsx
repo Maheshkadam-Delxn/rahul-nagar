@@ -373,7 +373,7 @@ export default function BuildingsManagement() {
       }
 
       const result = await response.json();
-
+      console.log("res = ",result)
       // If editing an existing document
       if (editingDocumentIndex !== null) {
         const updatedDocuments = [...newBuilding.documents];
@@ -382,7 +382,7 @@ export default function BuildingsManagement() {
           fileId: result.fileId || result.id,
           fileName: currentDocument.file.name,
           uploadDate: new Date().toISOString(),
-          fileUrl: result.fileUrl || ""
+          fileUrl: result.viewLink || ""
         };
         
         setNewBuilding(prev => ({
@@ -400,7 +400,7 @@ export default function BuildingsManagement() {
             fileId: result.fileId || result.id,
             fileName: currentDocument.file.name,
             uploadDate: new Date().toISOString(),
-            fileUrl: result.fileUrl || ""
+            fileUrl: result.viewLink || ""
           }]
         }));
       }
@@ -465,7 +465,6 @@ export default function BuildingsManagement() {
       [name]: value
     }));
   };
-  
   const addEvent = () => {
     if (currentEvent.title && currentEvent.date) {
       // Don't add event if document is still uploading
@@ -970,7 +969,7 @@ events: newBuilding.events.map(event => ({
       </p>
     ) : null;
   };
-  
+  console.log(currentBuildingDocuments)
   return (
     user?.role === "Super-Admin" || user?.role === "Admin" || user?.role?.startsWith("Building")? 
 
@@ -1670,7 +1669,7 @@ events: newBuilding.events.map(event => ({
                     <div className="flex items-center">
                       <File size={18} className="mr-3 text-gray-400" />
                       <div>
-                        <Link href={doc.viewLink} className="font-medium underline text-blue-500" >{doc.title || doc.name}</Link>
+                        <Link href={doc.fileUrl} className="font-medium underline text-blue-500" >{doc.title}</Link>
                       </div>
                     </div>
                   </div>
