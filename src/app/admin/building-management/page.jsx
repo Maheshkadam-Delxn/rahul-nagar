@@ -1525,7 +1525,7 @@ events: newBuilding.events.map(event => ({
         <div className="mb-6 border-t border-gray-200 pt-4">
           <h3 className="text-lg font-semibold mb-3 flex items-center">
             <FileText size={18} className="mr-2" />
-            Documents
+          Private  Documents
           </h3>
           
           <div className="bg-gray-50 p-3 rounded-md mb-3">
@@ -1584,7 +1584,7 @@ events: newBuilding.events.map(event => ({
             </div>
           </div>
           
-          {newBuilding.documents && newBuilding.documents.length > 0 && (
+          {/* {newBuilding.documents && newBuilding.documents.length > 0 && (
             <div className="mt-2">
               <h4 className="text-sm font-medium text-gray-600 mb-2">Added Documents</h4>
               <div className="space-y-2">
@@ -1601,7 +1601,65 @@ events: newBuilding.events.map(event => ({
                 ))}
               </div>
             </div>
-          )}
+          )} */}
+          {newBuilding.documents && newBuilding.documents.length > 0 && (
+  <div className="mt-2">
+    <h4 className="text-sm font-medium text-gray-600 mb-2">Added Documents</h4>
+    <div className="space-y-2">
+      {newBuilding.documents.map((doc, index) => (
+        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+          <div className="flex items-center">
+            <File size={16} className="mr-2 text-gray-400" />
+            <div>
+              <div className="font-medium">{doc.title}</div>
+              <div className="text-gray-500 text-xs">{doc.fileName}</div>
+            </div>
+          </div>
+
+          {/* Delete Icon */}
+          <button
+  onClick={async () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${doc.fileName}"?`);
+    if (!confirmDelete) return;
+
+    try {
+      // Send fileUrl instead of fileId to the API
+      const res = await fetch('/api/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fileUrl: doc.fileUrl }) // Update here
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert("File deleted successfully.");
+
+        // Update UI: remove the deleted document
+        const updatedDocs = [...newBuilding.documents];
+        updatedDocs.splice(index, 1);
+        setNewBuilding({ ...newBuilding, documents: updatedDocs });
+      } else {
+        alert("Failed to delete the file: " + result.error);
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Something went wrong while deleting the file.");
+    }
+  }}
+  className="text-red-500 hover:text-red-700"
+  title="Delete"
+>
+  <Trash2 size={16} />
+</button>
+
+        </div>
+      ))}
+    </div>
+  </div>
+)}
         </div>
 
         <div className="flex justify-end gap-3 mt-6">

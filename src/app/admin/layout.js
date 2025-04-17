@@ -99,7 +99,7 @@ export default function AdminLayout({ children }) {
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Users</div>
             <MenuItem href="/admin/associate-member" icon={<Building size={18} />} label="Associate Member Management" onClick={closeSidebar} />
             <MenuItem href="/admin/user-management" icon={<Users size={18} />} label="User Management" onClick={closeSidebar} />
-            {/* <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} /> */}
+            <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Private Document " onClick={closeSidebar} />
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Settings</div>
             <MenuItem href="/admin/site-settings" icon={<Settings size={18} />} label="Site Settings" onClick={closeSidebar} />
@@ -119,7 +119,7 @@ export default function AdminLayout({ children }) {
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Users</div>
             <MenuItem href="/admin/user-management" icon={<Users size={18} />} label="User Management" onClick={closeSidebar} />
-            {/* <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Document Management" onClick={closeSidebar} /> */}
+            <MenuItem href="/admin/document-management" icon={<ShieldCheck size={18} />} label="Private Document " onClick={closeSidebar} />
             
             <div className="px-4 mt-6 mb-3 text-xs font-semibold text-gray-400 uppercase">Settings</div>
             <MenuItem href="/admin/profile" icon={<UserCircle size={18} />} label="Your Profile" onClick={closeSidebar} />
