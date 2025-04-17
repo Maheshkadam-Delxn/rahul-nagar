@@ -81,10 +81,10 @@ const UpdatesPage = () => {
           ) : (
             currentUpdates.map((update) => (
               <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
-                <Link href={`/updates/${update._id}`} className="font-bold text-md">
+                <p  className="font-bold text-md">
                   {update.title} held on{" "}
                   {formatDate(update.createdAt)}
-                </Link>
+                </p>
                 
                 <div className="flex items-center text-sm text-gray-500 gap-2">
                   <Calendar size={14} />
