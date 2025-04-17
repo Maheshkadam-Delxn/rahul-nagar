@@ -50,7 +50,8 @@ const Events = () => {
         </div>
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 items-stretch justify-center gap-5">
-          <div className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5">
+          {/* Updates Section */}
+          <div className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5 h-full">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 md:gap-5">
                 <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
@@ -62,10 +63,10 @@ const Events = () => {
                 Check All →
               </Link>
             </div>
-            <div className="flex flex-col gap-4 md:gap-10 w-full">
+            <div className="flex flex-col gap-4 md:gap-5 w-full">
               {updates.length > 0 ? (
                 updates.map((update) => (
-                  <div key={update._id} className="flex flex-col gap-2 md:gap-3">
+                  <div key={update._id} className="flex flex-col gap-2 md:gap-3 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
                       <div className="flex items-center gap-1 md:gap-2">
                         <User size={14} color="red" />
@@ -81,7 +82,7 @@ const Events = () => {
                       </div>
                     </div>
                     <h1 className="text-lg md:text-xl font-bold">{update.title}</h1>
-                    <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(update.content, 100)}</p>
+                    <p className="text-xs md:text-sm text-gray-600 font-medium">{trimText(update.content, 100)}</p>
                     <Link href={`/updates/${update._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
                       Read More <MoveRight size={16} />
                     </Link>
@@ -93,7 +94,8 @@ const Events = () => {
             </div>
           </div>
 
-          <div className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5">
+          {/* Events Section */}
+          <div className="bg-white shadow-2xl rounded-lg p-5 md:p-6 flex flex-col gap-4 md:gap-5 h-full">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 md:gap-5">
                 <Image src={ConstructionIcon} alt="Construction Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16" />
@@ -108,7 +110,7 @@ const Events = () => {
             <div className="flex flex-col gap-4 md:gap-5 w-full">
               {events.length > 0 ? (
                 events.map((event) => (
-                  <div key={event._id} className="flex flex-col gap-2 md:gap-3">
+                  <div key={event._id} className="flex flex-col gap-2 md:gap-3 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <div className="flex items-center gap-3 text-xs md:text-sm text-gray-600">
                       <div className="flex items-center gap-1 md:gap-2">
                         <User size={14} color="red" />
@@ -119,16 +121,11 @@ const Events = () => {
                         {new Date(event.date).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                      {/* <Image src={event.image} alt={event.title} width={200} height={100} className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover" /> */}
-                      <div className="flex flex-col gap-1 md:gap-2">
-                        <h1 className="text-lg md:text-xl font-bold">{event.title}</h1>
-                        <p className="text-xs md:text-sm opacity-45 font-medium">{trimText(event.description, 100)}</p>
-                        <Link href={`/events/${event._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
-                          Read More <MoveRight size={16} />
-                        </Link>
-                      </div>
-                    </div>
+                    <h1 className="text-lg md:text-xl font-bold">{event.title}</h1>
+                    <p className="text-xs md:text-sm text-gray-600 font-medium">{trimText(event.description, 100)}</p>
+                    <Link href={`/events/${event._id}`} className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-[#B57E10]">
+                      Read More <MoveRight size={16} />
+                    </Link>
                   </div>
                 ))
               ) : (

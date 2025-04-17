@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, X, MoveRight } from "lucide-react";
+import { FileText, X, Calendar, Clock, MoveRight, Image as ImageIcon } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 
 const UpdatesPage = () => {
@@ -42,7 +41,7 @@ const UpdatesPage = () => {
   }, [isModalOpen]);
 
   const openImageModal = (images) => {
-    setModalImages(images || []);
+    setModalImages(Array.isArray(images) ? images : [images]);
     setIsModalOpen(true);
   };
 
@@ -58,44 +57,59 @@ const UpdatesPage = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Format date properly
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#f8f8f8] py-12 px-4 flex flex-col items-center">
       <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
         <section className="space-y-4">
           <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
-          <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
-           Updates
+            <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16 h-16" />
+            Updates
           </div>
 
           {currentUpdates.length === 0 ? (
-            <p className="text-gray-500 text-sm">No Updates available.</p>
+            <p className="text-gray-500 text-center py-4">No updates available.</p>
           ) : (
             currentUpdates.map((update) => (
               <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
                 <Link href={`/updates/${update._id}`} className="font-bold text-md">
                   {update.title} held on{" "}
-                  {new Date(update.createdAt).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {formatDate(update.createdAt)}
                 </Link>
+                
+                <div className="flex items-center text-sm text-gray-500 gap-2">
+                  <Calendar size={14} />
+                  <span>{formatDate(update.createdAt)}</span>
+                </div>
+                
                 <p className="text-sm text-gray-600">{update.content}</p>
-               
-                <Link
-                  href={`/updates/${update._id}`}  
-                  className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
-                >
-              Read More <MoveRight size={16} />
-            </Link>
-                {update.images?.length > 0 && (
-                  <button
-                    onClick={() => openImageModal(update.images)}
-                    className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+                
+                <div className="flex gap-3 mt-2 flex-wrap">
+                  <Link
+                    href={`/updates/${update._id}`}
+                    className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
                   >
-                    <FileText size={14} /> Images
-                  </button>
-                )}
+                    Read More <MoveRight size={16} />
+                  </Link>
+                  
+                  {update.images?.length > 0 && (
+                    <button
+                      onClick={() => openImageModal(update.images)}
+                      className="inline-flex items-center gap-2 text-sm md:text-base text-yellow-600 hover:text-yellow-800 transition font-medium border border-yellow-600 px-4 py-2 rounded-md"
+                    >
+                      <ImageIcon size={18} /> View Images
+                    </button>
+                  )}
+                </div>
               </div>
             ))
           )}
@@ -121,40 +135,35 @@ const UpdatesPage = () => {
 
       {/* Modal */}
       {isModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-    <div className="bg-white rounded-lg p-4 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
-      <button
-        onClick={closeModal}
-        className="sticky top-2 right-2 ml-auto block text-gray-600 hover:text-red-500 z-10"
-      >
-        <X size={24} />
-      </button>
-      <div
-        className={`mt-6 ${
-          modalImages.length === 1
-            ? "flex justify-center"
-            : "grid grid-cols-1 sm:grid-cols-2 gap-4"
-        }`}
-      >
-        {modalImages.map((img) => (
-          <Image
-            key={img._id}
-            src={img.url}
-            alt={img.alt || "Event image"}
-            width={600}
-            height={400}
-            className="w-full max-w-md rounded-md object-cover"
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-)}
-
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-gray-600 hover:text-red-500 z-10"
+            >
+              <X size={24} />
+            </button>
+            <div className={`mt-6 ${
+              modalImages.length === 1
+                ? "flex justify-center"
+                : "grid grid-cols-1 sm:grid-cols-2 gap-4"
+            }`}>
+              {modalImages.map((img, index) => (
+                <Image
+                  key={img._id || index}
+                  src={img.url || img}
+                  alt={img.alt || "Update image"}
+                  width={600}
+                  height={400}
+                  className="max-w-full h-auto rounded-md object-contain"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-
 export default UpdatesPage;
-
