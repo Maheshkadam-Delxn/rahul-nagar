@@ -1617,7 +1617,7 @@ events: newBuilding.events.map(event => ({
           </div>
 
           {/* Delete Icon */}
-          <button
+          {/* <button
   onClick={async () => {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${doc.fileName}"?`);
     if (!confirmDelete) return;
@@ -1653,7 +1653,7 @@ events: newBuilding.events.map(event => ({
   title="Delete"
 >
   <Trash2 size={16} />
-</button>
+</button> */}
 
         </div>
       ))}
