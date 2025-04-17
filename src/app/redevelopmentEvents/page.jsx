@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, X, User, Calendar, MoveRight } from "lucide-react";
+import { FileText, X, User, Calendar, MoveRight, Image as ImageIcon } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
 
 const EventsPage = () => {
@@ -101,36 +101,34 @@ const EventsPage = () => {
         </div>
       </div>
       <div className="flex flex-col md:flex-row gap-3">
-        {event.image && (
-          <div className="flex-shrink-0">
-            <Image
-              src={event.image}
-              alt={event.title}
-              width={200}
-              height={100}
-              className="w-full md:w-32 rounded-lg h-auto md:h-28 object-cover cursor-pointer"
-              onClick={() => openImageModal(event.image)}
-            />
-          </div>
-        )}
         <div className="flex-grow">
           <p className="text-sm text-gray-600">{trimText(event.description, 200)}</p>
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-2 flex items-center gap-3 flex-wrap">
             <Link
               href={`/redevelopmentEvents/${event._id}`}
               className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
             >
               Read More <MoveRight size={16} />
             </Link>
+            
+            {event.image && (
+              <button
+                onClick={() => openImageModal(event.image)}
+                className="inline-flex items-center gap-2 text-sm md:text-base text-yellow-600 hover:text-yellow-800 transition font-medium border border-yellow-600 px-4 py-2 rounded-md"
+              >
+                <ImageIcon size={18} /> View Image
+              </button>
+            )}
+            
             {event.document && (
-              <Link
+              <a
                 href={event.document}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+                className="inline-flex items-center gap-2 text-sm md:text-base text-yellow-600 hover:text-yellow-800 transition font-medium border border-yellow-600 px-4 py-2 rounded-md"
               >
-                <FileText size={14} /> View Document
-              </Link>
+                <FileText size={18} /> View Document
+              </a>
             )}
           </div>
         </div>
@@ -140,73 +138,80 @@ const EventsPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f8f8f8] py-12 px-4 flex flex-col items-center">
-      {/* Upcoming Events Section */}
-      <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8 mb-8">
-        <section className="space-y-4">
-          <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
-            <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
-            Upcoming Events
+      {/* Only show sections if they have events */}
+      {upcomingEvents.length > 0 && (
+        <>
+          <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8 mb-8">
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
+                <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16 h-16" />
+                Upcoming Events
+              </div>
+
+              {currentUpcomingEvents.map((event) => (
+                <EventItem key={event._id} event={event} isPast={false} />
+              ))}
+            </section>
           </div>
 
-          {currentUpcomingEvents.length === 0 ? (
-            <p className="text-gray-500 text-sm">No upcoming events available.</p>
-          ) : (
-            currentUpcomingEvents.map((event) => (
-              <EventItem key={event._id} event={event} isPast={false} />
-            ))
+          {/* Upcoming Events Pagination */}
+          {upcomingTotalPages > 1 && (
+            <div className="mt-2 mb-8 flex gap-2 flex-wrap justify-center items-center">
+              {Array.from({ length: upcomingTotalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => paginateUpcoming(page)}
+                  className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
+                    upcomingCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
           )}
-        </section>
-      </div>
-
-      {/* Upcoming Events Pagination */}
-      {upcomingTotalPages > 1 && (
-        <div className="mt-2 mb-8 flex gap-2 flex-wrap justify-center items-center">
-          {Array.from({ length: upcomingTotalPages }, (_, index) => index + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => paginateUpcoming(page)}
-              className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
-                upcomingCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
+        </>
       )}
 
-      {/* Past Events Section */}
-      <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
-        <section className="space-y-4">
-          <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
-          <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16  h-16" />
-          Past Events
+      {/* Only show past events section if there are past events */}
+      {pastEvents.length > 0 && (
+        <>
+          <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md space-y-8">
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 text-[#B57E10] font-semibold text-lg">
+                <Image src={ConstructionIcon} alt="Icon" width={1920} height={1080} className="w-16 h-16" />
+                Past Events
+              </div>
+
+              {currentPastEvents.map((event) => (
+                <EventItem key={event._id} event={event} isPast={true} />
+              ))}
+            </section>
           </div>
 
-          {currentPastEvents.length === 0 ? (
-            <p className="text-gray-500 text-sm">No past events available.</p>
-          ) : (
-            currentPastEvents.map((event) => (
-              <EventItem key={event._id} event={event} isPast={true} />
-            ))
+          {/* Past Events Pagination */}
+          {pastTotalPages > 1 && (
+            <div className="mt-6 flex gap-2 flex-wrap justify-center items-center">
+              {Array.from({ length: pastTotalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => paginatePast(page)}
+                  className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
+                    pastCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
           )}
-        </section>
-      </div>
+        </>
+      )}
 
-      {/* Past Events Pagination */}
-      {pastTotalPages > 1 && (
-        <div className="mt-6 flex gap-2 flex-wrap justify-center items-center">
-          {Array.from({ length: pastTotalPages }, (_, index) => index + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => paginatePast(page)}
-              className={`w-8 h-8 rounded-full text-sm flex items-center justify-center border ${
-                pastCurrentPage === page ? "bg-[#B57E10] text-white" : "bg-white text-gray-700"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+      {/* Show a message if no events exist */}
+      {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+        <div className="max-w-5xl w-full bg-white rounded-lg p-6 md:p-10 shadow-md text-center">
+          <p className="text-gray-500">No events are currently available.</p>
         </div>
       )}
 
