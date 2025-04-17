@@ -1,5 +1,4 @@
-
- "use client"
+"use client"
 import React, { useState, useEffect } from 'react';
 import { Folder, File, Upload, Plus, MoreVertical, ChevronLeft, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -9,6 +8,7 @@ import Link from 'next/link';
  
 const DocumentManagement = () => {
   const [currentPath, setCurrentPath] = useState(['Private ']);
+  const [currentFolderId, setCurrentFolderId] = useState('1cXQEwyr8n2-ydx9fTP7uN1dsudLEXM41'); // Start with root folder ID
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
@@ -18,116 +18,106 @@ const DocumentManagement = () => {
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadProgress, setUploadProgress] = useState({});
+  const [folderLoading, setFolderLoading] = useState(false);
   
   // Get the current folder path as a string (used for parent tracking)
   const currentFolderPath = currentPath.join('/');
   
-  // Filter items to only show those that belong to the current folder
+  // Filter items to only show those that match the search term
   const filteredItems = items.filter(item =>
-    item.parent === currentFolderPath &&
-    (searchTerm === '' || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    searchTerm === '' || item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
+  // Fetch folder contents whenever the current folder ID changes
   useEffect(() => {
-    const fetchItems = async () => {
+    const fetchFolderContents = async () => {
+      if (!user || !(user?.role === "Super-Admin" || user?.role === "Admin" || user?.role === "Associate-Member")) {
+        return;
+      }
+      
       try {
         setLoading(true);
-        const response = await axios.get('/api/files');
-        // Ensure each item has a parent field
-        const processedFiles = (response.data.files || []).map(file => ({
-          ...file,
-          parent: file.parent || 'Super-Admin' // Default to root if no parent specified
-        }));
-        setItems(processedFiles);
+        const response = await axios.get(`/api/files?folderId=${currentFolderId}`);
+        
+        if (response.data.success) {
+          // Update items with the current folder's contents
+          setItems(response.data.files || []);
+          
+          // Update path from the API if provided
+          if (response.data.folderInfo && response.data.folderInfo.path) {
+            setCurrentPath(response.data.folderInfo.path);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching files:', error);
+        console.error('Error fetching folder contents:', error);
       } finally {
         setLoading(false);
       }
     };
  
-    if (user?.role === "Super-Admin" || user?.role === "Admin" || user?.role === "Associate-Member") {
-      fetchItems();
-    }
-  }, [user]);
+    fetchFolderContents();
+  }, [currentFolderId, user]);
  
   const handleItemClick = (item) => {
     if (item.type === 'folder') {
-      setCurrentPath([...currentPath, item.name]);
+      // Navigate into the folder by updating the current folder ID
+      setCurrentFolderId(item.driveFileId);
     } else if (item.driveFileId) {
       // Open the file in a new tab
       window.open(`https://drive.google.com/file/d/${item.driveFileId}/view`, '_blank');
     }
   };
  
-  const handleBackClick = () => {
+  const handleBackClick = async () => {
     if (currentPath.length > 1) {
-      setCurrentPath(currentPath.slice(0, -1));
-    }
-  };
-  
-  // Recursive function to find all child items of a folder
-  const findAllChildren = (folderId) => {
-    // Get the folder item
-    const folder = items.find(item => item.id === folderId);
-    if (!folder) return [];
-    
-    // Find the folder path
-    const folderPath = folder.parent + '/' + folder.name;
-    
-    // Find direct children
-    const children = items.filter(item => item.parent === folderPath);
-    
-    // Recursively get children of subfolders
-    let allChildren = [...children];
-    children.forEach(child => {
-      if (child.type === 'folder') {
-        allChildren = [...allChildren, ...findAllChildren(child.id)];
+      try {
+        setLoading(true);
+        
+        // Find the parent folder's ID from the current selected folder
+        const response = await axios.get(`/api/folders/parent?folderId=${currentFolderId}`);
+        
+        if (response.data.success && response.data.parentId) {
+          // Go back to parent folder
+          setCurrentFolderId(response.data.parentId);
+        } else {
+          // Fallback to root folder if we can't find the parent
+          setCurrentFolderId('1cXQEwyr8n2-ydx9fTP7uN1dsudLEXM41');
+        }
+      } catch (error) {
+        console.error('Error navigating to parent folder:', error);
+        // Fallback to root folder on error
+        setCurrentFolderId('1cXQEwyr8n2-ydx9fTP7uN1dsudLEXM41');
+      } finally {
+        setLoading(false);
       }
-    });
-    
-    return allChildren;
+    }
   };
   
   const handleDelete = async (item, e) => {
     e.stopPropagation(); // Prevent triggering the parent click event
     setShowDropdown(null); // Close the dropdown
     
+    if (!confirm(`Are you sure you want to delete this ${item.type === 'folder' ? 'folder and all its contents' : 'file'}?`)) {
+      return;
+    }
+    
     try {
       setLoading(true);
       
-      if (item.type === 'folder') {
-        // If deleting a folder, find all children first
-        const children = findAllChildren(item.id);
-        const childFileIds = children
-          .filter(child => child.type === 'file' && child.driveFileId)
-          .map(child => child.driveFileId);
-        
-        // Delete all child files first
-        if (childFileIds.length > 0) {
-          await Promise.all(childFileIds.map(fileId => 
-            axios.delete('/api/files/delete', { data: { fileId } })
-          ));
+      const response = await axios.delete('/api/files/delete', {
+        data: { 
+          fileId: item.driveFileId,
+          isFolder: item.type === 'folder'
         }
-        
-        // Now delete the folder itself from our state
-        // Note: assuming folders exist only in local state and not in the backend
-        setItems(prevItems => 
-          prevItems.filter(i => i.id !== item.id && !children.some(child => child.id === i.id))
-        );
-      } else if (item.driveFileId) {
-        // If deleting a single file
-        const response = await axios.delete('/api/files/delete', {
-          data: { fileId: item.driveFileId }
-        });
-        
-        if (response.data.success) {
-          // Remove just this file from state
-          setItems(prevItems => prevItems.filter(i => i.id !== item.id));
-        }
+      });
+      
+      if (response.data.success) {
+        // Remove item from current view
+        setItems(prevItems => prevItems.filter(i => i.id !== item.id));
       }
     } catch (error) {
       console.error('Error deleting:', error);
+      alert('Failed to delete: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
@@ -138,21 +128,38 @@ const DocumentManagement = () => {
     setShowDropdown(showDropdown === id ? null : id);
   };
  
-  const handleNewFolder = () => {
+  const handleNewFolder = async () => {
     if (newFolderName.trim() !== '') {
-      const newId = Math.max(0, ...items.map(item => item.id || 0)) + 1;
-      setItems([
-        ...items,
-        { 
-          id: newId, 
-          type: 'folder', 
-          name: newFolderName, 
-          parent: currentFolderPath, // Use the full path as parent
-          createdAt: new Date().toISOString()
+      try {
+        setFolderLoading(true);
+        
+        // Create the folder in Google Drive via API
+        const response = await axios.post('/api/folders', {
+          folderName: newFolderName,
+          parentFolderId: currentFolderId
+        });
+        
+        if (response.data.success) {
+          // Add the new folder to our state
+          const newFolder = {
+            id: response.data.folder.id,
+            name: response.data.folder.name,
+            type: 'folder',
+            driveFileId: response.data.folder.id,
+            parent: currentFolderPath,
+            createdAt: new Date().toISOString()
+          };
+          
+          setItems(prevItems => [...prevItems, newFolder]);
+          setNewFolderName('');
+          setShowNewFolderInput(false);
         }
-      ]);
-      setNewFolderName('');
-      setShowNewFolderInput(false);
+      } catch (error) {
+        console.error('Error creating folder:', error);
+        alert('Failed to create folder: ' + (error.response?.data?.error || error.message));
+      } finally {
+        setFolderLoading(false);
+      }
     }
   };
  
@@ -161,30 +168,28 @@ const DocumentManagement = () => {
     if (files.length > 0) {
       const newItems = [...items];
       const newUploadProgress = { ...uploadProgress };
-     
+      
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const newId = Math.max(0, ...items.map(item => item.id || 0)) + 1 + i;
-       
-        // Add file to local state immediately with current folder path as parent
+        const newId = `temp-${Date.now()}-${i}`; // Create a temporary unique ID
+        
+        // Add file to local state immediately
         const newItemEntry = {
           id: newId,
           type: 'file',
           name: file.name,
-          parent: currentFolderPath, // Use the full path as parent
           size: file.size,
           uploadStatus: 'uploading',
           createdAt: new Date().toISOString()
         };
         newItems.push(newItemEntry);
         setItems(newItems); // Update items immediately to show progress
-       
+        
         // Prepare FormData for upload
         const formData = new FormData();
         formData.append('file', file);
-        // Add current folder path to the form data
-        formData.append('folderPath', currentFolderPath);
-       
+        formData.append('folderId', currentFolderId);
+        
         try {
           // Upload to Google Drive via API route
           const response = await axios.post('/api/upload', formData, {
@@ -197,7 +202,7 @@ const DocumentManagement = () => {
               setUploadProgress({...newUploadProgress});
             }
           });
-         
+          
           if (response.data.success) {
             // Update item with upload success and Google Drive file ID
             setItems(prevItems => 
@@ -205,6 +210,7 @@ const DocumentManagement = () => {
                 item.id === newId
                   ? {
                       ...item,
+                      id: response.data.fileId, // Replace temp ID with actual file ID
                       uploadStatus: 'success',
                       driveFileId: response.data.fileId,
                       viewLink: response.data.viewLink
@@ -257,7 +263,7 @@ const DocumentManagement = () => {
           </div>
 
           {/* Search Bar */}
-          {/* <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 max-w-md">
             <Search className="h-5 w-5 absolute left-3 top-2.5 text-gray-400" />
             <input
               type="text"
@@ -266,7 +272,7 @@ const DocumentManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div> */}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -284,13 +290,13 @@ const DocumentManagement = () => {
           </label>
 
           {/* New Folder Button */}
-          {/* <button
+          <button
             onClick={() => setShowNewFolderInput(true)}
             className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
           >
             <Plus className="h-5 w-5 mr-2" />
             New Folder
-          </button> */}
+          </button>
         </div>
 
         {/* New Folder Input */}
@@ -303,16 +309,19 @@ const DocumentManagement = () => {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleNewFolder()}
+              disabled={folderLoading}
             />
             <button
               onClick={handleNewFolder}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+              disabled={folderLoading}
             >
-              Create
+              {folderLoading ? 'Creating...' : 'Create'}
             </button>
             <button
               onClick={() => setShowNewFolderInput(false)}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              disabled={folderLoading}
             >
               Cancel
             </button>
