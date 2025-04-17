@@ -563,25 +563,25 @@ export default function RedevelopmentManagement() {
       {/* Tab navigation */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
-          className={`py-3 px-6 ${
+          className={`py-3 px-6 text-2xl font-bold ${
             activeTab === "events"
               ? "border-b-2 border-purple-600 text-purple-600 font-medium"
               : "text-gray-500 hover:text-gray-700"
           } flex items-center gap-2`}
           onClick={() => setActiveTab("events")}
         >
-          <Calendar size={18} />
+          <Calendar size={22} />
           Events
         </button>
         <button
-          className={`py-3 px-6 ${
+          className={`py-3 px-6 text-2xl font-bold ${
             activeTab === "updates"
               ? "border-b-2 border-purple-600 text-purple-600 font-medium"
               : "text-gray-500 hover:text-gray-700"
           } flex items-center gap-2`}
           onClick={() => setActiveTab("updates")}
         >
-          <ListPlus size={18} />
+          <ListPlus size={22} />
           Updates
         </button>
       </div>
