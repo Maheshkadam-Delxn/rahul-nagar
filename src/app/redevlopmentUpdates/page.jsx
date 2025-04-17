@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, X, Calendar, Clock, MoveRight } from "lucide-react";
+import { FileText, X, Calendar, Clock, MoveRight, Image as ImageIcon } from "lucide-react";
 import ConstructionIcon from "../../../public/home/events/icon.png";
-// import { FileText, X, User, Calendar, MoveRight } from "lucide-react";
 
 const UpdatesPage = () => {
   const [updates, setUpdates] = useState([]);
@@ -89,7 +88,7 @@ const UpdatesPage = () => {
           </div>
 
           {currentUpdates.length === 0 ? (
-            <p className="text-gray-500 text-sm">No Updates available.</p>
+            <p className="text-gray-500 text-center py-4">No updates available.</p>
           ) : (
             currentUpdates.map((update) => (
               <div key={update._id} className="space-y-2 border-b pb-4 last:border-b-0">
@@ -115,36 +114,35 @@ const UpdatesPage = () => {
                 
                 <p className="text-sm text-gray-600">{getContent(update)}</p>
                 
-                <div className="flex gap-4 mt-2">
+                <div className="flex gap-3 mt-2 flex-wrap">
+                  <Link
+                    href={`/redevlopmentUpdates/${update._id}`}
+                    className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
+                  >
+                    Read More <MoveRight size={16} />
+                  </Link>
+                  
                   {update?.image && (
                     <button
                       onClick={() => openImageModal(update.image)}
-                      className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+                      className="inline-flex items-center gap-2 text-sm md:text-base text-yellow-600 hover:text-yellow-800 transition font-medium border border-yellow-600 px-4 py-2 rounded-md"
                     >
-                      <FileText size={14} /> View Image
+                      <ImageIcon size={18} /> View Image
                     </button>
                   )}
                   
                   {update?.document && (
-                    <Link
+                    <a
                       href={update.document}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-[#6B46C1] flex items-center gap-1 hover:underline"
+                      className="inline-flex items-center gap-2 text-sm md:text-base text-yellow-600 hover:text-yellow-800 transition font-medium border border-yellow-600 px-4 py-2 rounded-md"
                     >
-                      <FileText size={14} /> View Document
-                    </Link>
+                      <FileText size={18} /> View Document
+                    </a>
                   )}
-                  
                 </div>
-                <Link
-                               href={`/redevlopmentUpdates/${update._id}`}
-                                className="text-sm text-yellow-600 font-semibold flex items-center gap-1 hover:underline"
-                              >
-                                Read More <MoveRight size={16} />
-                              </Link>
               </div>
-              
             ))
           )}
         </section>
