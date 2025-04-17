@@ -15,7 +15,7 @@ export async function POST(req) {
     const formData = await req.formData();
     const file = formData.get("file");
     const folderId = formData.get("folderId") || process.env.GOOGLE_DRIVE_FOLDER_ID; 
- 
+    console.log(folderId)
     if (!file) {
       return NextResponse.json({ success: false, error: "No file uploaded." });
     }

@@ -1,9 +1,15 @@
-import { google } from 'googleapis';
- 
-export async function DELETE(request) {
+import { NextResponse } from "next/server";
+import { google } from "googleapis";
+
+export async function DELETE(req) {
   try {
-    const { fileId } = await request.json();
-   
+    const { fileId } = await req.json();
+    
+    if (!fileId) {
+      return NextResponse.json({ success: false, error: "File ID is required" });
+    }
+
+    // Get credentials from environment variables
     const serviceAccountKey = {
       "type": "service_account",
       "project_id": "rahul-nagar-454910",
@@ -12,26 +18,29 @@ export async function DELETE(request) {
       "client_email": "sheets-service-account@rahul-nagar-454910.iam.gserviceaccount.com",
       "token_uri": "https://oauth2.googleapis.com/token"
     };
- 
-    const auth = new google.auth.GoogleAuth({
-      credentials: serviceAccountKey,
-      scopes: ['https://www.googleapis.com/auth/drive'],
-    });
- 
+
+    // Create a JWT client using the service account credentials
+    const auth = new google.auth.JWT(
+      serviceAccountKey.client_email,
+      null,
+      serviceAccountKey.private_key,
+      ['https://www.googleapis.com/auth/drive']
+    );
+
+    // Create Google Drive client
     const drive = google.drive({ version: 'v3', auth });
-   
+
+    // Delete the file
     await drive.files.delete({
       fileId: fileId
     });
- 
-    return Response.json({ success: true, message: 'File deleted successfully' });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting file:', error);
-    return Response.json({
-      success: false,
-      error: 'Failed to delete file',
-      details: error.message
+    console.error("Error deleting file:", error);
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message || "Failed to delete file" 
     }, { status: 500 });
   }
 }
- 
