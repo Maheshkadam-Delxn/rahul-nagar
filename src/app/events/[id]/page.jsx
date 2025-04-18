@@ -1,16 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { Calendar, Clock, MapPin, FileText, ChevronLeft, ArrowLeft } from "lucide-react"; // Add ChevronLeft for the back arrow
+import { Calendar, Clock, MapPin, FileText, ArrowLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 const EventDetails = () => {
   const { id } = useParams();
-  const router = useRouter(); // Hook to navigate back
+  const router = useRouter();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -40,31 +41,29 @@ const EventDetails = () => {
   return (
     <div className="w-full bg-gray-100 px-4 pt-10 flex justify-center">
       <div className="w-full max-w-5xl bg-white shadow-lg rounded-lg p-6 md:p-10 mb-10" style={{ minWidth: "80%" }}>
-      <Link href="/events" className="flex items-center gap-2 text-[#B57E10] ">
+        <Link href="/events" className="flex items-center gap-2 text-[#B57E10]">
           <ArrowLeft size={18} /> Back to Events
         </Link>
-        <div className="flex items-center  gap-4">
         
+        <div className="flex items-center gap-4">
           <h1 className="text-2xl md:text-3xl font-bold mt-5 text-[#B57E10]">{event.title}</h1>
-          {/* <button
-            onClick={() => router.back()}
-            className="text-[#B57E10] flex items-center gap-2 font-medium hover:text-[#9f660d] transition"
-          >
-            <ChevronLeft size={20} /> Back
-          </button> */}
         </div>
 
         {event.image && (
-          <Image
-            src={event.image}
-            alt={event.title}
-            width={600}
-            height={300}
-            className="w-full h-64 object-contain rounded-lg"
-          />
+          <div className="mt-6 cursor-pointer flex justify-start" onClick={() => setShowModal(true)}>
+            <div className="w-1/2 md:w-2/5">
+              <Image
+                src={event.image}
+                alt={event.title}
+                width={400}
+                height={600}
+                className="h-112 w-full object-cover rounded-lg hover:opacity-90 transition"
+              />
+            </div>
+          </div>
         )}
 
-        <p className="text-gray-600 mt-2">{event.description}</p>
+        <p className="text-gray-600 mt-4">{event.description}</p>
 
         <div className="mt-4 flex flex-col gap-3 text-gray-700">
           <div className="flex items-center gap-2">
@@ -94,6 +93,29 @@ const EventDetails = () => {
           </div>
         )}
       </div>
+      
+      {/* Image Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowModal(false)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 focus:outline-none"
+            >
+              <X size={24} />
+            </button>
+            <div className="bg-white p-2 rounded-lg">
+              <Image
+                src={event.image}
+                alt={event.title}
+                width={1200}
+                height={800}
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
