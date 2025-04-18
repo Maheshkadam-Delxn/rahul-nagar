@@ -43,6 +43,12 @@ export default function RedevelopmentManagement() {
     isDocumentDeleted: false,
   });
 
+  const trimText = (text, wordLimit = 5) => {
+    if (!text) return '';
+    const words = text.split(' ');
+    if (words.length <= wordLimit) return text;
+    return words.slice(0, wordLimit).join(' ') + '...';
+  };
   // Fetch data when component mounts or when tab changes
   useEffect(() => {
     if (activeTab === "events") {
@@ -108,11 +114,11 @@ export default function RedevelopmentManagement() {
   const handleDocumentChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size - 256KB = 262144 bytes
-      const maxSizeInBytes = 256 * 1024; // 256KB in bytes
+      // Check file size - 4MB = 4 * 1024 * 1024 bytes
+      const maxSizeInBytes = 4 * 1024 * 1024; // 4MB in bytes
       
       if (file.size > maxSizeInBytes) {
-        alert(`File size exceeds the 256KB limit. Please upload a smaller file.`);
+        alert(`File size exceeds the 4MB limit. Please upload a smaller file.`);
         return;
       }
       
@@ -139,7 +145,6 @@ export default function RedevelopmentManagement() {
       }
     }
   };
-
   const uploadDocument = async (file) => {
     setIsUploading(true);
     setUploadProgress(0);
@@ -637,9 +642,9 @@ export default function RedevelopmentManagement() {
                       <h3 className="text-xl font-semibold text-gray-800 mb-2">
                         {event.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3">
-                        {event.description}
-                      </p>
+                      <p className="text-gray-600 mb-4">
+  {trimText(event.description)}
+</p>
 
                       <div className="flex items-center text-gray-500 mb-2">
                         <Calendar size={16} className="mr-2 flex-shrink-0" />
@@ -660,8 +665,11 @@ export default function RedevelopmentManagement() {
                         </div>
                       )}
 
+                    
+
+                      <div className="flex justify-between gap-2 mt-2">
                       {event.document && (
-                        <div className="flex items-center text-blue-500 mb-4">
+                        <div className="flex items-center text-blue-500 ">
                           <FileText size={16} className="mr-2 flex-shrink-0" />
                           <a
                             href={event.document}
@@ -673,9 +681,8 @@ export default function RedevelopmentManagement() {
                           </a>
                         </div>
                       )}
-
-                      <div className="flex justify-end gap-2 mt-2">
-                        <button
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                           onClick={() => handleEdit(event)}
                         >
@@ -686,7 +693,8 @@ export default function RedevelopmentManagement() {
                           onClick={() => handleDelete(event._id)}
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </button></div>
+                        
                       </div>
                     </div>
                   </div>
@@ -732,17 +740,20 @@ export default function RedevelopmentManagement() {
                       <h3 className="text-xl font-semibold text-gray-800 mb-2">
                         {update?.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3">
-                        {update?.description}
-                      </p>
+                      <p className="text-gray-600 mb-4">
+  {trimText(update?.description)}
+</p>
 
                       <div className="flex items-center text-gray-500 mb-4">
                         <Calendar size={16} className="mr-2 flex-shrink-0" />
                         <span>{formatDate(update?.date)}</span>
                       </div>
 
+                      
+
+                      <div className="flex justify-between items-center gap-2 mt-2">
                       {update?.document && (
-                        <div className="flex items-center text-blue-500 mb-4">
+                        <div className="flex items-center text-blue-500 ">
                           <FileText size={16} className="mr-2 flex-shrink-0" />
                           <a
                             href={update?.document}
@@ -754,9 +765,8 @@ export default function RedevelopmentManagement() {
                           </a>
                         </div>
                       )}
-
-                      <div className="flex justify-end gap-2 mt-2">
-                        <button
+                        <div className="flex justify-end gap-2 mt-2">                
+                                  <button
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                           onClick={() => handleEdit(update)}
                         >
@@ -767,7 +777,8 @@ export default function RedevelopmentManagement() {
                           onClick={() => handleDelete(update?._id)}
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </button></div>
+
                       </div>
                     </div>
                   </div>
@@ -1012,7 +1023,7 @@ export default function RedevelopmentManagement() {
                   </div>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
-                  Supported formats: PDF, DOC, DOCX, XLS, XLSX, TXT (max 256KB)
+                  Supported formats: PDF, DOC, DOCX, XLS, XLSX, TXT (max 4MB)
                 </p>
               </div>
 

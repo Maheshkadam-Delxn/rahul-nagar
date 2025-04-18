@@ -80,14 +80,14 @@ export default function EventsManagement() {
 
   // Updated document change handler with immediate upload
  // Updated document change handler with file size validation and immediate upload
-const handleDocumentChange = async (e) => {
+ const handleDocumentChange = async (e) => {
   const file = e.target.files[0];
   if (file) {
-    // Check file size - 256KB = 262144 bytes
-    const maxSizeInBytes = 256 * 1024; // 256KB in bytes
+    // Check file size - 4MB = 4 * 1024 * 1024 bytes
+    const maxSizeInBytes = 4 * 1024 * 1024; // 4MB in bytes
     
     if (file.size > maxSizeInBytes) {
-      alert(`File size exceeds the 256KB limit. Please upload a smaller file.`);
+      alert(`File size exceeds the 4MB limit. Please upload a smaller file.`);
       return;
     }
     
@@ -115,6 +115,13 @@ const handleDocumentChange = async (e) => {
   }
 };
 
+// Add this function before the return statement in your component
+const trimText = (text, wordLimit = 10) => {
+  if (!text) return '';
+  const words = text.split(' ');
+  if (words.length <= wordLimit) return text;
+  return words.slice(0, wordLimit).join(' ') + '...';
+};
   // New function for document upload with progress bar
   const uploadDocument = async (file) => {
     setIsUploading(true);
@@ -534,9 +541,9 @@ const handleDocumentChange = async (e) => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   {event.title}
                 </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {event.description}
-                </p>
+                <p className="text-gray-600 mb-4 line-clamp-1">
+  {trimText(event.description)}
+</p>
 
                 <div className="flex items-center text-gray-500 mb-2">
                   <Calendar size={16} className="mr-2 flex-shrink-0" />
@@ -553,8 +560,11 @@ const handleDocumentChange = async (e) => {
                   <span>{event.location}</span>
                 </div>
 
+               
+
+                <div className="flex justify-between gap-2 mt-2 items-center">
                 {event.document && (
-                  <div className="flex items-center text-blue-500 mb-4">
+                  <div className="flex items-center text-blue-500 ">
                     <FileText size={16} className="mr-2 flex-shrink-0" />
                     <a
                       href={event.document}
@@ -566,8 +576,7 @@ const handleDocumentChange = async (e) => {
                     </a>
                   </div>
                 )}
-
-                <div className="flex justify-end gap-2 mt-2">
+                  <div className="flex justify-end gap-2 mt-2">
                   <button
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                     onClick={() => handleEdit(event)}
@@ -580,6 +589,8 @@ const handleDocumentChange = async (e) => {
                   >
                     <Trash2 size={18} />
                   </button>
+                  </div>
+                  
                 </div>
               </div>
             </div>

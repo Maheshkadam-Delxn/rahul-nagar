@@ -1727,7 +1727,7 @@ events: newBuilding.events.map(event => ({
                     <div className="flex items-center">
                       <File size={18} className="mr-3 text-gray-400" />
                       <div>
-                        <Link href={doc.fileUrl} className="font-medium underline text-blue-500" >{doc.title}</Link>
+                        <Link href={doc?.fileUrl || ''} className="font-medium underline text-blue-500" >{doc.title}</Link>
                       </div>
                     </div>
                   </div>
