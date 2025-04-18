@@ -30,6 +30,20 @@ const EventDetails = () => {
     fetchEvent();
   }, [id]);
 
+  useEffect(() => {
+    // Disable body scrolling when modal is open
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showModal]);
+
   if (loading) {
     return <p className="text-center text-gray-500 py-10">Loading event details...</p>;
   }
@@ -94,7 +108,7 @@ const EventDetails = () => {
         )}
       </div>
       
-      {/* Image Modal */}
+      {/* Image Modal with Scrollbar */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
           <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
@@ -105,13 +119,15 @@ const EventDetails = () => {
               <X size={24} />
             </button>
             <div className="bg-white p-2 rounded-lg">
-              <Image
-                src={event.image}
-                alt={event.title}
-                width={1200}
-                height={800}
-                className="w-full h-auto max-h-[80vh] object-contain"
-              />
+              <div className="max-h-[80vh] overflow-y-auto overflow-x-auto">
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
             </div>
           </div>
         </div>
