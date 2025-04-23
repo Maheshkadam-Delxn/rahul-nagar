@@ -59,7 +59,7 @@ export async function DELETE(req) {
     await connectDb();
 
     // Extract data from request
-    const { eventId, userId } = await req.json();
+    const { eventId, userId ,role} = await req.json();
 
     // Find the event
     const event = await Event.findById(eventId);
@@ -68,20 +68,20 @@ export async function DELETE(req) {
     }
 
     // Extract authorization token from request headers
-    const authHeader = req.headers.get("authorization");
-    let role = "Association-Member"; // Default role
-    let tokenUserId = null;
+    // const authHeader = req.headers.get("authorization");
+    // let role = "Association-Member"; // Default role
+    // let tokenUserId = null;
 
-    if (authHeader) {
-      try {
-        const token = authHeader.split(" ")[1]; // Extract Bearer token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        role = decoded.role; // Extract role
-        tokenUserId = decoded.id; // Extract user ID
-      } catch (error) {
-        return NextResponse.json({ error: "Invalid Token" }, { status: 403 });
-      }
-    }
+    // if (authHeader) {
+    //   try {
+    //     const token = authHeader.split(" ")[1]; // Extract Bearer token
+    //     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    //     role = decoded.role; // Extract role
+    //     tokenUserId = decoded.id; // Extract user ID
+    //   } catch (error) {
+    //     return NextResponse.json({ error: "Invalid Token" }, { status: 403 });
+    //   }
+    // }
 
     // **Super-Admin & Admin: Can delete any event**
     if (role === "Super-Admin" || role === "Admin") {

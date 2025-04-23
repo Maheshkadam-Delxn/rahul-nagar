@@ -219,7 +219,7 @@ const trimText = (text, wordLimit = 10) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         const userId = user?.user?.id;
-       
+        const role = user?.user?.role
 
         if (!userId) {
           alert("User not found. Please log in again.");
@@ -232,7 +232,7 @@ const trimText = (text, wordLimit = 10) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ eventId: id, userId }),
+          body: JSON.stringify({ eventId: id, userId,role }),
         });
 
         if (!response.ok) {
