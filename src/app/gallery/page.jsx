@@ -4,7 +4,7 @@ import ServiceHeroSection from "@/components/ServiceHeroSection";
 import Image from "next/image";
 
 // Updated categories as per your request
-const categories = ["general", "event", "fascilities", "celebration", "meetings"];
+const categories = ["general", "events", "facilities", "celebrations", "meetings"];
 const Page = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [images, setImages] = useState([]);
