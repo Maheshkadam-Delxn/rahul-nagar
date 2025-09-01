@@ -34,7 +34,7 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const { user, logout, loading, error } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+//sample
   useEffect(() => {
     if (!loading) {
       // More precise role checking
@@ -93,7 +93,7 @@ export default function AdminLayout({ children }) {
             <MenuItem href="/admin/building-management" icon={<Building size={18} />} label="Building Management" onClick={closeSidebar} />
             <MenuItem href="/admin/gallery-management" icon={<Building size={18} />} label="Gallery Management" onClick={closeSidebar} />
             <MenuItem href="/admin/builder-management" icon={<Building size={18} />} label="Construction Management" onClick={closeSidebar} />
-
+            
            
             <MenuItem href="/admin/updates" icon={<RefreshCw size={18} />} label="Updates" onClick={closeSidebar} />
             
