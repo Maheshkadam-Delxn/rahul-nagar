@@ -1,4 +1,4 @@
-|-- .env.local
+|-- .env
 |-- .gitignore
 |-- jsconfig.json
 |-- next.config.mjs
@@ -119,9 +119,13 @@
             |-- metadata.js
             |-- page.jsx
         |-- admin
+            |-- advertisements
+                |-- page.jsx
             |-- associate-member
                 |-- page.jsx
             |-- blog
+                |-- page.jsx
+            |-- builder-management
                 |-- page.jsx
             |-- building-management
                 |-- page.jsx
@@ -134,6 +138,8 @@
             |-- layout.js
             |-- page.js
             |-- profile
+                |-- page.jsx
+            |-- redevelopment
                 |-- page.jsx
             |-- site-settings
                 |-- page.jsx
@@ -180,6 +186,15 @@
                     |-- route.js
                 |-- update-blog
                     |-- route.js
+            |-- builder
+                |-- add
+                    |-- route.js
+                |-- delete
+                    |-- route.js
+                |-- edit
+                    |-- route.js
+                |-- fetchAll
+                    |-- route.js
             |-- building
                 |-- add-building
                     |-- route.js
@@ -193,6 +208,8 @@
                 |-- update
                     |-- route.js
             |-- contact
+                |-- route.js
+            |-- delete
                 |-- route.js
             |-- events
                 |-- add-event
@@ -208,8 +225,11 @@
             |-- files
                 |-- delete
                     |-- route.js
+                |-- route.js
                 |-- [...folderId]
                     |-- route.js
+            |-- folders
+                |-- route.js
             |-- gallery
                 |-- add-image
                     |-- route.js
@@ -219,6 +239,40 @@
                     |-- route.js
                 |-- update-image
                     |-- route.js
+            |-- redevelopment
+                |-- advertisement
+                    |-- add-advertisement
+                        |-- route.js
+                    |-- delete-advertisement
+                        |-- route.js
+                    |-- edit-advertisement js
+                        |-- route.jsx
+                    |-- fetchAll
+                        |-- route.js
+                |-- event
+                    |-- add-event
+                        |-- route.js
+                    |-- delete-event
+                        |-- route.js
+                    |-- edit-event
+                        |-- route.js
+                    |-- fetchAll
+                        |-- route.js
+                    |-- [eventId]
+                        |-- route.js
+                |-- update
+                    |-- add-update
+                        |-- route.js
+                    |-- delete-update
+                        |-- route.js
+                    |-- edit-update
+                        |-- route.js
+                    |-- fetchAll
+                        |-- route.js
+                    |-- [updateId]
+                        |-- route.js
+            |-- redevelopmentContact
+                |-- route.js
             |-- settings
                 |-- route.js
             |-- updates
@@ -266,6 +320,16 @@
                 |-- page.jsx
         |-- redevelopment
             |-- page.jsx
+        |-- redevelopment-info
+            |-- page.jsx
+        |-- redevelopmentEvents
+            |-- page.jsx
+            |-- [id]
+                |-- page.jsx
+        |-- redevlopmentUpdates
+            |-- page.jsx
+            |-- [Id]
+                |-- page.jsx
         |-- signin
             |-- page.jsx
         |-- updates
@@ -295,12 +359,16 @@
 |-- utils
     |-- connectDb.js
     |-- models
+        |-- AdvertisementSchema.js
         |-- AssociateMember.js
+        |-- builder.js
         |-- Building.js
         |-- Events.js
         |-- GalleryImage.js
         |-- members.js
         |-- Post.js
+        |-- RedevelopmentEvent.js
+        |-- RedevelopmentUpdates.js
         |-- SiteSetting.js
         |-- Updates.js
         |-- User.js

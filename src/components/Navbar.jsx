@@ -106,6 +106,7 @@ const Navbar = () => {
               <Link href={"/about"}>About</Link>
               <Link href={"/gallery"}>Gallery</Link>
               <Link href={"/redevelopment"}>Redevelopment</Link>
+              <Link href={"/redevelopment-info"}>Redevelopment Info</Link>
               <Link href={"/contact"}>Contact Us</Link>
             </div>
             <div className='flex items-center gap-5 text-white py-1 px-3'>
@@ -194,6 +195,7 @@ const Navbar = () => {
                 <Link href={"/about"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>About</Link>
                 <Link href={"/gallery"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Gallery</Link>
                 <Link href={"/redevelopment"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Redevelopment</Link>
+                <Link href={"/redevelopment-info"} className='text-white py-4 border-b border-gray-700' onClick={closeMenu}>Redevelopment Info</Link>
 
 
                 <Link href={"/contact"} className='text-white py-4' onClick={closeMenu}>Contact Us</Link>
