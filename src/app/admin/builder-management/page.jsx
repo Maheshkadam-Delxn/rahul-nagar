@@ -74,7 +74,7 @@ export default function BuilderManagement() {
     const file = e.target.files[0];
     if (file) {
       // Check file size - 4MB = 4 * 1024 * 1024 bytes
-      const maxSizeInBytes = 4 * 1024 * 1024; // 4MB in bytes
+      const maxSizeInBytes = 15 * 1024 * 1024; // 4MB in bytes
       
       if (file.size > maxSizeInBytes) {
         alert(`File size exceeds the 4MB limit. Please upload a smaller file.`);
