@@ -29,19 +29,18 @@ export default function BuilderManagement() {
   const [formData, setFormData] = useState({
     developer: "",
     videoUrl: "",
-    additionalDocuments: [], // Array of {name: string, url: string}
+    additionalDocuments: [], // Array of {name, url}
     offerTitle: "",
     offerPercentage: 100,
   });
 
   const trimText = (text, wordLimit = 5) => {
-    if (!text) return '';
-    const words = text.split(' ');
+    if (!text) return "";
+    const words = text.split(" ");
     if (words.length <= wordLimit) return text;
-    return words.slice(0, wordLimit).join(' ') + '...';
+    return words.slice(0, wordLimit).join(" ") + "...";
   };
 
-  // Fetch data when component mounts
   useEffect(() => {
     fetchBuilders();
   }, []);
@@ -50,9 +49,7 @@ export default function BuilderManagement() {
     setFetchLoading(true);
     try {
       const response = await fetch("/api/builder/fetchAll");
-      if (!response.ok) {
-        throw new Error("Failed to fetch builders");
-      }
+      if (!response.ok) throw new Error("Failed to fetch builders");
       const data = await response.json();
       if (data.success && data.builders) {
         setBuilders(data.builders);
@@ -73,27 +70,19 @@ export default function BuilderManagement() {
   const handleDocumentChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size - 4MB = 4 * 1024 * 1024 bytes
-      const maxSizeInBytes = 15 * 1024 * 1024; // 4MB in bytes
-      
+      const maxSizeInBytes = 15 * 1024 * 1024; // 15MB
       if (file.size > maxSizeInBytes) {
-        alert(`File size exceeds the 4MB limit. Please upload a smaller file.`);
+        alert("File size exceeds 15MB. Please upload a smaller file.");
         return;
       }
-      
-      // Get file extension
+
       const fileExt = file.name.split(".").pop().toLowerCase();
-  
-      // List of formats that are supported
       const supportedFormats = ["pdf", "txt", "xls", "xlsx", "doc", "docx"];
-  
+
       if (supportedFormats.includes(fileExt)) {
-        // Begin upload
         await uploadDocument(file);
       } else {
-        alert(
-          `The file format "${fileExt}" is not supported. Please use one of the following formats: PDF, TXT, XLS, XLSX, DOC, DOCX.`
-        );
+        alert(`Unsupported format: ${fileExt}. Allowed: PDF, TXT, XLS, XLSX, DOC, DOCX`);
       }
     }
   };
@@ -101,90 +90,60 @@ export default function BuilderManagement() {
 const uploadDocument = async (file) => {
   setIsUploading(true);
   setUploadProgress(0);
-  
-  const documentData = new FormData();
-  documentData.append("file", file);
-  documentData.append("folderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8");
 
   try {
+    // Step 1: Create FormData to send file and metadata
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("mimeType", file.type);
+    formData.append("folderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8"); // Your Drive folder ID
+
+    // Step 2: Send file to server for upload to Google Drive
     const xhr = new XMLHttpRequest();
-    
+    xhr.open("POST", "/api/createUploadSession", true);
+
+    // Track upload progress
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(progress);
+      }
+    };
+
     const uploadPromise = new Promise((resolve, reject) => {
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percentComplete);
-        }
-      });
-      
-      xhr.addEventListener("load", () => {
-        console.log('XHR load event:', xhr.status, xhr.statusText);
-        
+      xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            console.log('Upload successful:', response);
-            resolve(response);
-          } catch (error) {
-            console.error('JSON parse error:', error, xhr.responseText);
-            reject(new Error("Invalid response format"));
-          }
+          resolve(JSON.parse(xhr.responseText));
         } else {
-          console.error('HTTP error details:', xhr.status, xhr.statusText, xhr.responseText);
-          reject(new Error(`HTTP error: ${xhr.status} - ${xhr.statusText}`));
+          reject(new Error(`Upload failed: ${xhr.status} - ${xhr.statusText}`));
         }
-      });
-      
-      xhr.addEventListener("error", (e) => {
-        console.error('XHR error event:', e);
-        reject(new Error("Network error - check console for details"));
-      });
-      
-      xhr.addEventListener("abort", () => {
-        console.log('Upload aborted by user');
-        reject(new Error("Upload aborted"));
-      });
-      
-      // Add timeout handling
-      xhr.timeout = 300000; // 5 minutes timeout
-      xhr.ontimeout = () => {
-        console.error('Upload timeout');
-        reject(new Error("Upload timeout"));
       };
-      
-      xhr.open("POST", "/api/upload");
-      
-      // Add headers if needed (though FormData usually handles this)
-      // xhr.setRequestHeader('Accept', 'application/json');
-      
-      xhr.send(documentData);
+      xhr.onerror = () => reject(new Error("Network error during file upload"));
+      xhr.send(formData);
     });
 
-    const documentResult = await uploadPromise;
-    
-    let documentUrl = "";
-    if (documentResult.viewLink) {
-      documentUrl = documentResult.viewLink;
-    } else if (documentResult.url) {
-      documentUrl = documentResult.url;
-    } else if (documentResult.data && documentResult.data.fileUrl) {
-      documentUrl = documentResult.data.fileUrl;
-    } else if (documentResult.data && documentResult.data.url) {
-      documentUrl = documentResult.data.url;
-    } else {
-      console.error("Could not extract document URL from response:", documentResult);
-      throw new Error("Failed to get document URL from upload response");
+    const response = await uploadPromise;
+    if (!response.success) {
+      throw new Error(response.error || "Failed to upload file to Google Drive");
     }
-    
-    // Add to additionalDocuments array
+
+    const fileId = response.fileId;
+    if (!fileId) {
+      throw new Error("Failed to retrieve fileId from server");
+    }
+
+    // Step 3: Construct file link
+    const documentUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+
     setFormData((prev) => ({
       ...prev,
       additionalDocuments: [
         ...prev.additionalDocuments,
-        { name: file.name, url: documentUrl }
+        { name: file.name, url: documentUrl },
       ],
     }));
-    
+
     return documentUrl;
   } catch (error) {
     console.error("Error uploading document:", error);
@@ -192,9 +151,10 @@ const uploadDocument = async (file) => {
     throw error;
   } finally {
     setIsUploading(false);
+    setUploadProgress(0);
   }
 };
-
+  
   const handleDeleteDocument = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -203,39 +163,29 @@ const uploadDocument = async (file) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this builder?")) {
-      try {
-        const userId = user?.user?.id;
-       
-        if (!userId) {
-          alert("User not found. Please log in again.");
-          return;
-        }
-
-        const response = await fetch("/api/builder/delete", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ builderId: id, userId }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to delete builder");
-        }
-
-        setBuilders(builders.filter((builder) => builder._id !== id));
-      } catch (error) {
-        console.error("Error deleting builder:", error);
-        alert("Failed to delete builder. Please try again.");
+    if (!window.confirm("Delete this builder?")) return;
+    try {
+      const userId = user?.user?.id;
+      if (!userId) {
+        alert("User not found. Please log in again.");
+        return;
       }
+      const response = await fetch("/api/builder/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ builderId: id, userId }),
+      });
+      if (!response.ok) throw new Error("Failed to delete builder");
+      setBuilders(builders.filter((builder) => builder._id !== id));
+    } catch (error) {
+      console.error("Error deleting builder:", error);
+      alert("Failed to delete builder. Please try again.");
     }
   };
 
   const handleEdit = (item) => {
     setIsEditMode(true);
     setCurrentItemId(item._id);
-
     setFormData({
       developer: item.developer,
       videoUrl: item.video.url,
@@ -243,7 +193,6 @@ const uploadDocument = async (file) => {
       offerTitle: item.offer.title,
       offerPercentage: item.offer.percentage,
     });
-
     setShowModal(true);
   };
 
@@ -263,7 +212,6 @@ const uploadDocument = async (file) => {
     setLoading(true);
     setError(null);
 
-    // Prepare update data
     const updateData = {
       builderId: currentItemId,
       developer: formData.developer.trim(),
@@ -278,9 +226,7 @@ const uploadDocument = async (file) => {
     try {
       const response = await fetch("/api/builder/edit", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
       });
 
@@ -290,15 +236,11 @@ const uploadDocument = async (file) => {
       }
 
       const result = await response.json();
-
-      // Update builders list with the updated item
       setBuilders(
         builders.map((builder) =>
           builder._id === currentItemId ? result.builder : builder
         )
       );
-
-      // Reset form and close modal
       resetForm();
       setShowModal(false);
     } catch (error) {
@@ -311,7 +253,6 @@ const uploadDocument = async (file) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (isEditMode) {
       await handleUpdate();
       return;
@@ -330,22 +271,15 @@ const uploadDocument = async (file) => {
       },
       createdBy: user?.user?.name,
     };
-    
+
     try {
       const response = await fetch("/api/builder/add", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(itemData),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to add builder: ${response.statusText}`);
-      }
-
+      if (!response.ok) throw new Error(`Failed to add builder`);
       fetchBuilders();
-      
       resetForm();
       setShowModal(false);
     } catch (error) {
@@ -356,17 +290,16 @@ const uploadDocument = async (file) => {
     }
   };
 
-  const hasRequiredRole = user?.user?.role === "Super-Admin" || 
-                         user?.user?.role === "Admin" || 
-                         user?.user?.role === "Associate-Member";
+  const hasRequiredRole =
+    user?.user?.role === "Super-Admin" ||
+    user?.user?.role === "Admin" ||
+    user?.user?.role === "Associate-Member";
 
   if (!hasRequiredRole) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
         <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-        <p className="text-gray-700 mb-6">
-          You don't have permission to view this page.
-        </p>
+        <p className="text-gray-700 mb-6">You don't have permission to view this page.</p>
         <button
           onClick={() => window.history.back()}
           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors"
@@ -380,9 +313,7 @@ const uploadDocument = async (file) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Builder Management
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">Builder Management</h1>
         <button
           onClick={() => {
             resetForm();
@@ -396,10 +327,7 @@ const uploadDocument = async (file) => {
       </div>
 
       {error && (
-        <div
-          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
-          role="alert"
-        >
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
           <p>{error}</p>
         </div>
       )}
@@ -408,89 +336,81 @@ const uploadDocument = async (file) => {
         <div className="flex justify-center items-center h-64">
           <Loader size={40} className="animate-spin text-purple-600" />
         </div>
+      ) : builders.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <ListPlus size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-700 mb-2">No Builders Found</h3>
+          <p className="text-gray-500">Click 'Add Builder' to create your first builder entry</p>
+        </div>
       ) : (
-        <>
-          {builders.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <ListPlus size={48} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-medium text-gray-700 mb-2">
-                No Builders Found
-              </h3>
-              <p className="text-gray-500">
-                Click 'Add Builder' to create your first builder entry
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {builders.map((builder) => (
-                <div
-                  key={builder._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg"
-                >
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      {builder.developer}
-                    </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {builders.map((builder) => (
+            <div
+              key={builder._id}
+              className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg"
+            >
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{builder.developer}</h3>
 
-                    <div className="flex items-center text-gray-500 mb-2">
-                      <Video size={16} className="mr-2 flex-shrink-0" />
-                      <a
-                        href={builder.video.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        View Video
-                      </a>
-                    </div>
-
-                    {builder.additionalDocuments.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-gray-700 font-medium mb-1">Documents:</p>
-                        {builder.additionalDocuments.map((doc, index) => (
-                          <div key={index} className="flex items-center text-blue-500 mb-1">
-                            <FileText size={16} className="mr-2 flex-shrink-0" />
-                            <a
-                              href={doc.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              {trimText(doc.name)}
-                            </a>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex items-center text-gray-500 mb-4">
-                      <Percent size={16} className="mr-2 flex-shrink-0" />
-                      <span>{builder.offer.title}: {builder.offer.percentage}%</span>
-                    </div>
-
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                        onClick={() => handleEdit(builder)}
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                        onClick={() => handleDelete(builder._id)}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
+                <div className="flex items-center text-gray-500 mb-2">
+                  <Video size={16} className="mr-2 flex-shrink-0" />
+                  <a
+                    href={builder.video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    View Video
+                  </a>
                 </div>
-              ))}
+
+                {builder.additionalDocuments.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-gray-700 font-medium mb-1">Documents:</p>
+                    {builder.additionalDocuments.map((doc, index) => (
+                      <div key={index} className="flex items-center text-blue-500 mb-1">
+                        <FileText size={16} className="mr-2 flex-shrink-0" />
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {trimText(doc.name)}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center text-gray-500 mb-4">
+                  <Percent size={16} className="mr-2 flex-shrink-0" />
+                  <span>
+                    {builder.offer.title}: {builder.offer.percentage}%
+                  </span>
+                </div>
+
+                <div className="flex justify-end gap-2 mt-2">
+                  <button
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    onClick={() => handleEdit(builder)}
+                  >
+                    <Edit size={18} />
+                  </button>
+                  <button
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    onClick={() => handleDelete(builder._id)}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
-      {/* Modal for adding/editing builders */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
@@ -511,39 +431,25 @@ const uploadDocument = async (file) => {
 
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="developer"
-                >
-                  Developer Name*
-                </label>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Developer Name*</label>
                 <input
-                  id="developer"
                   name="developer"
                   type="text"
                   value={formData.developer}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter developer name"
+                  className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
                   required
                 />
               </div>
 
               <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="videoUrl"
-                >
-                  Video URL*
-                </label>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Video URL*</label>
                 <input
-                  id="videoUrl"
                   name="videoUrl"
                   type="url"
                   value={formData.videoUrl}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter video URL (e.g., YouTube link)"
+                  className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
                   required
                 />
               </div>
@@ -563,7 +469,7 @@ const uploadDocument = async (file) => {
                     />
                     <label
                       htmlFor="document"
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded cursor-pointer hover:bg-gray-300 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded cursor-pointer hover:bg-gray-300"
                     >
                       <FileText size={18} />
                       Add Document
@@ -578,19 +484,17 @@ const uploadDocument = async (file) => {
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Uploading: {uploadProgress}%
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Uploading...</p>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Supported formats: PDF, DOC, DOCX, XLS, XLSX, TXT (max 4MB)
-                </p>
                 {formData.additionalDocuments.length > 0 && (
                   <div className="mt-4">
                     <p className="text-gray-700 font-medium mb-1">Uploaded Documents:</p>
                     {formData.additionalDocuments.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded mb-2">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-gray-100 rounded mb-2"
+                      >
                         <span className="text-sm text-gray-700">{doc.name}</span>
                         <button
                           type="button"
@@ -607,69 +511,54 @@ const uploadDocument = async (file) => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                    htmlFor="offerTitle"
-                  >
-                    Offer Title*
-                  </label>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Offer Title*</label>
                   <input
-                    id="offerTitle"
                     name="offerTitle"
                     type="text"
                     value={formData.offerTitle}
                     onChange={handleInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Enter offer title"
+                    className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
                     required
                   />
                 </div>
                 <div>
-                  <label
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                    htmlFor="offerPercentage"
-                  >
-                    Offer Percentage*
-                  </label>
-                  <input
-                    id="offerPercentage"
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Offer Percentage*</label>
+                                   <input
                     name="offerPercentage"
                     type="number"
                     min="0"
                     max="100"
                     value={formData.offerPercentage}
                     onChange={handleInputChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
                     required
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4">
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  disabled={loading || isUploading}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
                 >
                   {loading ? (
                     <>
-                      <Loader size={16} className="animate-spin" />
-                      {isEditMode ? "Updating..." : "Saving..."}
+                      <Loader size={18} className="animate-spin" />
+                      Saving...
                     </>
                   ) : (
-                    <>
-                      {isEditMode ? "Update" : "Save"}
-                    </>
+                    <>{isEditMode ? "Update Builder" : "Add Builder"}</>
                   )}
                 </button>
               </div>
@@ -677,22 +566,7 @@ const uploadDocument = async (file) => {
           </div>
         </div>
       )}
-
-      {/* View for grid and list modes */}
-      <div className="flex justify-end mt-8">
-        <button
-          className="p-2 bg-gray-100 hover:bg-gray-200 rounded mr-2"
-          title="Grid View"
-        >
-          <LayoutGrid size={20} className="text-gray-600" />
-        </button>
-        <button
-          className="p-2 bg-gray-100 hover:bg-gray-200 rounded"
-          title="List View"
-        >
-          <FileText size={20} className="text-gray-600" />
-        </button>
-      </div>
     </div>
   );
 }
+

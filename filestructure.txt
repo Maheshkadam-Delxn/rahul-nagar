@@ -209,6 +209,8 @@
                     |-- route.js
             |-- contact
                 |-- route.js
+            |-- createUploadSession
+                |-- route.js
             |-- delete
                 |-- route.js
             |-- events
@@ -274,6 +276,8 @@
                     |-- [updateId]
                         |-- route.js
             |-- redevelopmentContact
+                |-- route.js
+            |-- setFilePermission
                 |-- route.js
             |-- settings
                 |-- route.js
