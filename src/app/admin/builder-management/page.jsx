@@ -97,7 +97,7 @@ const uploadDocument = async (file) => {
     if (file.size > maxSizeBytes) {
       throw new Error("File size exceeds 50MB limit. Please upload a smaller file.");
     }
-//sample
+//sample2
     // Step 2: Create resumable upload session
     const sessionRes = await fetch("/api/createUploadSession", {
       method: "POST",
