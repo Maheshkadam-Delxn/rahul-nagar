@@ -98,80 +98,102 @@ export default function BuilderManagement() {
     }
   };
 
-  const uploadDocument = async (file) => {
-    setIsUploading(true);
-    setUploadProgress(0);
+const uploadDocument = async (file) => {
+  setIsUploading(true);
+  setUploadProgress(0);
+  
+  const documentData = new FormData();
+  documentData.append("file", file);
+  documentData.append("folderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8");
+
+  try {
+    const xhr = new XMLHttpRequest();
     
-    const documentData = new FormData();
-    documentData.append("file", file);
-    documentData.append("folderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8");
-
-    try {
-      // Create XMLHttpRequest to track progress
-      const xhr = new XMLHttpRequest();
-      
-      const uploadPromise = new Promise((resolve, reject) => {
-        xhr.upload.addEventListener("progress", (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percentComplete);
-          }
-        });
-        
-        xhr.addEventListener("load", () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response);
-            } catch (error) {
-              reject(new Error("Invalid response format"));
-            }
-          } else {
-            reject(new Error(`HTTP error: ${xhr.status}`));
-          }
-        });
-        
-        xhr.addEventListener("error", () => reject(new Error("Network error")));
-        xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
-        
-        xhr.open("POST", "/api/upload");
-        xhr.send(documentData);
+    const uploadPromise = new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percentComplete);
+        }
       });
+      
+      xhr.addEventListener("load", () => {
+        console.log('XHR load event:', xhr.status, xhr.statusText);
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            console.log('Upload successful:', response);
+            resolve(response);
+          } catch (error) {
+            console.error('JSON parse error:', error, xhr.responseText);
+            reject(new Error("Invalid response format"));
+          }
+        } else {
+          console.error('HTTP error details:', xhr.status, xhr.statusText, xhr.responseText);
+          reject(new Error(`HTTP error: ${xhr.status} - ${xhr.statusText}`));
+        }
+      });
+      
+      xhr.addEventListener("error", (e) => {
+        console.error('XHR error event:', e);
+        reject(new Error("Network error - check console for details"));
+      });
+      
+      xhr.addEventListener("abort", () => {
+        console.log('Upload aborted by user');
+        reject(new Error("Upload aborted"));
+      });
+      
+      // Add timeout handling
+      xhr.timeout = 300000; // 5 minutes timeout
+      xhr.ontimeout = () => {
+        console.error('Upload timeout');
+        reject(new Error("Upload timeout"));
+      };
+      
+      xhr.open("POST", "/api/upload");
+      
+      // Add headers if needed (though FormData usually handles this)
+      // xhr.setRequestHeader('Accept', 'application/json');
+      
+      xhr.send(documentData);
+    });
 
-      const documentResult = await uploadPromise;
-      
-      let documentUrl = "";
-      if (documentResult.viewLink) {
-        documentUrl = documentResult.viewLink;
-      } else if (documentResult.url) {
-        documentUrl = documentResult.url;
-      } else if (documentResult.data && documentResult.data.fileUrl) {
-        documentUrl = documentResult.data.fileUrl;
-      } else if (documentResult.data && documentResult.data.url) {
-        documentUrl = documentResult.data.url;
-      } else {
-        console.error("Could not extract document URL from response:", documentResult);
-        throw new Error("Failed to get document URL from upload response");
-      }
-      
-      // Add to additionalDocuments array
-      setFormData((prev) => ({
-        ...prev,
-        additionalDocuments: [
-          ...prev.additionalDocuments,
-          { name: file.name, url: documentUrl }
-        ],
-      }));
-      
-      return documentUrl;
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      setError("Failed to upload document. Please try again.");
-      throw error;
-    } finally {
-      setIsUploading(false);
+    const documentResult = await uploadPromise;
+    
+    let documentUrl = "";
+    if (documentResult.viewLink) {
+      documentUrl = documentResult.viewLink;
+    } else if (documentResult.url) {
+      documentUrl = documentResult.url;
+    } else if (documentResult.data && documentResult.data.fileUrl) {
+      documentUrl = documentResult.data.fileUrl;
+    } else if (documentResult.data && documentResult.data.url) {
+      documentUrl = documentResult.data.url;
+    } else {
+      console.error("Could not extract document URL from response:", documentResult);
+      throw new Error("Failed to get document URL from upload response");
     }
-  };
+    
+    // Add to additionalDocuments array
+    setFormData((prev) => ({
+      ...prev,
+      additionalDocuments: [
+        ...prev.additionalDocuments,
+        { name: file.name, url: documentUrl }
+      ],
+    }));
+    
+    return documentUrl;
+  } catch (error) {
+    console.error("Error uploading document:", error);
+    setError(`Upload failed: ${error.message}`);
+    throw error;
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const handleDeleteDocument = (index) => {
     setFormData((prev) => ({

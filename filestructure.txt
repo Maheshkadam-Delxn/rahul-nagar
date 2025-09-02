@@ -239,6 +239,8 @@
                     |-- route.js
                 |-- update-image
                     |-- route.js
+            |-- generate-auth
+                |-- route.js
             |-- redevelopment
                 |-- advertisement
                     |-- add-advertisement
@@ -287,6 +289,8 @@
                 |-- [updateId]
                     |-- route.js
             |-- upload
+                |-- route.js
+            |-- upload-large-files
                 |-- route.js
             |-- upload-to-drive
                 |-- route.js
@@ -372,3 +376,4 @@
         |-- SiteSetting.js
         |-- Updates.js
         |-- User.js
+|-- vercel.json
