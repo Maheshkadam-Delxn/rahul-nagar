@@ -92,48 +92,87 @@ const uploadDocument = async (file) => {
   setUploadProgress(0);
 
   try {
-    // Step 1: Create FormData to send file and metadata
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", file.name);
-    formData.append("mimeType", file.type);
-    formData.append("folderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8"); // Your Drive folder ID
+    // Step 1: Validate file size (optional, adjust as needed)
+    const maxSizeBytes = 50 * 1024 * 1024; // 50MB limit
+    if (file.size > maxSizeBytes) {
+      throw new Error("File size exceeds 50MB limit. Please upload a smaller file.");
+    }
 
-    // Step 2: Send file to server for upload to Google Drive
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/createUploadSession", true);
-
-    // Track upload progress
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const progress = Math.round((event.loaded / event.total) * 100);
-        setUploadProgress(progress);
-      }
-    };
-
-    const uploadPromise = new Promise((resolve, reject) => {
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(JSON.parse(xhr.responseText));
-        } else {
-          reject(new Error(`Upload failed: ${xhr.status} - ${xhr.statusText}`));
-        }
-      };
-      xhr.onerror = () => reject(new Error("Network error during file upload"));
-      xhr.send(formData);
+    // Step 2: Create resumable upload session
+    const sessionRes = await fetch("/api/createUploadSession", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        mimeType: file.type,
+        folderId: "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8", // Your Drive folder ID
+      }),
+      credentials: "same-origin",
     });
 
-    const response = await uploadPromise;
-    if (!response.success) {
-      throw new Error(response.error || "Failed to upload file to Google Drive");
+    if (!sessionRes.ok) {
+      const errorData = await sessionRes.json();
+      throw new Error(`Failed to create session: ${errorData.error || sessionRes.statusText}`);
     }
 
-    const fileId = response.fileId;
+    const { uploadUrl } = await sessionRes.json();
+    if (!uploadUrl) {
+      throw new Error("Failed to create Google Drive upload session");
+    }
+
+    // Step 3: Upload file in chunks
+    const chunkSize = 4 * 1024 * 1024; // 4MB chunks
+    let start = 0;
+    let fileId = null;
+
+    while (start < file.size) {
+      const chunk = file.slice(start, start + chunkSize);
+      const chunkArrayBuffer = await chunk.arrayBuffer();
+      const chunkSizeBytes = chunkArrayBuffer.byteLength;
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", "/api/uploadChunk", true);
+      xhr.setRequestHeader("Content-Type", "application/octet-stream");
+      xhr.setRequestHeader("X-Upload-Start", start);
+      xhr.setRequestHeader("X-Upload-Length", file.size);
+      xhr.setRequestHeader("X-Upload-Url", uploadUrl);
+      xhr.setRequestHeader("X-Upload-MimeType", file.type);
+      xhr.setRequestHeader("X-Upload-FileName", file.name);
+      xhr.setRequestHeader("X-Upload-FolderId", "1gsrhldLDRlcQmI-vKCgpPuJTxJpY48q8");
+
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round(((start + event.loaded) / file.size) * 100);
+            setUploadProgress(progress);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status === 200 || xhr.status === 201) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.fileId) {
+              fileId = response.fileId; // Capture fileId from final chunk
+            }
+            resolve();
+          } else if (xhr.status === 308) {
+            resolve(); // Continue with next chunk
+          } else {
+            reject(new Error(`Chunk upload failed: ${xhr.status} - ${xhr.statusText}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Network error during chunk upload"));
+        xhr.send(chunkArrayBuffer);
+      });
+
+      await uploadPromise;
+      start += chunkSize;
+    }
+
     if (!fileId) {
-      throw new Error("Failed to retrieve fileId from server");
+      throw new Error("Failed to retrieve fileId after upload");
     }
 
-    // Step 3: Construct file link
+    // Step 4: Construct file link
     const documentUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
 
     setFormData((prev) => ({

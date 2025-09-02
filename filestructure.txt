@@ -298,6 +298,8 @@
                 |-- route.js
             |-- upload-to-drive
                 |-- route.js
+            |-- uploadChunk
+                |-- route.js
             |-- user-management
                 |-- add-user
                     |-- route.js

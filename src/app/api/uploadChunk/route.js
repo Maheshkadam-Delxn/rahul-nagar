@@ -4,12 +4,28 @@ import { NextResponse } from "next/server";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Upload-Start, X-Upload-Length, X-Upload-Url, X-Upload-MimeType, X-Upload-FileName, X-Upload-FolderId',
 };
 
-export async function POST(req) {
+export async function PUT(req) {
   try {
-    const { fileName, mimeType, folderId } = await req.json();
+    const uploadUrl = req.headers.get("X-Upload-Url");
+    const start = parseInt(req.headers.get("X-Upload-Start"), 10);
+    const totalLength = parseInt(req.headers.get("X-Upload-Length"), 10);
+    const mimeType = req.headers.get("X-Upload-MimeType");
+    const fileName = req.headers.get("X-Upload-FileName");
+    const folderId = req.headers.get("X-Upload-FolderId");
+
+    if (!uploadUrl || isNaN(start) || isNaN(totalLength) || !mimeType || !fileName || !folderId) {
+      const response = NextResponse.json(
+        { success: false, error: "Missing required headers" },
+        { status: 400 }
+      );
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      return response;
+    }
 
     const serviceAccountKey = {
       // Your service account key (same as before)
@@ -26,62 +42,56 @@ export async function POST(req) {
       scopes: ["https://www.googleapis.com/auth/drive.file"],
     });
 
-    const token = await auth.getAccessToken();
+    const chunkBuffer = Buffer.from(await req.arrayBuffer());
+    const contentRange = `bytes ${start}-${start + chunkBuffer.length - 1}/${totalLength}`;
 
-    const sessionRes = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json; charset=UTF-8",
-          "X-Upload-Content-Type": mimeType,
-        },
-        body: JSON.stringify({
-          name: fileName,
-          parents: [folderId],
-        }),
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Range": contentRange,
+        "Content-Type": "application/octet-stream",
+      },
+      body: chunkBuffer,
+    });
+
+    let fileId = null;
+    if (uploadRes.status === 200 || uploadRes.status === 201) {
+      // Upload complete, get fileId from response
+      const fileMetadata = await uploadRes.json();
+      fileId = fileMetadata.id;
+      if (!fileId) {
+        throw new Error("Failed to retrieve fileId from Google Drive");
       }
-    );
 
-    if (!sessionRes.ok) {
-      const errorBody = await sessionRes.text();
-      console.error("Google API error:", errorBody);
-      throw new Error(`Failed to create session: ${sessionRes.statusText}`);
+      // Set public read permissions
+      const drive = google.drive({ version: "v3", auth });
+      await drive.permissions.create({
+        fileId,
+        requestBody: {
+          role: "reader",
+          type: "anyone",
+        },
+      });
+    } else if (uploadRes.status === 308) {
+      // Resume incomplete, more chunks needed
+      const response = NextResponse.json({ success: true }, { status: 308 });
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      return response;
+    } else {
+      const errorBody = await uploadRes.text();
+      console.error("Chunk upload error:", errorBody);
+      throw new Error(`Chunk upload failed: ${uploadRes.statusText}`);
     }
 
-    const uploadUrl = sessionRes.headers.get("location");
-    if (!uploadUrl) {
-      throw new Error("No resumable upload URL returned from Google Drive");
-    }
-
-    // Get fileId (optional, if needed for further operations)
-    const drive = google.drive({ version: "v3", auth });
-    const fileMetadata = await drive.files.create({
-      requestBody: {
-        name: fileName,
-        parents: [folderId],
-      },
-      fields: "id",
-    });
-    const fileId = fileMetadata.data.id;
-
-    // Set public read permissions
-    await drive.permissions.create({
-      fileId,
-      requestBody: {
-        role: "reader",
-        type: "anyone",
-      },
-    });
-
-    const response = NextResponse.json({ success: true, uploadUrl, fileId });
+    const response = NextResponse.json({ success: true, fileId });
     Object.entries(corsHeaders).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
     return response;
   } catch (err) {
-    console.error("Session creation error:", err);
+    console.error("Chunk upload error:", err);
     const response = NextResponse.json({ success: false, error: err.message }, { status: 500 });
     Object.entries(corsHeaders).forEach(([key, value]) => {
       response.headers.set(key, value);
