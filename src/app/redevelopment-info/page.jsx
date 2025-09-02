@@ -171,6 +171,41 @@ const RedevelopmentInfoPage = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <a
+                href="https://drive.google.com/file/d/1xskhd00xMzNGVNHEnA85KEVkt8jnapfh/view?usp=drive_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#B57E10] rounded-full flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800">Legal Compliance Report</h4>
+                    <p className="text-gray-600 text-sm">Download the legal compliance report</p>
+                  </div>
+                </div>
+              </a>
+              <a
+                href="https://drive.google.com/file/d/1DZqg0ajMflfWtJi68iSDmr8ITqdrQtFT/view?usp=drive_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#B57E10] rounded-full flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800">Rahul Nagar Evaluation Report</h4>
+                    <p className="text-gray-600 text-sm">Download the evaluation report</p>
+                  </div>
+                </div>
+              </a>
+            </div>
+
             <div className="text-center mb-16">
               <h3 className="text-2xl font-semibold text-gray-700 mb-4">
                 Stay updated with the confidential information
