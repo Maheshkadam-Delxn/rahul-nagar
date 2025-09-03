@@ -566,7 +566,7 @@ const uploadDocument = async (file) => {
                     name="offerPercentage"
                     type="number"
                     min="0"
-                    max="100"
+                    max="500"
                     value={formData.offerPercentage}
                     onChange={handleInputChange}
                     className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none"
