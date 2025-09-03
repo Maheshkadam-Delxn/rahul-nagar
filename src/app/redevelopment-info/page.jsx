@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import ServiceHeroSection from "@/components/ServiceHeroSection";
 import { Toaster } from "react-hot-toast";
-import { Play, FileText, Lock, Calendar, X } from "lucide-react";
+import { Play, FileText, Lock, Calendar, X, ExternalLink } from "lucide-react";
 
 const RedevelopmentInfoPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,6 +13,7 @@ const RedevelopmentInfoPage = () => {
   const [error, setError] = useState("");
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [image, setImage] = useState(null);
+  const [videoErrors, setVideoErrors] = useState({}); // Track video errors by ID
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -35,6 +36,11 @@ const RedevelopmentInfoPage = () => {
   const getDriveFileId = (url) => {
     const match = url?.match(/[-\w]{25,}/);
     return match ? match[0] : null;
+  };
+
+  // Handle YouTube iframe errors
+  const handleVideoError = (builderId) => {
+    setVideoErrors(prev => ({ ...prev, [builderId]: true }));
   };
 
   useEffect(() => {
@@ -243,15 +249,37 @@ const RedevelopmentInfoPage = () => {
                           Presentation Video
                         </h4>
                         {builder.video?.url && (
-                          <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
-                            <iframe
-                              src={`https://www.youtube.com/embed/${extractYouTubeId(builder.video.url)}`}
-                              className="w-full h-full"
-                              frameBorder="0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              title={`${builder.developer} Presentation`}
-                            />
+                          <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden relative">
+                            {!videoErrors[builder._id] ? (
+                              <iframe
+                                src={`https://www.youtube.com/embed/${extractYouTubeId(builder.video.url)}`}
+                                className="w-full h-full"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title={`${builder.developer} Presentation`}
+                                onError={() => handleVideoError(builder._id)}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white p-4 text-center">
+                                <div className="mb-4">
+                                  <svg className="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">Video Unavailable</h3>
+                                <p className="mb-4">This video cannot be embedded due to privacy restrictions set by the video owner.</p>
+                                <a
+                                  href={builder.video.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 bg-[#B57E10] hover:bg-amber-700 text-white px-4 py-2 rounded-md transition-colors"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                  Watch on YouTube
+                                </a>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -356,4 +384,3 @@ const RedevelopmentInfoPage = () => {
 };
 
 export default RedevelopmentInfoPage;
-//sample

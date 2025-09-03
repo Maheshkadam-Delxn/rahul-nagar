@@ -34,7 +34,7 @@ const builderSchema = new mongoose.Schema({
     percentage: {
       type: Number,
       min: 0,
-      max: 100,
+      max: 500,
       default: 100
     }
   },
@@ -45,5 +45,5 @@ const builderSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
+delete mongoose.models.Builder
 export default mongoose.models.Builder || mongoose.model('Builder', builderSchema);
