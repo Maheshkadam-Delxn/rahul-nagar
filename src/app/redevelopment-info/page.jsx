@@ -171,7 +171,7 @@ const RedevelopmentInfoPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Confidentiality Note</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    This is a confidential document prepared strictly for internal use. The details mentioned herein are highly sensitive and are not to be shared with anyone outside Ruival Nager. Sharing, copying, or distributing this document in any form is strictly prohibited. This resolution is for our safety and security purposes.
+                    This is a confidential document prepared strictly for internal use. The details mentioned herein are highly sensitive and are not to be shared with anyone outside Rahul Nager. Sharing, copying, or distributing this document in any form is strictly prohibited. This resolution is for our safety and security purposes.
                   </p>
                 </div>
               </div>
